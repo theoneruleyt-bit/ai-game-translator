@@ -15,7 +15,7 @@ class StabilityGateTest {
   val g=StabilityGate();g.observe("Go",0);g.commit("Go");g.observe("",1000);g.observe("",2600)
   g.observe("Go",2700);assertEquals("Go",g.observe("Go",3400))
  }
- @Test funNewLineDoesNotNeedBlankFrame() {
+ @Test fun newLineDoesNotNeedBlankFrame() {
   val g=StabilityGate();g.observe("First",0);g.commit("First");g.observe("Next",700)
   assertEquals("Next",g.observe("Next",1400))
  }
