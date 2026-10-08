@@ -1,8 +1,10 @@
-# AI Game Translator 0.10 — Anahtarsız sürekli dinleme
+# AI Game Translator 0.10.1 — Anahtarsız sürekli dinleme
 
 Android 10+ • İngilizce → Türkçe • Kamera, görsel, mikrofon.
 
 ## Yenilikler
+
+0.10.1 düzeltmesi: Dinle modundaki kulaklık zorunluluğu kaldırıldı. Türkçe sesli oku seçeneği artık geri kapanmaz; otomatik okuma, ses örneği ve son çeviriyi tekrar okuma hoparlörden de çalışabilecek şekilde düzenlendi. Ses motoru, mikrofon ve kamera işleme kodları değiştirilmedi.
 
 - Azure bağlantısı ve ücretli bulut konuşma bağımlılığı kaldırıldı. Vosk 0.3.75 ve JNA 5.18.1 ile cihaz içi sürekli mikrofon tanıma eklendi.
 - AudioRecord 16 kHz mono PCM mikrofonu açık tutar. İngilizce ara metinler, sık güncellemelerde son metni tercih ederek yerel ML Kit çevirisine gönderilir. Ara çeviri değişebilir, seslendirilmez.
@@ -12,19 +14,19 @@ Android 10+ • İngilizce → Türkçe • Kamera, görsel, mikrofon.
 
 ## GitHub adımları
 
-1. ZIP'i aç. İçindeki `Android_Game_Translator_0_10` klasörünün içeriğini mevcut repo köküne aktar; ayrı alt klasör oluşturma. `app` ve gizli `.github` klasörü dahil bütün mevcut dosyaları üzerine yaz.
+1. ZIP'i aç. İçindeki `Android_Game_Translator_0_10_1` klasörünün içeriğini mevcut repo köküne aktar; ayrı alt klasör oluşturma. `app` ve gizli `.github` klasörü dahil bütün mevcut dosyaları üzerine yaz.
 2. `StreamingTranslator.kt` ve `SpeechSettings.kt` bu pakette yalnızca geçiş açıklaması içerir. Üzerine yazılmaları önemlidir: eski Azure SDK importlarının repoda kalmasını engeller.
 3. Mevcut proje klasöründe terminal aç:
 
 ```bash
 git add .
-git commit -m "v0.10: anahtarsiz cihaz ici surekli ses cevirisi"
+git commit -m "v0.10.1: Dinle modunda Turkce sesli okuma duzeltmesi"
 git push origin main
 ```
 
-4. GitHub Actions → Android APK yeşil olduğunda `AI-Game-Translator-0.10-offline-speech-debug` artifact'ını indir. İçindeki `app-debug.apk` dosyasını yükle.
+4. GitHub Actions → Android APK yeşil olduğunda `AI-Game-Translator-0.10.1-voice-fix-debug` artifact'ını indir. İçindeki `app-debug.apk` dosyasını yükle.
 
-Sürüm kodu 10. Sabit yayın imzalama bu sürümde eklenmedi; farklı CI debug imzaları mevcut uygulamanın üzerine yüklemeyi engelleyebilir.
+Sürüm kodu 11. Sabit yayın imzalama bu sürümde eklenmedi; farklı CI debug imzaları mevcut uygulamanın üzerine yüklemeyi engelleyebilir.
 
 ## Telefonda ilk kurulum
 
@@ -32,7 +34,7 @@ Sürüm kodu 10. Sabit yayın imzalama bu sürümde eklenmedi; farklı CI debug 
 2. **Dinle → İngilizce konuşma modelini indir / kontrol et** düğmesine bas. Yaklaşık 40 MB Vosk modeli resmî alphacephei.com adresinden indirilir, açılır ve yüklenebilirliği doğrulanır. Açılmış model için ek depolama gerekir.
 3. `Anahtarsız sürekli dinleme (Vosk)` seçili kalsın. Başlat ve mikrofon izni ver.
 4. Bir TV/PC/başka cihazdan İngilizce oyun/video sesi oynat. Kaynak metin ve ara çeviri düğmeye basmadan güncellenmeli; duraklamada tamamlanan replik geçmişe eklenmeli.
-5. Türkçe ses için kulaklık bağla. `Türkçe sesi kulaklıkla dinliyorum` ve ardından `Türkçe sesli oku` seçeneklerini aç. Kulaklık seçeneği gerçek ses çıkışını değiştirmez; kulaklığın bağlı olduğundan emin ol.
+5. `Türkçe sesli oku` seçeneğini aç. Hoparlör veya bağlı kulaklık üzerinden tamamlanan replikler okunur. Kulaklık zorunlu değildir. Gerçekten kulaklık kullanıyorsan ilgili kutuyu aç; kutu gerçek ses çıkışını değiştirmez.
 
 Vosk model dosyası: https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
 
@@ -42,7 +44,7 @@ Azure hesabı, API anahtarı ve dakika başına bulut servis ücreti gerekmez. V
 
 Mikrofon telefonun çevresindeki sesi alır. Telefonun iç oyun sesini doğrudan yakalayan ekran yakalama özelliği eklenmedi. Uygulama arka plana geçince veya Durdur'a basılınca kayıt durur; geç kalmış sonuçlar elenir. Aktif model indirmesi de durdurulur; tekrar indirme baştan başlar. Tamamlanmamış konuşma Durdur'a basınca seslendirilmez.
 
-Kulaklıksız canlı dinleme başlatılırken Türkçe sesli okuma kapanır, ekrandaki çeviri devam eder. Böylece uygulamanın kendi sesini yeniden çevirmesi azaltılır. Mikrofon seviyesi gerçek PCM verisinden hesaplanır.
+Sesli okuma seçeneği dinleme başlayınca veya kulaklık kutusu değişince kapatılmaz. Hoparlörle okuma sırasında mikrofon açık kaldığından kendi Türkçe sesi tekrar algılayabilir; düşük hoparlör sesi veya kulaklık önerilir. Mikrofon seviyesi gerçek PCM verisinden hesaplanır.
 
 ## Kalite ve sınırlar
 

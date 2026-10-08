@@ -237,9 +237,9 @@ class MainActivity : ComponentActivity() {
         metrics=label("",12f,mint);controls.addView(metrics)
         autoVoice=CheckBox(this).apply {
             text="Türkçe sesli oku";setTextColor(Color.WHITE);isChecked=true
-            setOnCheckedChangeListener { box,checked ->
+            setOnCheckedChangeListener { _,checked ->
                 if(!checked&&::voice.isInitialized) voice.stop()
-                if(checked&&active&&mode==Mode.MIC&&offlineMode&&!headphones.isChecked) { box.isChecked=false;message("Sürekli dinlerken Türkçe ses için kulaklık seçeneğini aç. Mikrofon kesilmeden metin çevirisi devam ediyor.") }
+                if(checked&&active&&mode==Mode.MIC&&offlineMode) message("Türkçe sesli okuma açık. Yeni tamamlanan replikler okunacak; mikrofon açık kalıyor.")
             }
         };controls.addView(autoVoice)
         region=CheckBox(this).apply {
@@ -253,7 +253,7 @@ class MainActivity : ComponentActivity() {
             text="Türkçe sesi kulaklıkla dinliyorum";setTextColor(muted);isChecked=false
             setOnCheckedChangeListener { _,checked ->
                 if(active&&mode==Mode.MIC) {
-                    if(offlineMode) { if(!checked) { autoVoice.isChecked=false;voice.stop();message("Mikrofon kesilmeden metin çevirisi devam ediyor. Sesli okuma için kulaklık kullan.") } }
+                    if(offlineMode) { message(if(checked) "Kulaklık kullanımı seçildi. Sesli okuma seçeneğin korunuyor." else "Hoparlörden okuma kullanılabilir. Kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir.") }
                     else if(!checked&&voice.count>0) pauseMicrophone() else scheduleListening()
                 }
             }
@@ -382,7 +382,7 @@ class MainActivity : ComponentActivity() {
         start.text=when(mode) { Mode.CAMERA->"Kamerayı başlat";Mode.MIC->"Dinlemeyi başlat";Mode.IMAGE->"Görsel seç" }
         hint.text=when(mode) {
             Mode.CAMERA->"TV veya monitörde İngilizce altyazıyı aç. Telefonu sabit tut. Yeşil alanı yalnızca altyazı satırlarına çiz; süre ve simgeleri dışarıda bırak."
-            Mode.MIC->"Vosk modunda mikrofon sürekli açık kalır ve ses cihazda işlenir. Türkçe okumada kulaklık kullan; kulaklıksız metin çevirisi devam eder. Uygulama arka plana geçince durur."
+            Mode.MIC->"Vosk modunda mikrofon sürekli açık kalır ve ses cihazda işlenir. Türkçe sesi hoparlör veya kulaklıkla dinleyebilirsin. Kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir. Uygulama arka plana geçince durur."
             Mode.IMAGE->"Fotoğraf veya ekran görüntüsündeki İngilizce yazıyı Türkçeye çevir ve sesli dinle."
         }
         if(modelReady) message("Hazır. Başlatabilirsin.")
@@ -402,7 +402,7 @@ class MainActivity : ComponentActivity() {
             Mode.IMAGE->{ stopSession();photo.launch("image/*") }
             Mode.MIC->{
                 AlertDialog.Builder(this).setTitle("Oyun sesini dinle")
-                    .setMessage(if(offlineMode) "Mikrofon sesi cihaz üzerinde sürekli işlenir; Vosk dinleme modu sesi dışarıya göndermez. Konuşma ve çeviri modelleri indirildikten sonra internet gerekmez. Türkçe sesli okuma için kulaklık kullan; ara sonuçlar değişebilir." else "Android konuşma servisi kullanılacak; internet gerekebilir. Bu test modu kesintisiz akış sağlamaz.")
+                    .setMessage(if(offlineMode) "Mikrofon sesi cihaz üzerinde sürekli işlenir; Vosk dinleme modu sesi dışarıya göndermez. Konuşma ve çeviri modelleri indirildikten sonra internet gerekmez. Türkçe ses hoparlörden de okunabilir; kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir. Ara sonuçlar değişebilir." else "Android konuşma servisi kullanılacak; internet gerekebilir. Bu test modu kesintisiz akış sağlamaz.")
                     .setPositiveButton("Dinlemeyi başlat") { _,_ -> if(has(Manifest.permission.RECORD_AUDIO)) startMicrophone() else microphonePermission.launch(Manifest.permission.RECORD_AUDIO) }
                     .setNegativeButton("Vazgeç",null).show()
             }
@@ -511,7 +511,6 @@ class MainActivity : ComponentActivity() {
     }
     private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker) {
         if(text.isBlank())return
-        if(active&&mode==Mode.MIC&&offlineMode&&!headphones.isChecked) { message("Canlı mikrofon açıkken sesli okuma için kulaklık seçeneğini aç.");return }
         if(!voice.ready) { message("Türkçe ses hazır değil. Ses ayarlarından Türkçe paket yükle.");return }
         if(!voice.add(text, active&&mode==Mode.CAMERA,speakerVoiceName(speakerSlot))) { rejected++;message("Ses sırası doldu. Çeviri ekranda korunuyor.") }
         refreshMetrics()
@@ -534,7 +533,6 @@ class MainActivity : ComponentActivity() {
         if(!offline.ready()) { prepareSpeechModel();return }
         if(!modelReady) { prepareModel();return }
         active=true;val token=epoch;start.text="Dinlemeyi durdur"
-        if(!headphones.isChecked) autoVoice.isChecked=false
         signal.isIndeterminate=false;signal.progress=0;signalLabel.text="Yerel konuşma modeli açılıyor…"
         source.text="İngilizce konuşma bekleniyor…";result.text="Ara çeviri burada görünecek."
         message("Cihaz içi dinleme hazırlanıyor…")
