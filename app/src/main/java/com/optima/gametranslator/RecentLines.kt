@@ -14,7 +14,14 @@ class RecentLines {
         return true
     }
     fun observeVisibility(text: String,now: Long) {
-        if(text.isNotBlank())emptySince=null
+        if(text.isNotBlank()) {
+            emptySince=null
+            val visible=key(text)
+            // Refresh real visibility, including lines hidden by the stationary-text filter.
+            lines.keys.toList().forEach { k ->
+                if(k==visible||(k.length>=20&&visible.contains(k)))lines[k]=now
+            }
+        }
         else {
             if(emptySince==null)emptySince=now
             if(now-emptySince!!>=1000)lines.clear()

@@ -235,4 +235,21 @@
  <string-array name="speaker_styles"><item>Doğal</item><item>Daha kalın ton</item><item>Daha ince ton</item><item>Sakin</item><item>Enerjik</item><item>Anlatıcı</item></string-array>
  <string name="model_readiness">"Konuşma: %1$s · Çeviri: %2$s"</string>
  <string name="audio_level">"Mikrofon ses seviyesi"</string>
+
+    <string name="pro_title">Pro • Canlı çeviri</string>
+    <string name="pro_plans">Aylık $4.99 • Yıllık $49.99 • Ömür boyu $199</string>
+    <string name="pro_detail">Kamera ve mikrofon için ortak 3 dakika Pro denemesi. Yalnızca aktif kullanım sayılır. Deneme otomatik ücretlendirilmez. Pro: sınırsız canlı çeviri, sesli okuma ve konuşmacı profilleri.</string>
+    <string name="pro_open">Pro seçenekleri</string>
+    <string name="pro_restore">Satın alımları geri yükle</string>
+    <string name="pro_start">3 dakikalık denemeyi başlat</string>
+    <string name="pro_unavailable">Satın alma henüz hazır değil. Google Play ürünleri ve lisans anahtarı yapılandırılmalı.</string>
+    <string name="pro_remaining">Deneme: %s saniye kaldı</string>
+    <string name="pro_active">Pro etkin • Sınırsız canlı çeviri</string>
+    <string name="pro_expired">Deneme tamamlandı</string>
+    <string name="pro_monthly">Aylık</string>
+    <string name="pro_yearly">Yıllık</string>
+    <string name="pro_lifetime">Ömür boyu</string>
+    <string name="pro_terms">Abonelikler iptal edilene kadar yenilenir. Ömür boyu tek seferliktir. Ödeme öncesi Google Play ekranındaki yerel fiyatı ve koşulları kontrol edin.</string>
+    <string name="pro_close">Kapat</string>
+    <string name="play_license_key" translatable="false"></string>
 </resources>

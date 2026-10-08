@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
     private var textInk=Color.WHITE
     private var dark=true
     private lateinit var meter: AudioMeterView
+    private var cameraRevision=0L
     private var lastSource=""
     private val phraseBook by lazy { PhraseBook(this) }
     private lateinit var readiness: TextView
@@ -85,6 +86,39 @@ class MainActivity : ComponentActivity() {
     private var lastSpeaker=0
     private var automaticSubtitleNames=true
     private lateinit var speakerChoice: Button
+    private lateinit var billing: PlayBilling
+    private lateinit var proStatus: TextView
+    private val trial by lazy { TrialMeter(settings.getLong("trial_used",0)) }
+    private val trialTick=object : Runnable {
+        override fun run() {
+            if(!alive||!active)return
+            if(billing.pro)trial.stop(SystemClock.elapsedRealtime()) else trial.tick(SystemClock.elapsedRealtime())
+            settings.edit().putLong("trial_used",trial.usedMillis).apply();refreshPro()
+            if(!billing.pro&&trial.remainingMillis==0L) { stopSession(true);showPro();return }
+            handler.postDelayed(this,250)
+        }
+    }
+    private fun countLiveUse() {
+        if(!billing.pro)trial.start(SystemClock.elapsedRealtime())
+        handler.removeCallbacks(trialTick);handler.post(trialTick)
+    }
+    private fun refreshPro() {
+        if(::proStatus.isInitialized)proStatus.text=if(billing.pro)getString(R.string.pro_active) else getString(R.string.pro_remaining,((trial.remainingMillis+999)/1000).toString())
+    }
+    private fun showPro() {
+        val content=vertical().apply { setPadding(dp(20),dp(12),dp(20),dp(12)) }
+        content.addView(label(getString(R.string.pro_detail),16f))
+        content.addView(label(getString(R.string.pro_plans),14f,mint))
+        val configured=getString(R.string.play_license_key).isNotBlank()
+        if(billing.plans.isEmpty()||!configured)content.addView(label(getString(R.string.pro_unavailable),14f,muted))
+        val dialog=AlertDialog.Builder(this).setTitle(getString(R.string.pro_title)).setView(content).setNegativeButton(getString(R.string.pro_close),null).create()
+        billing.plans.sortedBy { listOf("monthly","yearly","lifetime").indexOf(it.name) }.forEach { plan ->
+            val title=when(plan.name) { "monthly"->R.string.pro_monthly;"yearly"->R.string.pro_yearly;else->R.string.pro_lifetime }
+            content.addView(button(getString(title)+" • "+plan.price) { dialog.dismiss();billing.buy(plan) }.apply { isEnabled=configured })
+        }
+        content.addView(label(getString(R.string.pro_terms),12f,muted))
+        dialog.show();billing.refresh()
+    }
     private val settings by lazy { getSharedPreferences("app_settings",MODE_PRIVATE) }
     private var speedMode=0
     private var adaptiveReading=true
@@ -206,6 +240,12 @@ class MainActivity : ComponentActivity() {
         root.addView(brand,LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(18) })
         root.addView(label(getString(R.string.ui_011),12f,mint))
         readiness=label("",12f,muted);root.addView(readiness)
+        billing=PlayBilling(this) { refreshPro() }
+        val proCard=card(root)
+        proStatus=label("",15f,mint);proCard.addView(proStatus)
+        proCard.addView(button(getString(R.string.pro_open)) { showPro() })
+        proCard.addView(button(getString(R.string.pro_restore)) { billing.refresh() })
+        refreshPro();billing.connect()
         tabs=listOf(button(getString(R.string.ui_012)) { selectMode(Mode.CAMERA) },button(getString(R.string.ui_013)) { selectMode(Mode.MIC) },button(getString(R.string.ui_014)) { selectMode(Mode.IMAGE) })
         row(root,tabs)
         row(root,listOf(button(getString(R.string.ui_015)) { showSettings() },button(getString(R.string.ui_016)) { showGuide() }))
@@ -601,6 +641,14 @@ class MainActivity : ComponentActivity() {
         if(active) { stopSession();message(getString(R.string.ui_044));return }
         if(!modelReady) { prepareModel();return }
         if(mode==Mode.MIC&&offlineMode&&!offline.ready()) { prepareSpeechModel();return }
+        if(mode!=Mode.IMAGE&&!billing.pro) {
+            if(trial.remainingMillis==0L) { showPro();return }
+            if(!settings.getBoolean("trial_started",false)) {
+                AlertDialog.Builder(this).setTitle(getString(R.string.pro_title)).setMessage(getString(R.string.pro_detail))
+                    .setPositiveButton(getString(R.string.pro_start)) { _,_ -> settings.edit().putBoolean("trial_started",true).apply();primaryAction() }
+                    .setNegativeButton(getString(R.string.pro_close),null).show();return
+            }
+        }
         when(mode) {
             Mode.CAMERA->if(has(Manifest.permission.CAMERA)) startCamera() else cameraPermission.launch(Manifest.permission.CAMERA)
             Mode.IMAGE->{ stopSession();photo.launch("image/*") }
@@ -637,18 +685,23 @@ class MainActivity : ComponentActivity() {
                             val target=preview.outputTransform
                             val transform=target?.let { CoordinateTransform(factory.getOutputTransform(proxy),it) }
                             recognizer.process(InputImage.fromMediaImage(image,rotation)).addOnSuccessListener { text ->
+                                var visibleSubtitle=""
                                 if(valid(frameToken)&&active) {
                                     val selected=if(still) text.text else {
                                         val area=subtitleArea.bounds()
-                                        text.textBlocks.flatMap { it.lines }.filter { line ->
+                                        val areaLines=text.textBlocks.flatMap { it.lines }.filter { line ->
                                             val box=line.boundingBox
                                             if(box==null||transform==null) false else {
                                                 val mapped=RectF(box);transform.mapRect(mapped)
                                                 val inArea=!region.isChecked||area.contains(mapped.centerX(),mapped.centerY())
-                                                inArea&&subtitleFilter.keep(line.text,
-                                                    mapped.centerX()/preview.width.coerceAtLeast(1),
-                                                    mapped.centerY()/preview.height.coerceAtLeast(1),SystemClock.elapsedRealtime())
+                                                inArea&&subtitleFilter.eligible(line.text)
                                             }
+                                        }
+                                        visibleSubtitle=areaLines.joinToString("\n") { it.text }
+                                        areaLines.filter { line ->
+                                            val mapped=RectF(line.boundingBox!!);transform!!.mapRect(mapped)
+                                            subtitleFilter.keep(line.text,mapped.centerX()/preview.width.coerceAtLeast(1),
+                                                mapped.centerY()/preview.height.coerceAtLeast(1),SystemClock.elapsedRealtime())
                                         }.joinToString("\n") { it.text }
                                     }
                                     source.text=selected.ifBlank { getString(R.string.ui_174) }
@@ -656,8 +709,8 @@ class MainActivity : ComponentActivity() {
                                         stopSession()
                                         if(selected.isBlank()) message(getString(R.string.ui_175)) else accept(selected,SystemClock.elapsedRealtime())
                                     } else {
-                                        recent.observeVisibility(selected,SystemClock.elapsedRealtime())
-                                        gate.observe(selected,SystemClock.elapsedRealtime())?.let {
+                                        recent.observeVisibility(visibleSubtitle,SystemClock.elapsedRealtime())
+                                        gate.observe(if(selected.isBlank()&&visibleSubtitle.isNotBlank()) visibleSubtitle else selected,SystemClock.elapsedRealtime())?.let {
                                         if(accept(it,SystemClock.elapsedRealtime())) gate.commit(it)
                                         }
                                     }
@@ -669,7 +722,7 @@ class MainActivity : ComponentActivity() {
                 }
                 val viewport=preview.viewPort ?: error("Camera preview layout is not ready")
                 val group=UseCaseGroup.Builder().setViewPort(viewport).addUseCase(view).addUseCase(analysis).build()
-                provider?.unbindAll();provider?.bindToLifecycle(this,CameraSelector.DEFAULT_BACK_CAMERA,group)
+                provider?.unbindAll();provider?.bindToLifecycle(this,CameraSelector.DEFAULT_BACK_CAMERA,group);countLiveUse()
                 message(getString(R.string.ui_177))
             } catch (_: Exception) { stopSession();message(getString(R.string.ui_178)) }
         },ContextCompat.getMainExecutor(this))
@@ -678,6 +731,7 @@ class MainActivity : ComponentActivity() {
         if(text.isBlank()||!modelReady)return false
         if(active&&mode==Mode.CAMERA) {
             if(!recent.shouldSubmit(text,seenAt)) return true
+            cameraRevision++;voice.clearWaiting()
             waiting.clear() // One current pending camera line, not a backlog of old screen text.
         }
         val segments=speakers.route(text,selectedSpeaker,mode!=Mode.MIC&&automaticSubtitleNames)
@@ -695,11 +749,11 @@ class MainActivity : ComponentActivity() {
     private fun pumpTranslation() {
         if(translating||!alive)return
         val line=waiting.take()?:return
-        val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;translating=true
+        val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;val cameraToken=cameraRevision;translating=true
         val translationTask=if(mode==Mode.MIC&&offlineMode&&line.text==cachedSource&&cachedTranslation.isNotBlank())
             com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translator.translate(line.text)
         translationTask.addOnSuccessListener { translated ->
-            if(valid(token) && (!fromCamera || SystemClock.elapsedRealtime()-line.seenAt<=3000)) {
+            if(valid(token) && (!fromCamera || cameraToken==cameraRevision&&SystemClock.elapsedRealtime()-line.seenAt<=1500)) {
                 completed++;lastLag=SystemClock.elapsedRealtime()-line.seenAt
                 lastTranslation=translated;lastSource=line.text;lastSpeaker=line.speakerSlot
                 result.text=if(line.speakerName.isBlank()) translated else getString(R.string.ui_180, (line.speakerName).toString(), (line.speakerSlot).toString(), (translated).toString())
@@ -749,7 +803,7 @@ class MainActivity : ComponentActivity() {
         source.text=getString(R.string.ui_194);result.text=getString(R.string.ui_195)
         message(getString(R.string.ui_196))
         offline.start(speedMode,{
-            if(valid(token)&&active) { signalLabel.text=getString(R.string.ui_197);message(getString(R.string.ui_198)) }
+            if(valid(token)&&active) { countLiveUse();signalLabel.text=getString(R.string.ui_197);message(getString(R.string.ui_198)) }
         },{ english,final ->
             if(valid(token)&&active&&mode==Mode.MIC) {
                 partialRevision++;pendingPartial=if(final) "" else english
@@ -812,7 +866,7 @@ class MainActivity : ComponentActivity() {
             speech?.setRecognitionListener(object : RecognitionListener {
                 private fun current()=valid(token)&&round==micRound&&active&&mode==Mode.MIC
                 override fun onReadyForSpeech(params: Bundle?) {
-                    if(current()) { signalLabel.text=getString(R.string.ui_204);message(getString(R.string.ui_205)) }
+                    if(current()) { countLiveUse();signalLabel.text=getString(R.string.ui_204);message(getString(R.string.ui_205)) }
                 }
                 override fun onBeginningOfSpeech() {
                     if(current()) { message(getString(R.string.ui_206));armSpeechDeadline(token,round,6000) }
@@ -926,18 +980,20 @@ class MainActivity : ComponentActivity() {
         speech?.cancel();speech?.destroy();speech=null
         if(active&&mode==Mode.MIC) message(getString(R.string.ui_219))
     }
-    private fun stopSession() {
+    private fun stopSession(keepCurrentVoice: Boolean=false) {
+        trial.stop(SystemClock.elapsedRealtime());settings.edit().putLong("trial_used",trial.usedMillis).apply();handler.removeCallbacks(trialTick)
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         epoch++;active=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
         provider?.unbindAll();pauseMicrophone();offline.stop();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
-        if(::voice.isInitialized)voice.stop()
+        if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->getString(R.string.ui_042);Mode.MIC->getString(R.string.ui_160);Mode.IMAGE->getString(R.string.ui_161) }
         refreshMetrics()
     }
+    override fun onResume() { super.onResume();if(::billing.isInitialized)billing.refresh() }
     override fun onStop() { stopSession();super.onStop() }
     override fun onDestroy() {
-        alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
+        if(::billing.isInitialized)billing.close();alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
         speech?.destroy();if(::voice.isInitialized)voice.close()
         offline.close();recognizer.close();translator.close();super.onDestroy()
     }

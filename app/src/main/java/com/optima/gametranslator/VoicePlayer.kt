@@ -104,6 +104,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
             }
         }
     }
+    fun clearWaiting() { pending.clear();onChange() }
     fun stop() {
         currentId=null;pending.clear();sequence++;engine?.stop();onChange()
     }

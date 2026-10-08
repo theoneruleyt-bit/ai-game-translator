@@ -235,4 +235,20 @@
  <string-array name="speaker_styles"><item>Natural</item><item>Lower pitch</item><item>Higher pitch</item><item>Calm</item><item>Energetic</item><item>Narrator</item></string-array>
  <string name="model_readiness">"Speech: %1$s · Translation: %2$s"</string>
  <string name="audio_level">"Microphone audio level"</string>
+
+    <string name="pro_title">Pro • Live translation</string>
+    <string name="pro_plans">Monthly $4.99 • Yearly $49.99 • Lifetime $199</string>
+    <string name="pro_detail">One shared 3-minute Pro demo for camera and microphone. Only active use counts. The demo never charges automatically. Pro includes unlimited live translation, spoken output and speaker profiles.</string>
+    <string name="pro_open">Pro options</string>
+    <string name="pro_restore">Restore purchases</string>
+    <string name="pro_start">Start 3-minute demo</string>
+    <string name="pro_unavailable">Purchases are not ready. Configure Google Play products and license key.</string>
+    <string name="pro_remaining">Demo: %s seconds remaining</string>
+    <string name="pro_active">Pro active • Unlimited live translation</string>
+    <string name="pro_expired">Demo complete</string>
+    <string name="pro_monthly">Monthly</string>
+    <string name="pro_yearly">Yearly</string>
+    <string name="pro_lifetime">Lifetime</string>
+    <string name="pro_terms">Subscriptions renew until canceled. Lifetime is a one-time purchase. Review the local price and terms on the Google Play checkout screen before paying.</string>
+    <string name="pro_close">Close</string>
 </resources>

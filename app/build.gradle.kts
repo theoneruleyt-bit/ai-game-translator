@@ -2,7 +2,7 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
  namespace = "com.optima.gametranslator"
  compileSdk = 35
- defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 35; versionCode = 15; versionName = "0.12.2-lint-fix" }
+ defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 35; versionCode = 16; versionName = "0.13.0-pro-demo" }
  signingConfigs { getByName("debug") { storeFile = rootProject.file("signing/optima-test.jks"); storePassword = "android"; keyAlias = "optima-test"; keyPassword = "android" } }
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
  kotlinOptions { jvmTarget = "17" }
@@ -10,6 +10,7 @@ android {
 }
 
 dependencies {
+ implementation("com.android.billingclient:billing:8.3.0")
  implementation("com.alphacephei:vosk-android:0.3.75@aar")
  implementation("net.java.dev.jna:jna:5.18.1@aar")
  implementation("androidx.activity:activity-ktx:1.10.1")

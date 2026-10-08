@@ -18,4 +18,16 @@ class RecentLinesTest {
   val r=RecentLines();assertTrue(r.shouldSubmit("Score 100",0));assertTrue(r.shouldSubmit("Score 101",100))
   assertTrue(r.shouldSubmit("Score 100",8100))
  }
+ @Test fun continuouslyVisibleSubtitleNeverExpires() {
+  val r=RecentLines();assertTrue(r.shouldSubmit("Please stay here.",0))
+  for(now in 1000L..60000L step 1000) {
+   r.observeVisibility("PLEASE stay here!",now)
+   assertFalse(r.shouldSubmit("Please stay here.",now))
+  }
+ }
+ @Test fun briefOcrMissDoesNotRearmSpeech() {
+  val r=RecentLines();r.shouldSubmit("Stay here",0)
+  r.observeVisibility("",100);r.observeVisibility("Stay here",500)
+  assertFalse(r.shouldSubmit("Stay here",600))
+ }
 }
