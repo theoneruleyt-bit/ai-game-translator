@@ -1,0 +1,238 @@
+<resources>
+ <string name="ui_000" formatted="false">"Kamera izni verilmedi. Tekrar başlatabilirsin."</string>
+ <string name="ui_001" formatted="false">"Mikrofon izni verilmedi. Kamera modu kullanılabilir."</string>
+ <string name="ui_002" formatted="false">"Sistem testi metin döndürmedi."</string>
+ <string name="ui_003" formatted="false">"Sistem konuşma testi iptal edildi veya sonuç alınamadı."</string>
+ <string name="ui_004" formatted="false">"Görsel okunuyor…"</string>
+ <string name="ui_005" formatted="false">"Yeni görsel çevriliyor…"</string>
+ <string name="ui_006" formatted="false">"Görseldeki metin okunuyor…"</string>
+ <string name="ui_007" formatted="false">"Yazı bulunamadı. Daha net bir görsel seç."</string>
+ <string name="ui_008" formatted="false">"Görsel okunamadı. Başka bir görsel dene."</string>
+ <string name="ui_009" formatted="false">"Görsel açılamadı."</string>
+ <string name="ui_010" formatted="false">"Oyun ve video • Canlı çeviri"</string>
+ <string name="ui_011" formatted="false">"İNGİLİZCE   →   TÜRKÇE"</string>
+ <string name="ui_012" formatted="false">"Kamera"</string>
+ <string name="ui_013" formatted="false">"Dinle"</string>
+ <string name="ui_014" formatted="false">"Görsel"</string>
+ <string name="ui_015" formatted="false">"Ayarlar"</string>
+ <string name="ui_016" formatted="false">"Kullanım rehberi"</string>
+ <string name="ui_017" formatted="false">"Yeni altyazı alanı seçildi. Yalnızca çerçevenin içi okunuyor."</string>
+ <string name="ui_018" formatted="false">"Altyazı alanını sıfırla"</string>
+ <string name="ui_019" formatted="false">"CANLI KAMERA"</string>
+ <string name="ui_020" formatted="false">"Oyunu veya videoyu Türkçe takip et"</string>
+ <string name="ui_021" formatted="false">"Anahtarsız sürekli mikrofon • İngilizce konuşma cihazda tanınır ve Türkçeye çevrilir. İlk kullanımda konuşma ve çeviri modellerini indir."</string>
+ <string name="ui_022" formatted="false">"Mikrofon bekliyor"</string>
+ <string name="ui_023" formatted="false">"İngilizce konuşma modelini indir / kontrol et"</string>
+ <string name="ui_024" formatted="false">"Anahtarsız sürekli dinleme (Vosk)"</string>
+ <string name="ui_025" formatted="false">"Cihaz içi sürekli dinleme seçildi."</string>
+ <string name="ui_026" formatted="false">"Android konuşma testi seçildi; sürekli akış sağlamaz."</string>
+ <string name="ui_027" formatted="false">"Cihazda konuşma tanımayı dene"</string>
+ <string name="ui_028" formatted="false">"Tanıma seçimi değişti. Dinlemeyi yeniden başlat."</string>
+ <string name="ui_029" formatted="false">"Konuşmayı bitir ve çevir"</string>
+ <string name="ui_030" formatted="false">"Mevcut replik tamamlanıyor; mikrofon açık kalıyor."</string>
+ <string name="ui_031" formatted="false">"Önce dinlemeyi başlat."</string>
+ <string name="ui_032" formatted="false">"Kısa konuşma testi"</string>
+ <string name="ui_033" formatted="false">"Önce çeviri modelini hazırla."</string>
+ <string name="ui_034" formatted="false">"Sistem konuşma testi"</string>
+ <string name="ui_035" formatted="false">"Android konuşma penceresi açılacak. İngilizce kısa bir cümle söyle. Sistem servisi internet kullanabilir."</string>
+ <string name="ui_036" formatted="false">"Testi aç"</string>
+ <string name="ui_037" formatted="false">"İngilizce kısa bir cümle söyle"</string>
+ <string name="ui_038" formatted="false">"Sistem konuşma penceresi bulunamadı. Konuşma servisini telefon ayarlarından kontrol et."</string>
+ <string name="ui_039" formatted="false">"Vazgeç"</string>
+ <string name="ui_040" formatted="false">"Çeviri modelini bir kez hazırla, sonra başlat."</string>
+ <string name="ui_041" formatted="false">"Çeviri modelini hazırla"</string>
+ <string name="ui_042" formatted="false">"Kamerayı başlat"</string>
+ <string name="ui_043" formatted="false">"Durdur"</string>
+ <string name="ui_044" formatted="false">"Oturum durduruldu."</string>
+ <string name="ui_045" formatted="false">"Türkçe sesli oku"</string>
+ <string name="ui_046" formatted="false">"Türkçe sesli okuma açık. Yeni tamamlanan replikler okunacak; mikrofon açık kalıyor."</string>
+ <string name="ui_047" formatted="false">"Yalnızca seçili altyazı alanını oku"</string>
+ <string name="ui_048" formatted="false">"Okuma alanı değişti. Kamerayı yeniden başlat."</string>
+ <string name="ui_049" formatted="false">"Türkçe sesi kulaklıkla dinliyorum"</string>
+ <string name="ui_050" formatted="false">"Kulaklık kullanımı seçildi. Sesli okuma seçeneğin korunuyor."</string>
+ <string name="ui_051" formatted="false">"Hoparlörden okuma kullanılabilir. Kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir."</string>
+ <string name="ui_052" formatted="false">"Ses seçeneklerini göster / gizle"</string>
+ <string name="ui_053" formatted="false">"Okuma hızı"</string>
+ <string name="ui_054" formatted="false">"Türkçe ses seç"</string>
+ <string name="ui_055" formatted="false">"İnternet gerektiren sesleri de göster"</string>
+ <string name="ui_056" formatted="false">"İnternet sesi"</string>
+ <string name="ui_057" formatted="false">"Seçtiğin ses motoru Türkçe çeviri metnini kendi hizmetine gönderebilir. İnternet bağlantısı gerekir; sesin daha doğal olacağı garanti değildir."</string>
+ <string name="ui_058" formatted="false">"Göster"</string>
+ <string name="ui_059" formatted="false">"Ses tonu • gerçek aksan değiştirmez"</string>
+ <string name="ui_060" formatted="false">"Seçili sesi dinle"</string>
+ <string name="ui_061" formatted="false">"16 KONUŞMACI PROFİLİ"</string>
+ <string name="ui_062" formatted="false">"Konuşmacı ayarlarını göster / gizle"</string>
+ <string name="ui_063" formatted="false">"İsimli altyazıda aynı kişiye aynı ses. Dinle modunda konuşmacıyı elle seç; sesten otomatik kişi ayrımı bu sürümde yok."</string>
+ <string name="ui_064" formatted="false">"Etiketsiz konuşmacı: Genel ses"</string>
+ <string name="ui_065">"Etiketsiz konuşmacı: %1$s"</string>
+ <string name="ui_066" formatted="false">"Etiketsiz / mikrofon konuşmacısı"</string>
+ <string name="ui_067" formatted="false">"Genel ses"</string>
+ <string name="ui_068">"Konuşmacı %1$s"</string>
+ <string name="ui_069" formatted="false">"Altyazıdaki konuşmacı adlarını eşleştir"</string>
+ <string name="ui_070" formatted="false">"Konuşmacı seslerini ayarla"</string>
+ <string name="ui_071" formatted="false">"Sesini değiştireceğin konuşmacı"</string>
+ <string name="ui_072" formatted="false">"Konuşmacı tonunu / tarzını ayarla"</string>
+ <string name="ui_073" formatted="false">"Konuşmacı profili"</string>
+ <string name="ui_074" formatted="false">"Konuşmacı eşleştirmelerini sıfırla"</string>
+ <string name="ui_075" formatted="false">"Ses ve isim eşleştirmeleri sıfırlandı."</string>
+ <string name="ui_076" formatted="false">"Tek kareyi çevir"</string>
+ <string name="ui_077" formatted="false">"Bir sonraki kare okunacak…"</string>
+ <string name="ui_078" formatted="false">"Önce kamerayı başlat."</string>
+ <string name="ui_079" formatted="false">"ALGILANAN İNGİLİZCE"</string>
+ <string name="ui_080" formatted="false">"Kaynak metin burada görünecek."</string>
+ <string name="ui_081" formatted="false">"TÜRKÇE ÇEVİRİ"</string>
+ <string name="ui_082" formatted="false">"Çevirin burada görünecek."</string>
+ <string name="ui_083" formatted="false">"Son çeviriyi tekrar oku"</string>
+ <string name="ui_084" formatted="false">"Kopyala"</string>
+ <string name="ui_085" formatted="false">"Kaydet"</string>
+ <string name="ui_086" formatted="false">"Kaydedilecek çeviri yok."</string>
+ <string name="ui_087" formatted="false">"Replik kaydedildi."</string>
+ <string name="ui_088" formatted="false">"Bu replik zaten kayıtlı."</string>
+ <string name="ui_089" formatted="false">"Metin çevir"</string>
+ <string name="ui_090" formatted="false">"Kaydedilenler"</string>
+ <string name="ui_091" formatted="false">"SON REPLİKLER"</string>
+ <string name="ui_092" formatted="false">"Henüz çeviri yok."</string>
+ <string name="ui_093" formatted="false">"Geçmişi paylaş"</string>
+ <string name="ui_094" formatted="false">"Geçmişi temizle"</string>
+ <string name="ui_095" formatted="false">"Geçmiş temizlendi."</string>
+ <string name="ui_096" formatted="false">"Türkçe ses ayarları"</string>
+ <string name="ui_097" formatted="false">"Telefon ayarlarından metinden konuşma bölümünü aç."</string>
+ <string name="ui_098" formatted="false">"Kopyalanacak çeviri yok."</string>
+ <string name="ui_099" formatted="false">"Çeviri"</string>
+ <string name="ui_100" formatted="false">"Çeviri kopyalandı."</string>
+ <string name="ui_101" formatted="false">"İngilizce metin yaz veya yapıştır"</string>
+ <string name="ui_102" formatted="false">"Çevir"</string>
+ <string name="ui_103" formatted="false">"Kaydedilen replik yok. Bir çeviride Kaydet\'e bas."</string>
+ <string name="ui_104" formatted="false">"Kaydedilen replikler"</string>
+ <string name="ui_105" formatted="false">"Kaydedilen replik"</string>
+ <string name="ui_106" formatted="false">"Kapat"</string>
+ <string name="ui_107" formatted="false">"Tümünü sil"</string>
+ <string name="ui_108" formatted="false">"Kaydedilenleri sil?"</string>
+ <string name="ui_109" formatted="false">"Kaydedilen replikler bu cihazdan silinecek."</string>
+ <string name="ui_110" formatted="false">"Sil"</string>
+ <string name="ui_111" formatted="false">"Kaydedilen replikler silindi."</string>
+ <string name="ui_112" formatted="false">"Çevrimdışı model durumu"</string>
+ <string name="ui_113">"Konuşma modeli: %1$s\nÇeviri modeli: %2$s\nYerel Türkçe ses: %3$s\n\nArayüz dili yalnızca menüleri değiştirir. Çeviri yönü İngilizce → Türkçe kalır."</string>
+ <string name="ui_114" formatted="false">"Hazır"</string>
+ <string name="ui_115" formatted="false">"İndirilmedi"</string>
+ <string name="ui_116" formatted="false">"Kontrol / indirme gerekli"</string>
+ <string name="ui_117" formatted="false">"Canlı çeviri rehberi"</string>
+ <string name="ui_118" formatted="false">"1. Çeviri modelini hazırla. Dinle modunda İngilizce konuşma modelini de bir kez indir.\n\n2. Kamera: yeşil çerçeveyi yalnızca altyazıya çiz. Dinle: başka bir cihazdaki İngilizce sesi mikrofona duyur.\n\n3. Hızlı mod kısa duraklamalarda sonuç verir ve uzun konuşmayı daha kısa bölümlere ayırır. Daha bütünlüklü cümle için Dengeli / Tam cümle seç.\n\n4. Ara çeviri değişebilir; ses yalnızca tamamlanan parçalardan okunur. Kulaklık kendi sesinin tekrar algılanmasını azaltır.\n\n5. Konuşmacı profillerinde gerçek TTS sesi ve ton tarzını seç. Dinle modunda kişi seçimi elle yapılır.\n\n6. Durdur veya arka plana geçiş mikrofonu kapatır. Modeller hazırsa Vosk ve yerel TTS ile internet gerekmez."</string>
+ <string name="ui_119" formatted="false">"Anladım"</string>
+ <string name="ui_120" formatted="false">"Görünüm: Açık / Koyu / Sistem"</string>
+ <string name="ui_121" formatted="false">"Görünüm"</string>
+ <string name="ui_122" formatted="false">"Sistem"</string>
+ <string name="ui_123" formatted="false">"Açık"</string>
+ <string name="ui_124" formatted="false">"Koyu"</string>
+ <string name="ui_125" formatted="false">"Arayüz dili: Türkçe / English"</string>
+ <string name="ui_126" formatted="false">"Arayüz dili"</string>
+ <string name="ui_127" formatted="false">"Türkçe"</string>
+ <string name="ui_128" formatted="false">"English"</string>
+ <string name="ui_129" formatted="false">"Çeviri yazı boyutu"</string>
+ <string name="ui_130" formatted="false">"Kompakt"</string>
+ <string name="ui_131" formatted="false">"Normal"</string>
+ <string name="ui_132" formatted="false">"Büyük"</string>
+ <string name="ui_133" formatted="false">"Hızlı • kısa parçalar"</string>
+ <string name="ui_134" formatted="false">"Dengeli • daha fazla bağlam"</string>
+ <string name="ui_135" formatted="false">"Tam cümle • daha uzun bekleme"</string>
+ <string name="ui_136">"Dinleme: %1$s"</string>
+ <string name="ui_137" formatted="false">"Dinleme hızı"</string>
+ <string name="ui_138">"%1$s seçildi. Dinlemeyi yeniden başlat."</string>
+ <string name="ui_139" formatted="false">"Ses kuyruğu uzarsa kontrollü hızlandır"</string>
+ <string name="ui_140" formatted="false">"Aktif çeviride ekranı açık tut"</string>
+ <string name="ui_141" formatted="false">"Sıfır gecikme garanti edilmez. Hızlı mod cümle bağlamını azaltabilir. Gerçek ses sayısı telefonun TTS motoruna bağlıdır."</string>
+ <string name="ui_142" formatted="false">"Türkçe ses motoru ayarları"</string>
+ <string name="ui_143" formatted="false">"Telefon ayarlarından Türkçe konuşma paketini kontrol et."</string>
+ <string name="ui_144" formatted="false">"Uygulama ayarları"</string>
+ <string name="ui_145">"Konuşmacı %1$s • ton varyasyonu"</string>
+ <string name="ui_146" formatted="false">"Paylaşılacak replik yok."</string>
+ <string name="ui_147" formatted="false">"Çeviri geçmişini paylaş"</string>
+ <string name="ui_148" formatted="false">"Paylaşım uygulaması bulunamadı."</string>
+ <string name="ui_149" formatted="false">"Türkçe ses bulunamadı. Ses ayarlarını kontrol et."</string>
+ <string name="ui_150">"Türkçe %1$s • %2$s"</string>
+ <string name="ui_151" formatted="false">"İnternet"</string>
+ <string name="ui_152" formatted="false">"Cihazda"</string>
+ <string name="ui_153">"Konuşmacı %1$s • gerçek ses seç"</string>
+ <string name="ui_154">"Konuşmacı %1$s için ses kaydedildi."</string>
+ <string name="ui_155" formatted="false">"Bu ses motorunda kullanılabilir Türkçe ses yok. Türkçe ses ayarlarını kontrol et."</string>
+ <string name="ui_156">"Türkçe %1$s • %2$s • %3$s"</string>
+ <string name="ui_157">"Türkçe sesler (%1$s)"</string>
+ <string name="ui_158" formatted="false">"Ses seçildi. Seçili sesi dinle ile karşılaştır."</string>
+ <string name="ui_159" formatted="false">"Bu ses seçilemedi. Başka bir ses dene."</string>
+ <string name="ui_160" formatted="false">"Dinlemeyi başlat"</string>
+ <string name="ui_161" formatted="false">"Görsel seç"</string>
+ <string name="ui_162" formatted="false">"TV veya monitörde İngilizce altyazıyı aç. Telefonu sabit tut. Yeşil alanı yalnızca altyazı satırlarına çiz; süre ve simgeleri dışarıda bırak."</string>
+ <string name="ui_163" formatted="false">"Vosk modunda mikrofon sürekli açık kalır ve ses cihazda işlenir. Türkçe sesi hoparlör veya kulaklıkla dinleyebilirsin. Kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir. Uygulama arka plana geçince durur."</string>
+ <string name="ui_164" formatted="false">"Fotoğraf veya ekran görüntüsündeki İngilizce yazıyı Türkçeye çevir ve sesli dinle."</string>
+ <string name="ui_165" formatted="false">"Hazır. Başlatabilirsin."</string>
+ <string name="ui_166" formatted="false">"Çeviri modeli hazırlanıyor. İlk indirme internet gerektirir…"</string>
+ <string name="ui_167" formatted="false">"Çeviri modeli hazır ✓"</string>
+ <string name="ui_168" formatted="false">"Hazır. Modunu seç ve başlat."</string>
+ <string name="ui_169" formatted="false">"Model indirilemedi. İnterneti kontrol edip yeniden dene."</string>
+ <string name="ui_170" formatted="false">"Mikrofon sesi cihaz üzerinde sürekli işlenir; Vosk dinleme modu sesi dışarıya göndermez. Konuşma ve çeviri modelleri indirildikten sonra internet gerekmez. Türkçe ses hoparlörden de okunabilir; kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir. Ara sonuçlar değişebilir."</string>
+ <string name="ui_171" formatted="false">"Android konuşma servisi kullanılacak; internet gerekebilir. Bu test modu kesintisiz akış sağlamaz."</string>
+ <string name="ui_172" formatted="false">"Kamerayı durdur"</string>
+ <string name="ui_173" formatted="false">"Kamera açılıyor…"</string>
+ <string name="ui_174" formatted="false">"Okunabilir yazı bekleniyor…"</string>
+ <string name="ui_175" formatted="false">"Bu karede yazı bulunamadı."</string>
+ <string name="ui_176" formatted="false">"Kare okunamadı. Kameranın netliğini kontrol et."</string>
+ <string name="ui_177" formatted="false">"Kamera açık. Altyazıyı takip ediyoruz."</string>
+ <string name="ui_178" formatted="false">"Kamera açılamadı. İzinleri kontrol et."</string>
+ <string name="ui_179" formatted="false">"Çeviri sırası doldu. Bazı replikler alınamadı."</string>
+ <string name="ui_180">"%1$s • Konuşmacı %2$s\n%3$s"</string>
+ <string name="ui_181" formatted="false">"Replik çevrildi • mikrofon dinlemeye devam ediyor"</string>
+ <string name="ui_182" formatted="false">"Canlı çeviri açık"</string>
+ <string name="ui_183" formatted="false">"Görsel çevirisi hazır"</string>
+ <string name="ui_184" formatted="false">"Bir replik çevrilemedi. İnterneti/modeli kontrol et."</string>
+ <string name="ui_185" formatted="false">"Türkçe ses hazır değil. Ses ayarlarından Türkçe paket yükle."</string>
+ <string name="ui_186" formatted="false">"Ses sırası doldu. Çeviri ekranda korunuyor."</string>
+ <string name="ui_187">"%1$sÇevrilen %2$s  •  Bekleyen %3$s  •  Ses %4$s\nSon çeviri işlemi %5$s sn  •  Sıra/işlem uyarısı %6$s"</string>
+ <string name="ui_188">"Oturum %1$s sn • "</string>
+ <string name="ui_189" formatted="false">"Konuşma modeli hazırlanıyor… İlk indirme yaklaşık 40 MB internet kullanır."</string>
+ <string name="ui_190" formatted="false">"İngilizce konuşma modeli hazır ✓ Çeviri modelini de hazırla, sonra dinlemeyi başlat."</string>
+ <string name="ui_191" formatted="false">"Cihaz içi konuşma modeli hazır"</string>
+ <string name="ui_192" formatted="false">"Model hazırlanamadı • tekrar dene"</string>
+ <string name="ui_193" formatted="false">"Yerel konuşma modeli açılıyor…"</string>
+ <string name="ui_194" formatted="false">"İngilizce konuşma bekleniyor…"</string>
+ <string name="ui_195" formatted="false">"Ara çeviri burada görünecek."</string>
+ <string name="ui_196" formatted="false">"Cihaz içi dinleme hazırlanıyor…"</string>
+ <string name="ui_197" formatted="false">"Mikrofon açık • cihaz içi İngilizce → Türkçe"</string>
+ <string name="ui_198" formatted="false">"Sürekli dinleme açık. İngilizce konuşma bekleniyor…"</string>
+ <string name="ui_199" formatted="false">"Replik çevriliyor • mikrofon açık kalıyor"</string>
+ <string name="ui_200" formatted="false">"Konuşma sürüyor • cihaz içi dinleme açık"</string>
+ <string name="ui_201">"Ara çeviri • değişebilir\n%1$s"</string>
+ <string name="ui_202" formatted="false">"Bu telefonda konuşma tanıma servisi bulunamadı."</string>
+ <string name="ui_203" formatted="false">"İngilizce oyun / video konuşması dinleniyor…"</string>
+ <string name="ui_204" formatted="false">"Mikrofon açık • İngilizce konuşma bekleniyor"</string>
+ <string name="ui_205" formatted="false">"Dinleniyor • İngilizce konuşma bekleniyor"</string>
+ <string name="ui_206" formatted="false">"Konuşma algılandı…"</string>
+ <string name="ui_207">"Mikrofon açık • Ses düzeyi %1$s/100"</string>
+ <string name="ui_208" formatted="false">"Konuşma çözümleniyor…"</string>
+ <string name="ui_209" formatted="false">"Üç denemede İngilizce metin alınamadı. Kısa konuşma testini dene; mikrofonu, İngilizce konuşma paketini ve interneti kontrol et."</string>
+ <string name="ui_210" formatted="false">"Konuşma metni alınamadı. Sesi yaklaştır; yeniden deneniyor…"</string>
+ <string name="ui_211" formatted="false">"Yerel İngilizce tanıma hazır değil. Android konuşma servisi deneniyor; internet kullanabilir."</string>
+ <string name="ui_212">"Dinleme durdu (kod %1$s). İngilizce konuşma paketini, mikrofonu ve interneti kontrol et."</string>
+ <string name="ui_213" formatted="false">"Konuşma tanıma başlatılamadı. Telefonun konuşma servisini kontrol et."</string>
+ <string name="ui_214" formatted="false">"Konuşma metni hazırlanıyor…"</string>
+ <string name="ui_215" formatted="false">"Ara konuşma sonucu çevriliyor…"</string>
+ <string name="ui_216" formatted="false">"Konuşma çevriliyor…"</string>
+ <string name="ui_217" formatted="false">"İki denemede konuşma metni alınamadı. Kısa konuşma testini aç; mikrofon izni, İngilizce tanıma ve interneti kontrol et."</string>
+ <string name="ui_218" formatted="false">"Konuşma metni alınamadı. Bir kez daha deneniyor…"</string>
+ <string name="ui_219" formatted="false">"Türkçe okunuyor • Okuma bitince dinleme devam edecek"</string>
+ <string name="ui_220" formatted="false">"İngilizce konuşma modeli indiriliyor • yaklaşık 40 MB"</string>
+ <string name="ui_221">"Konuşma modeli indiriliyor • %%%1$s"</string>
+ <string name="ui_222">"Konuşma modeli indiriliyor • %1$s MB"</string>
+ <string name="ui_223" formatted="false">"Model açılıyor ve doğrulanıyor…"</string>
+ <string name="ui_224" formatted="false">"Konuşma modeli hazırlanamadı. İnterneti ve boş depolamayı kontrol edip tekrar indir."</string>
+ <string name="ui_225" formatted="false">"Konuşma motoru bu cihazda yüklenemedi. Cihaz modeli ve Android sürümünü bildir."</string>
+ <string name="ui_226" formatted="false">"Yerel dinleme başlatılamadı veya kesildi. Mikrofon iznini ve başka uygulamaların mikrofon kullanımını kontrol et."</string>
+ <string name="ui_227" formatted="false">"Türkçe ses paketi bulunamadı. Ses ayarlarından Türkçe ses yükle."</string>
+ <string name="ui_228" formatted="false">"Türkçe ses hazır değil. Ses ayarlarını kontrol et."</string>
+ <string name="ui_229" formatted="false">"Seçili ses internet gerektiriyor. Yerel Türkçe ses seç."</string>
+ <string name="ui_230" formatted="false">"Ses motoru bir repliği okuyamadı. Çeviri ekranda korunuyor."</string>
+ <string name="ui_231" formatted="false">"Altyazı okuma alanı. Yeni bir alan çizmek için sürükle."</string>
+ <string name="ui_232" formatted="false">"Altyazı alanı • sürükleyerek seç"</string>
+ <string-array name="speaker_styles"><item>Doğal</item><item>Daha kalın ton</item><item>Daha ince ton</item><item>Sakin</item><item>Enerjik</item><item>Anlatıcı</item></string-array>
+ <string name="model_readiness">"Konuşma: %1$s · Çeviri: %2$s"</string>
+ <string name="audio_level">"Mikrofon ses seviyesi"</string>
+</resources>

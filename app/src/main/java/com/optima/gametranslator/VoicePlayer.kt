@@ -10,6 +10,7 @@ import java.util.Locale
 /** One utterance at a time. New translations never flush a running utterance. */
 class VoicePlayer(context: Context, private val onChange: () -> Unit,
                   private val beforeSpeak: () -> Unit, private val onError: (String) -> Unit) {
+    private val messages=context.resources
     private val handler = Handler(Looper.getMainLooper())
     private data class Job(val text: String,val voiceName: String?,val rate: Float,val pitch: Float)
     private val pending = java.util.ArrayDeque<Job>()
@@ -20,6 +21,8 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     private var closed = false
     var networkAllowed=false
     var adaptiveSpeed=true
+    var lastFailure: String?=null
+        private set
     fun currentVoiceName(): String?=defaultVoiceName
     var ready = false
         private set
@@ -44,12 +47,11 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
                 val language = if(code==TextToSpeech.SUCCESS) engine?.setLanguage(Locale.forLanguageTag("tr-TR")) else null
                 ready = language != null && language>=TextToSpeech.LANG_AVAILABLE
                 if(ready) {
-                    val best=engine?.voices?.filter { it.locale.language=="tr" && !it.isNetworkConnectionRequired }
-                        ?.sortedWith(compareByDescending<android.speech.tts.Voice> { it.quality }.thenBy { it.latency })?.firstOrNull()
+                    val best=availableVoices(false).firstOrNull()
                     if(best!=null) engine?.voice=best
                     defaultVoiceName=engine?.voice?.name
                     engine?.setSpeechRate(rate);engine?.setPitch(pitch)
-                } else onError("Türkçe ses paketi bulunamadı. Ses ayarlarından Türkçe ses yükle.")
+                } else onError(messages.getString(R.string.ui_227))
                 onChange()
             }
         }
@@ -62,10 +64,11 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         })
     }
     fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch,selectedRate: Float=rate): Boolean {
-        if(!ready || closed || text.isBlank()) return false
+        lastFailure=null
+        if(!ready || closed || text.isBlank()) { lastFailure=messages.getString(R.string.ui_228);return false }
         val selected=voiceName ?: defaultVoiceName
         val requestedVoice=engine?.voices?.firstOrNull { it.name==selected }
-        if(requestedVoice?.isNetworkConnectionRequired==true&&!networkAllowed)return false
+        if(requestedVoice?.isNetworkConnectionRequired==true&&!networkAllowed) { lastFailure=messages.getString(R.string.ui_229);return false }
         val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100)
         val chunks = mutableListOf<String>()
         var rest=text.trim()
@@ -77,7 +80,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         // Keep the current spoken utterance intact, but replace waiting camera
         // speech with the latest translation so it cannot lag dozens of lines.
         if(latestPending) pending.clear()
-        if(count+chunks.size>64) return false
+        if(count+chunks.size>64) { lastFailure=messages.getString(R.string.ui_186);return false }
         chunks.forEach { pending.addLast(Job(it,selected,selectedRate,selectedPitch)) };pump();onChange();return true
     }
     private fun pump() {
@@ -96,7 +99,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         handler.post {
             if(!closed && currentId==id && id!=null) {
                 currentId=null
-                if(failed) onError("Ses motoru bir repliği okuyamadı. Çeviri ekranda korunuyor.")
+                if(failed) onError(messages.getString(R.string.ui_230))
                 pump();onChange()
             }
         }

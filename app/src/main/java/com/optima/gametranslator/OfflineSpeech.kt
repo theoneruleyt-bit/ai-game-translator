@@ -22,6 +22,7 @@ import kotlin.math.sqrt
 
 /** Recognition and capture remain on one worker; stop invalidates all queued UI events. */
 class OfflineSpeech(context: Context) {
+    private val messages=context.resources
     private val app=context.applicationContext
     private val root=File(app.filesDir,"speech-models")
     private val modelPath=File(root,ModelArchive.ROOT)
@@ -40,12 +41,12 @@ class OfflineSpeech(context: Context) {
         stop();val token=generation.get()
         worker.execute {
             if(generation.get()!=token||closed)return@execute
-            val staging=File(root,"staging-$token")
-            val archive=File(root,"download-$token.zip")
+            val staging=File(root,"staging-${token}")
+            val archive=File(root,"download-${token}.zip")
             try {
                 if(ready()) { deliver(token,onDone);return@execute }
                 check(root.mkdirs()||root.isDirectory)
-                deliver(token) { onProgress("İngilizce konuşma modeli indiriliyor • yaklaşık 40 MB") }
+                deliver(token) { onProgress(messages.getString(R.string.ui_220)) }
                 val http=URL("https://alphacephei.com/vosk/models/${ModelArchive.ROOT}.zip").openConnection() as HttpURLConnection
                 connection=http;http.connectTimeout=15000;http.readTimeout=15000
                 require(http.responseCode==200&&http.url.protocol=="https")
@@ -60,12 +61,12 @@ class OfflineSpeech(context: Context) {
                         output.write(buffer,0,count)
                         val progress=if(total>0) (size*100/total).toInt().coerceIn(0,100) else (size/1024/1024).toInt()
                         if(progress!=lastProgress) { lastProgress=progress;deliver(token) {
-                            onProgress(if(total>0) "Konuşma modeli indiriliyor • %$progress" else "Konuşma modeli indiriliyor • ${size/1024/1024} MB")
+                            onProgress(if(total>0) messages.getString(R.string.ui_221, progress) else messages.getString(R.string.ui_222, size/1024/1024))
                         } }
                     }
                 } }
                 http.disconnect();connection=null
-                deliver(token) { onProgress("Model açılıyor ve doğrulanıyor…") }
+                deliver(token) { onProgress(messages.getString(R.string.ui_223)) }
                 check(staging.mkdirs()||staging.isDirectory)
                 archive.inputStream().use { ModelArchive.unpack(it,staging) { generation.get()!=token||closed } }
                 val unpacked=File(staging,ModelArchive.ROOT)
@@ -78,9 +79,9 @@ class OfflineSpeech(context: Context) {
                 }
                 deliver(token,onDone)
             } catch (_: Exception) {
-                deliver(token) { onError("Konuşma modeli hazırlanamadı. İnterneti ve boş depolamayı kontrol edip tekrar indir.") }
+                deliver(token) { onError(messages.getString(R.string.ui_224)) }
             } catch (_: LinkageError) {
-                deliver(token) { onError("Konuşma motoru bu cihazda yüklenemedi. Cihaz modeli ve Android sürümünü bildir.") }
+                deliver(token) { onError(messages.getString(R.string.ui_225)) }
             } finally {
                 connection?.disconnect();connection=null;archive.delete();staging.deleteRecursively()
             }
@@ -135,9 +136,9 @@ class OfflineSpeech(context: Context) {
                     }
                 }
             } catch (_: Exception) {
-                deliver(token) { onError("Yerel dinleme başlatılamadı veya kesildi. Mikrofon iznini ve başka uygulamaların mikrofon kullanımını kontrol et.") }
+                deliver(token) { onError(messages.getString(R.string.ui_226)) }
             } catch (_: LinkageError) {
-                deliver(token) { onError("Konuşma motoru bu cihazda yüklenemedi. Cihaz modeli ve Android sürümünü bildir.") }
+                deliver(token) { onError(messages.getString(R.string.ui_225)) }
             } finally {
                 synchronized(lock) {
                     if(recorder===input)recorder=null

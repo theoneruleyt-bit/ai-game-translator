@@ -1,0 +1,238 @@
+<resources>
+ <string name="ui_000" formatted="false">"Camera permission denied. You can try again."</string>
+ <string name="ui_001" formatted="false">"Microphone permission denied. Camera mode is still available."</string>
+ <string name="ui_002" formatted="false">"The system test returned no text."</string>
+ <string name="ui_003" formatted="false">"The speech test was canceled or returned no result."</string>
+ <string name="ui_004" formatted="false">"Reading image…"</string>
+ <string name="ui_005" formatted="false">"Translating the new image…"</string>
+ <string name="ui_006" formatted="false">"Reading text in the image…"</string>
+ <string name="ui_007" formatted="false">"No text found. Choose a clearer image."</string>
+ <string name="ui_008" formatted="false">"Could not read this image. Try another one."</string>
+ <string name="ui_009" formatted="false">"Could not open the image."</string>
+ <string name="ui_010" formatted="false">"Games &amp; videos • Live translation"</string>
+ <string name="ui_011" formatted="false">"ENGLISH   →   TURKISH"</string>
+ <string name="ui_012" formatted="false">"Camera"</string>
+ <string name="ui_013" formatted="false">"Listen"</string>
+ <string name="ui_014" formatted="false">"Image"</string>
+ <string name="ui_015" formatted="false">"Settings"</string>
+ <string name="ui_016" formatted="false">"Quick guide"</string>
+ <string name="ui_017" formatted="false">"Subtitle area updated. Only text inside the frame is read."</string>
+ <string name="ui_018" formatted="false">"Reset subtitle area"</string>
+ <string name="ui_019" formatted="false">"LIVE CAMERA"</string>
+ <string name="ui_020" formatted="false">"Follow the action in Turkish"</string>
+ <string name="ui_021" formatted="false">"Continuous on-device listening • English speech is recognized and translated into Turkish locally. Download both models once before use."</string>
+ <string name="ui_022" formatted="false">"Microphone idle"</string>
+ <string name="ui_023" formatted="false">"Download / check speech model"</string>
+ <string name="ui_024" formatted="false">"Continuous offline listening (Vosk)"</string>
+ <string name="ui_025" formatted="false">"Continuous on-device listening selected."</string>
+ <string name="ui_026" formatted="false">"Android speech test selected. This mode does not provide continuous streaming."</string>
+ <string name="ui_027" formatted="false">"Try Android on-device recognition"</string>
+ <string name="ui_028" formatted="false">"Recognition mode changed. Restart listening."</string>
+ <string name="ui_029" formatted="false">"Finish this phrase"</string>
+ <string name="ui_030" formatted="false">"Finishing this phrase. The microphone stays active."</string>
+ <string name="ui_031" formatted="false">"Start listening first."</string>
+ <string name="ui_032" formatted="false">"Android speech test"</string>
+ <string name="ui_033" formatted="false">"Prepare the translation model first."</string>
+ <string name="ui_034" formatted="false">"System speech test"</string>
+ <string name="ui_035" formatted="false">"The Android speech dialog will open. Say a short English sentence. The system service may use the internet."</string>
+ <string name="ui_036" formatted="false">"Open test"</string>
+ <string name="ui_037" formatted="false">"Say a short English sentence"</string>
+ <string name="ui_038" formatted="false">"No system speech dialog found. Check speech services in phone settings."</string>
+ <string name="ui_039" formatted="false">"Cancel"</string>
+ <string name="ui_040" formatted="false">"Prepare the translation model once, then start."</string>
+ <string name="ui_041" formatted="false">"Prepare translation model"</string>
+ <string name="ui_042" formatted="false">"Start camera"</string>
+ <string name="ui_043" formatted="false">"Stop"</string>
+ <string name="ui_044" formatted="false">"Session stopped."</string>
+ <string name="ui_045" formatted="false">"Read Turkish aloud"</string>
+ <string name="ui_046" formatted="false">"Turkish reading enabled. New completed phrases will be read while the microphone stays active."</string>
+ <string name="ui_047" formatted="false">"Read only the selected subtitle area"</string>
+ <string name="ui_048" formatted="false">"Reading area changed. Restart the camera."</string>
+ <string name="ui_049" formatted="false">"I am using headphones for Turkish audio"</string>
+ <string name="ui_050" formatted="false">"Headphone use selected. Your reading preference is unchanged."</string>
+ <string name="ui_051" formatted="false">"Speaker playback is available. Headphones help prevent the microphone from picking up the app\'s own voice."</string>
+ <string name="ui_052" formatted="false">"Voice options"</string>
+ <string name="ui_053" formatted="false">"Reading speed"</string>
+ <string name="ui_054" formatted="false">"Choose Turkish voice"</string>
+ <string name="ui_055" formatted="false">"Include voices that need internet"</string>
+ <string name="ui_056" formatted="false">"Online voices"</string>
+ <string name="ui_057" formatted="false">"Your speech engine may send translated text to its service. Internet is required; better voice quality is not guaranteed."</string>
+ <string name="ui_058" formatted="false">"Show voices"</string>
+ <string name="ui_059" formatted="false">"Voice pitch • does not change accent"</string>
+ <string name="ui_060" formatted="false">"Preview voice"</string>
+ <string name="ui_061" formatted="false">"16 SPEAKER PROFILES"</string>
+ <string name="ui_062" formatted="false">"Speaker options"</string>
+ <string name="ui_063" formatted="false">"Named subtitles keep the same voice for each speaker. Select speakers manually in Listen mode; automatic speaker identification is not included."</string>
+ <string name="ui_064" formatted="false">"Unlabeled speaker: Default voice"</string>
+ <string name="ui_065">"Unlabeled speaker: %1$s"</string>
+ <string name="ui_066" formatted="false">"Unlabeled / microphone speaker"</string>
+ <string name="ui_067" formatted="false">"Default voice"</string>
+ <string name="ui_068">"Speaker %1$s"</string>
+ <string name="ui_069" formatted="false">"Match speaker names in subtitles"</string>
+ <string name="ui_070" formatted="false">"Assign speaker voices"</string>
+ <string name="ui_071" formatted="false">"Choose a speaker"</string>
+ <string name="ui_072" formatted="false">"Assign speaker styles"</string>
+ <string name="ui_073" formatted="false">"Speaker profile"</string>
+ <string name="ui_074" formatted="false">"Reset speaker assignments"</string>
+ <string name="ui_075" formatted="false">"Voice and name assignments reset."</string>
+ <string name="ui_076" formatted="false">"Translate one frame"</string>
+ <string name="ui_077" formatted="false">"Reading the next frame…"</string>
+ <string name="ui_078" formatted="false">"Start the camera first."</string>
+ <string name="ui_079" formatted="false">"RECOGNIZED ENGLISH"</string>
+ <string name="ui_080" formatted="false">"Source text will appear here."</string>
+ <string name="ui_081" formatted="false">"TURKISH TRANSLATION"</string>
+ <string name="ui_082" formatted="false">"Your translation will appear here."</string>
+ <string name="ui_083" formatted="false">"Read last translation"</string>
+ <string name="ui_084" formatted="false">"Copy"</string>
+ <string name="ui_085" formatted="false">"Save"</string>
+ <string name="ui_086" formatted="false">"No translation to save yet."</string>
+ <string name="ui_087" formatted="false">"Phrase saved."</string>
+ <string name="ui_088" formatted="false">"This phrase is already saved."</string>
+ <string name="ui_089" formatted="false">"Translate text"</string>
+ <string name="ui_090" formatted="false">"Saved phrases"</string>
+ <string name="ui_091" formatted="false">"RECENT PHRASES"</string>
+ <string name="ui_092" formatted="false">"No translations yet."</string>
+ <string name="ui_093" formatted="false">"Share history"</string>
+ <string name="ui_094" formatted="false">"Clear history"</string>
+ <string name="ui_095" formatted="false">"History cleared."</string>
+ <string name="ui_096" formatted="false">"Turkish speech settings"</string>
+ <string name="ui_097" formatted="false">"Open text-to-speech settings on your phone."</string>
+ <string name="ui_098" formatted="false">"No translation to copy yet."</string>
+ <string name="ui_099" formatted="false">"Translation"</string>
+ <string name="ui_100" formatted="false">"Translation copied."</string>
+ <string name="ui_101" formatted="false">"Type or paste English text"</string>
+ <string name="ui_102" formatted="false">"Translate"</string>
+ <string name="ui_103" formatted="false">"No saved phrases yet. Tap Save on a translation."</string>
+ <string name="ui_104" formatted="false">"Saved phrases"</string>
+ <string name="ui_105" formatted="false">"Saved phrase"</string>
+ <string name="ui_106" formatted="false">"Close"</string>
+ <string name="ui_107" formatted="false">"Delete all"</string>
+ <string name="ui_108" formatted="false">"Delete saved phrases?"</string>
+ <string name="ui_109" formatted="false">"Saved phrases will be deleted from this device."</string>
+ <string name="ui_110" formatted="false">"Delete"</string>
+ <string name="ui_111" formatted="false">"Saved phrases deleted."</string>
+ <string name="ui_112" formatted="false">"Offline readiness"</string>
+ <string name="ui_113">"Speech model: %1$s\nTranslation model: %2$s\nLocal Turkish voices: %3$s\n\nInterface language changes menus only. Translation remains English → Turkish."</string>
+ <string name="ui_114" formatted="false">"Ready"</string>
+ <string name="ui_115" formatted="false">"Not downloaded"</string>
+ <string name="ui_116" formatted="false">"Check / download required"</string>
+ <string name="ui_117" formatted="false">"Live translation guide"</string>
+ <string name="ui_118" formatted="false">"1. Prepare the translation model. In Listen mode, download the English speech model once.\n\n2. Camera: frame the subtitles only. Listen: let the microphone hear English audio from another device.\n\n3. Fast mode uses short pauses and shorter segments. Choose Balanced or Full sentence for more context.\n\n4. Partial translations can change. Only completed phrases are spoken. Headphones reduce feedback.\n\n5. Assign a real TTS voice and style to each speaker profile. Select speakers manually in Listen mode.\n\n6. Stop or moving the app to the background turns off the microphone. With downloaded models and local TTS, internet is not required."</string>
+ <string name="ui_119" formatted="false">"Got it"</string>
+ <string name="ui_120" formatted="false">"Appearance: Light / Dark / System"</string>
+ <string name="ui_121" formatted="false">"Appearance"</string>
+ <string name="ui_122" formatted="false">"System"</string>
+ <string name="ui_123" formatted="false">"Light"</string>
+ <string name="ui_124" formatted="false">"Dark"</string>
+ <string name="ui_125" formatted="false">"Interface language: Turkish / English"</string>
+ <string name="ui_126" formatted="false">"Interface language"</string>
+ <string name="ui_127" formatted="false">"Turkish"</string>
+ <string name="ui_128" formatted="false">"English"</string>
+ <string name="ui_129" formatted="false">"Translation text size"</string>
+ <string name="ui_130" formatted="false">"Compact"</string>
+ <string name="ui_131" formatted="false">"Standard"</string>
+ <string name="ui_132" formatted="false">"Large"</string>
+ <string name="ui_133" formatted="false">"Fast • short segments"</string>
+ <string name="ui_134" formatted="false">"Balanced • more context"</string>
+ <string name="ui_135" formatted="false">"Full sentence • longer wait"</string>
+ <string name="ui_136">"Listening: %1$s"</string>
+ <string name="ui_137" formatted="false">"Listening speed"</string>
+ <string name="ui_138">"%1$s selected. Restart listening."</string>
+ <string name="ui_139" formatted="false">"Speed up gradually when speech falls behind"</string>
+ <string name="ui_140" formatted="false">"Keep screen awake during translation"</string>
+ <string name="ui_141" formatted="false">"Zero delay is not guaranteed. Fast mode may reduce sentence context. Available voices depend on your phone\'s speech engine."</string>
+ <string name="ui_142" formatted="false">"Turkish speech engine settings"</string>
+ <string name="ui_143" formatted="false">"Check the Turkish speech package in phone settings."</string>
+ <string name="ui_144" formatted="false">"App settings"</string>
+ <string name="ui_145">"Speaker %1$s • style variation"</string>
+ <string name="ui_146" formatted="false">"No phrases to share yet."</string>
+ <string name="ui_147" formatted="false">"Share translation history"</string>
+ <string name="ui_148" formatted="false">"No sharing app found."</string>
+ <string name="ui_149" formatted="false">"No Turkish voice found. Check speech settings."</string>
+ <string name="ui_150">"Turkish %1$s • %2$s"</string>
+ <string name="ui_151" formatted="false">"Online"</string>
+ <string name="ui_152" formatted="false">"On device"</string>
+ <string name="ui_153">"Speaker %1$s • choose a voice"</string>
+ <string name="ui_154">"Voice saved for speaker %1$s."</string>
+ <string name="ui_155" formatted="false">"No usable Turkish voices in this engine. Check Turkish speech settings."</string>
+ <string name="ui_156">"Turkish %1$s • %2$s • %3$s"</string>
+ <string name="ui_157">"Turkish voices (%1$s)"</string>
+ <string name="ui_158" formatted="false">"Voice selected. Tap Preview voice to hear it."</string>
+ <string name="ui_159" formatted="false">"Could not select this voice. Try another."</string>
+ <string name="ui_160" formatted="false">"Start listening"</string>
+ <string name="ui_161" formatted="false">"Choose image"</string>
+ <string name="ui_162" formatted="false">"Enable English subtitles on your TV or monitor. Hold the phone steady. Draw the green area around subtitles only; leave timers and icons outside."</string>
+ <string name="ui_163" formatted="false">"Vosk keeps the microphone active and processes audio locally. Turkish can play through speakers or headphones. Headphones reduce feedback. Listening stops in the background."</string>
+ <string name="ui_164" formatted="false">"Translate English text in a photo or screenshot into Turkish and listen aloud."</string>
+ <string name="ui_165" formatted="false">"Ready. You can start."</string>
+ <string name="ui_166" formatted="false">"Preparing the translation model. First download needs internet…"</string>
+ <string name="ui_167" formatted="false">"Translation model ready ✓"</string>
+ <string name="ui_168" formatted="false">"Ready. Choose a mode and start."</string>
+ <string name="ui_169" formatted="false">"Could not download the model. Check your connection and try again."</string>
+ <string name="ui_170" formatted="false">"Microphone audio is processed continuously on this device. Vosk does not upload audio. Once both models are downloaded, internet is not required. Speaker playback works; headphones reduce feedback. Partial results may change."</string>
+ <string name="ui_171" formatted="false">"The Android speech service will be used and may need internet. This test mode does not provide continuous streaming."</string>
+ <string name="ui_172" formatted="false">"Stop camera"</string>
+ <string name="ui_173" formatted="false">"Opening camera…"</string>
+ <string name="ui_174" formatted="false">"Waiting for readable text…"</string>
+ <string name="ui_175" formatted="false">"No text found in this frame."</string>
+ <string name="ui_176" formatted="false">"Could not read the frame. Check camera focus."</string>
+ <string name="ui_177" formatted="false">"Camera active. Following subtitles."</string>
+ <string name="ui_178" formatted="false">"Could not open the camera. Check permissions."</string>
+ <string name="ui_179" formatted="false">"Translation queue full. Some phrases could not be accepted."</string>
+ <string name="ui_180">"%1$s • Speaker %2$s\n%3$s"</string>
+ <string name="ui_181" formatted="false">"Phrase translated • microphone still listening"</string>
+ <string name="ui_182" formatted="false">"Live translation active"</string>
+ <string name="ui_183" formatted="false">"Image translation ready"</string>
+ <string name="ui_184" formatted="false">"Could not translate a phrase. Check the translation model."</string>
+ <string name="ui_185" formatted="false">"Turkish voice is not ready. Install a Turkish speech package in phone settings."</string>
+ <string name="ui_186" formatted="false">"Speech queue full. The translation remains on screen."</string>
+ <string name="ui_187">"%1$sTranslated %2$s  •  Pending %3$s  •  Speech %4$s\nLast translation step %5$s s  •  Queue/process warnings %6$s"</string>
+ <string name="ui_188">"Session %1$s s • "</string>
+ <string name="ui_189" formatted="false">"Preparing the speech model… First download uses about 40 MB."</string>
+ <string name="ui_190" formatted="false">"English speech model ready ✓ Prepare the translation model too, then start listening."</string>
+ <string name="ui_191" formatted="false">"On-device speech model ready"</string>
+ <string name="ui_192" formatted="false">"Model preparation failed • try again"</string>
+ <string name="ui_193" formatted="false">"Loading the local speech model…"</string>
+ <string name="ui_194" formatted="false">"Waiting for English speech…"</string>
+ <string name="ui_195" formatted="false">"Partial translation will appear here."</string>
+ <string name="ui_196" formatted="false">"Preparing on-device listening…"</string>
+ <string name="ui_197" formatted="false">"Microphone active • on-device English → Turkish"</string>
+ <string name="ui_198" formatted="false">"Continuous listening active. Waiting for English speech…"</string>
+ <string name="ui_199" formatted="false">"Translating phrase • microphone stays active"</string>
+ <string name="ui_200" formatted="false">"Speech continuing • on-device listening active"</string>
+ <string name="ui_201">"Partial translation • may change\n%1$s"</string>
+ <string name="ui_202" formatted="false">"No speech recognition service found on this phone."</string>
+ <string name="ui_203" formatted="false">"Listening to English game / video speech…"</string>
+ <string name="ui_204" formatted="false">"Microphone active • waiting for English speech"</string>
+ <string name="ui_205" formatted="false">"Listening • waiting for English speech"</string>
+ <string name="ui_206" formatted="false">"Speech detected…"</string>
+ <string name="ui_207">"Microphone active • level %1$s/100"</string>
+ <string name="ui_208" formatted="false">"Recognizing speech…"</string>
+ <string name="ui_209" formatted="false">"No English text after three attempts. Try the speech test; check microphone, English speech package and connection."</string>
+ <string name="ui_210" formatted="false">"No speech text received. Move closer to the audio; retrying…"</string>
+ <string name="ui_211" formatted="false">"Local English recognition is unavailable. Trying Android speech service; internet may be used."</string>
+ <string name="ui_212">"Listening stopped (code %1$s). Check English speech package, microphone and connection."</string>
+ <string name="ui_213" formatted="false">"Could not start recognition. Check the phone\'s speech service."</string>
+ <string name="ui_214" formatted="false">"Preparing recognized text…"</string>
+ <string name="ui_215" formatted="false">"Translating a partial speech result…"</string>
+ <string name="ui_216" formatted="false">"Translating speech…"</string>
+ <string name="ui_217" formatted="false">"No speech text after two attempts. Open the speech test; check microphone permission, English recognition and connection."</string>
+ <string name="ui_218" formatted="false">"No speech text received. Trying once more…"</string>
+ <string name="ui_219" formatted="false">"Reading Turkish • listening resumes after playback"</string>
+ <string name="ui_220" formatted="false">"Downloading English speech model • about 40 MB"</string>
+ <string name="ui_221">"Downloading speech model • %1$s%%"</string>
+ <string name="ui_222">"Downloading speech model • %1$s MB"</string>
+ <string name="ui_223" formatted="false">"Extracting and validating model…"</string>
+ <string name="ui_224" formatted="false">"Could not prepare speech model. Check your connection and free storage, then retry."</string>
+ <string name="ui_225" formatted="false">"Could not load speech engine on this device. Report your phone model and Android version."</string>
+ <string name="ui_226" formatted="false">"Local listening could not start or was interrupted. Check microphone permission and other apps using the microphone."</string>
+ <string name="ui_227" formatted="false">"No Turkish speech package found. Install one in speech settings."</string>
+ <string name="ui_228" formatted="false">"Turkish voice is not ready. Check speech settings."</string>
+ <string name="ui_229" formatted="false">"The selected voice needs internet. Choose a local Turkish voice."</string>
+ <string name="ui_230" formatted="false">"The speech engine could not read a phrase. Its translation remains on screen."</string>
+ <string name="ui_231" formatted="false">"Subtitle reading area. Drag to select a new area."</string>
+ <string name="ui_232" formatted="false">"Subtitle area • drag to select"</string>
+ <string-array name="speaker_styles"><item>Natural</item><item>Lower pitch</item><item>Higher pitch</item><item>Calm</item><item>Energetic</item><item>Narrator</item></string-array>
+ <string name="model_readiness">"Speech: %1$s · Translation: %2$s"</string>
+ <string name="audio_level">"Microphone audio level"</string>
+</resources>
