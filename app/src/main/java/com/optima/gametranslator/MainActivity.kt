@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
     private val translator = Translation.getClient(TranslatorOptions.Builder()
         .setSourceLanguage(TranslateLanguage.ENGLISH).setTargetLanguage(TranslateLanguage.TURKISH).build())
     private val gate = StabilityGate()
+    private val waiting = LatestLine()
     private var provider: ProcessCameraProvider? = null
     private var tts: TextToSpeech? = null
     private var voiceReady = false
@@ -70,8 +71,8 @@ class MainActivity : ComponentActivity() {
             } catch (_: Exception) { status.text = "Görüntü açılamadı." }
         }
     }
-    override fun onCreate(saved: Bundle?) {
-        super.onCreate(saved)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; setPadding(24, 32, 24, 24)
             setBackgroundColor(Color.rgb(16,24,39))
@@ -92,8 +93,8 @@ class MainActivity : ComponentActivity() {
         } };content.addView(start)
         content.addView(Button(this).apply { text="Durdur";setOnClickListener { stopLive();status.text="Durduruldu." } })
         subtitleRegion=CheckBox(this).apply {
-            text="Canlı mod: görüntünün alt %45'indeki yazıları oku";isChecked=true;setTextColor(Color.WHITE)
-            setOnCheckedChangeListener { _,_ -> epoch++;gate.reset();tts?.stop();translating=false }
+            text="Canlı mod: görüntünün alt %45'indeki yazıları oku";isChecked=false;setTextColor(Color.WHITE)
+            setOnCheckedChangeListener { _,_ -> epoch++;gate.reset();waiting.clear();tts?.stop();translating=false }
         };content.addView(subtitleRegion)
         autoVoice=CheckBox(this).apply {
             text="Türkçe çeviriyi otomatik sesli oku";isChecked=true;setTextColor(Color.WHITE)
@@ -144,7 +145,7 @@ class MainActivity : ComponentActivity() {
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
                     analysis.setAnalyzer(ContextCompat.getMainExecutor(this)) { proxy ->
                         val now=SystemClock.elapsedRealtime()
-                        if(!live || busy || now-lastFrame<450) proxy.close()
+                        if(!live || busy || now-lastFrame<150) proxy.close()
                         else {
                             val media=proxy.image
                             if(media==null) proxy.close() else {
@@ -163,8 +164,14 @@ class MainActivity : ComponentActivity() {
                                                 if(selected.isBlank()) status.text="Bu karede metin bulunamadı."
                                                 else translate(selected,epoch,false)
                                             } else {
-                                                val stable=gate.observe(selected,SystemClock.elapsedRealtime())
-                                                if(stable!=null&&!translating) { source.text=stable;translate(stable,currentEpoch,true) }
+                                                val observedAt=SystemClock.elapsedRealtime()
+                                                source.text=selected.ifBlank { "Kamerada okunabilir metin bekleniyor…" }
+                                                val stable=gate.observe(selected,observedAt)
+                                                if(stable!=null) {
+                                                    gate.commit(stable)
+                                                    if(translating) waiting.offer(stable,observedAt)
+                                                    else translate(stable,currentEpoch,true,observedAt)
+                                                }
                                             }
                                         }
                                     }.addOnFailureListener { if(valid(currentEpoch)) status.text="Kare okunamadı. Işık/netliği kontrol et." }
@@ -179,18 +186,31 @@ class MainActivity : ComponentActivity() {
             }
         },ContextCompat.getMainExecutor(this))
     }
-    private fun translate(text: String, token: Long, fromLive: Boolean) {
+    private fun translate(text: String, token: Long, fromLive: Boolean,
+                          seenAt: Long = SystemClock.elapsedRealtime()) {
         if(!modelReady) { status.text="Metin okundu. Modeli hazırla ve görüntüyü yeniden seç.";return }
         translating=true;status.text="Türkçeye çevriliyor…"
         translator.translate(text).addOnSuccessListener { translated ->
-            if(valid(token) && (!fromLive || (live&&gate.current==text))) {
+            // A subtitle can disappear while its translation is running. Its result
+            // remains useful briefly; exact equality with the next OCR frame loses it.
+            if(valid(token) && (!fromLive || (live && SystemClock.elapsedRealtime()-seenAt<=3500))) {
                 lastTranslation=translated;result.text=translated
-                if(fromLive) gate.commit(text)
                 status.text=if(fromLive) "Canlı çeviri açık" else "Görüntü çevirisi hazır"
                 if(autoVoice.isChecked) speak(translated)
             }
-        }.addOnFailureListener { if(valid(token)) status.text="Çeviri başarısız. Tekrar dene." }
-         .addOnCompleteListener { if(valid(token)) translating=false }
+        }.addOnFailureListener {
+            if(valid(token)) {
+                gate.release(text)
+                status.text="Çeviri başarısız. Tekrar dene."
+            }
+        }.addOnCompleteListener {
+            if(valid(token)) {
+                translating=false
+                if(fromLive && live) waiting.take(SystemClock.elapsedRealtime())?.let {
+                    translate(it.text, token, true, it.seenAt)
+                }
+            }
+        }
     }
     private fun speak(text: String) {
         if(text.isBlank()) return
@@ -199,7 +219,7 @@ class MainActivity : ComponentActivity() {
         tts?.speak(text,TextToSpeech.QUEUE_FLUSH,null,"translation")
     }
     private fun stopLive() {
-        epoch++;live=false;frozen=false;translating=false;gate.reset()
+        epoch++;live=false;frozen=false;translating=false;gate.reset();waiting.clear()
         provider?.unbindAll();tts?.stop()
         if(::start.isInitialized) start.isEnabled=modelReady
     }
