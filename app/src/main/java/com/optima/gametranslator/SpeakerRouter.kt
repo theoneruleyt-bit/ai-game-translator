@@ -1,7 +1,7 @@
 package com.optima.gametranslator
 
 /** Routes explicit subtitle labels only. It never infers identity/gender from audio. */
-class SpeakerRouter(private val capacity: Int=8) {
+class SpeakerRouter(private val capacity: Int=16) {
     data class Segment(val text: String,val slot: Int,val name: String)
     private val names=linkedMapOf<String,Int>()
     private val pattern=Regex("^\\s*(?:\\[([\\p{L}][\\p{L}\\p{M} .'-]{0,23})]|([\\p{L}][\\p{L}\\p{M} .'-]{0,23}):)\\s*(.*)$")

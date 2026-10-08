@@ -87,7 +87,7 @@ class OfflineSpeech(context: Context) {
         }
     }
     @SuppressLint("MissingPermission")
-    fun start(onReady: ()->Unit,onText: (String,Boolean)->Unit,onLevel: (Int)->Unit,onError: (String)->Unit) {
+    fun start(mode: Int=0,onReady: ()->Unit,onText: (String,Boolean)->Unit,onLevel: (Int)->Unit,onError: (String)->Unit) {
         if(closed)return
         stop();val token=generation.get();flushRequested=false
         worker.execute {
@@ -96,6 +96,7 @@ class OfflineSpeech(context: Context) {
             try {
                 check(ContextCompat.checkSelfPermission(app,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)
                 check(ready())
+                RecognitionTuning.configure(modelPath,mode)
                 model=Model(modelPath.absolutePath)
                 val decoder=Recognizer(model,16000f);recognizer=decoder
                 val minimum=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT)
@@ -109,7 +110,7 @@ class OfflineSpeech(context: Context) {
                 }
                 check(mic.recordingState==AudioRecord.RECORDSTATE_RECORDING)
                 deliver(token,onReady)
-                val buffer=ShortArray(1600);var previous="";var lastLevel=0L
+                val buffer=ShortArray(800);var previous="";var lastLevel=0L
                 while(generation.get()==token&&!closed) {
                     val count=mic.read(buffer,0,buffer.size,AudioRecord.READ_BLOCKING)
                     if(generation.get()!=token||closed)break

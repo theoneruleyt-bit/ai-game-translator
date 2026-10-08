@@ -1,74 +1,67 @@
-# AI Game Translator 0.10.1 — Anahtarsız sürekli dinleme
+# AI Game Translator 0.11 — Birleştirilmiş geliştirme paketi
 
-Android 10+ • İngilizce → Türkçe • Kamera, görsel, mikrofon.
+Android 10+ · İngilizce → Türkçe · Anahtarsız cihaz içi çeviri.
 
-## Yenilikler
+## Gecikme düzenlemeleri
 
-0.10.1 düzeltmesi: Dinle modundaki kulaklık zorunluluğu kaldırıldı. Türkçe sesli oku seçeneği artık geri kapanmaz; otomatik okuma, ses örneği ve son çeviriyi tekrar okuma hoparlörden de çalışabilecek şekilde düzenlendi. Ses motoru, mikrofon ve kamera işleme kodları değiştirilmedi.
+- Mikrofon okuma parçası 100 ms yerine 50 ms. Kayıt tamponu taşmaya karşı korunur; mikrofon okumak için tamamen dolması beklenmez.
+- Varsayılan Hızlı mod: modelin endpoint sessizlik kuralları 0.25 / 0.60 / 0.90 saniye; uzun kesintisiz konuşma bölümü üst sınırı 4 saniye. Dengeli mod 0.40 / 0.80 / 1.20 ve 8 saniye; Tam cümle modu 0.60 / 1.0 / 1.80 ve 20 saniye. Bunlar karar kurallarıdır; uçtan uca gecikme garantisi değildir.
+- Ara çeviri zamanlayıcısı 400 ms yerine Hızlı modda 100 ms. Tek ara çeviri işlemi sürerken yalnızca en güncel metin bekletilir.
+- Aynı kaynak metnin ara çevirisi hazırsa tamamlanan sonuç için ikinci kez hesaplanmaz. Farklı/revize edilmiş metin için yeniden çeviri yapılır.
+- Ses kuyruğu büyüdüğünde sıradaki repliklerin okuma hızı kontrollü artırılır. Mevcut okuma kesilmez, mikrofon replikleri kuyruktan atılmaz. Kuyruk kapasitesi aşılırsa açık uyarı gösterilir.
 
-- Azure bağlantısı ve ücretli bulut konuşma bağımlılığı kaldırıldı. Vosk 0.3.75 ve JNA 5.18.1 ile cihaz içi sürekli mikrofon tanıma eklendi.
-- AudioRecord 16 kHz mono PCM mikrofonu açık tutar. İngilizce ara metinler, sık güncellemelerde son metni tercih ederek yerel ML Kit çevirisine gönderilir. Ara çeviri değişebilir, seslendirilmez.
-- Konuşma duraklamasında tamamlanan replik FIFO çeviri ve Türkçe ses kuyruğuna eklenir. Mikrofon Türkçe okunurken kapanmaz. Gerçek tekrar söylenen replikler korunur.
-- `Konuşmayı bitir ve çevir` mevcut repliği elle tamamlar; mikrofonu kapatmaz. Konuşmanın ortasında basarsan kelime kesilebilir. Normal kullanımda doğal duraklamaları bekle.
-- Kamera, seçili altyazı alanı, sabit HUD/süre filtresi, görsel çeviri ve konuşmacı profilleri korunur. Sesten otomatik konuşmacı/cinsiyet ayrımı eklenmedi.
+Hızlı mod daha kısa bağlam kullanır ve bazen cümlenin ortasında bölüm çıkarabilir. Tam cümle daha iyi bağlam sağlar ama bekleme artar. Ara çeviri değişebilir; yanlış/revize edilebilir ara metinler otomatik seslendirilmez. Uzun kesintisiz konuşmada 4 saniyelik bölüm sınırı hâlâ birkaç saniye bekleme yaratabilir. Sıfır gecikme ve 1 saniyelik kesin hedef vaat edilmez. Gerçek telefonla karşılaştırmalı test gerekir.
 
-## GitHub adımları
+## Birleştirilen diğer çalışmalar
 
-1. ZIP'i aç. İçindeki `Android_Game_Translator_0_10_1` klasörünün içeriğini mevcut repo köküne aktar; ayrı alt klasör oluşturma. `app` ve gizli `.github` klasörü dahil bütün mevcut dosyaları üzerine yaz.
-2. `StreamingTranslator.kt` ve `SpeechSettings.kt` bu pakette yalnızca geçiş açıklaması içerir. Üzerine yazılmaları önemlidir: eski Azure SDK importlarının repoda kalmasını engeller.
-3. Mevcut proje klasöründe terminal aç:
+- 16 konuşmacı profili (önceden 8), profil başına gerçek Türkçe TTS sesi seçimi.
+- Altı ton/tempo tarzı: Doğal, Daha kalın ton, Daha ince ton, Sakin, Enerjik, Anlatıcı. Bunlar mevcut sesin varyasyonlarıdır; yeni gerçek kişi, erkek/kadın sesi veya aksan değildir. Gerçek Türkçe ses sayısı telefonun TTS motoruna bağlıdır.
+- İsimli altyazıda konuşmacı → profil eşleştirmesi; mikrofon modunda elle konuşmacı seçimi. Sesten otomatik kişi/cinsiyet ayrımı veya ses klonlama eklenmedi.
+- Ayarlar: Hızlı/Dengeli/Tam cümle, kuyrukta kontrollü hızlandırma, aktif çeviride ekranı açık tutma. Sesli okuma, hız, ton, seçili konuşmacı, altyazı filtresi ve uygun yerel ses tercihi kaydedilir. İnternet sesleri ve kulaklık beyanı her açılışta yeniden seçilir.
+- İlk kullanım rehberi, her zaman açılabilir yardım, oturum süresi, çeviri işlemi süresi. Gösterilen çeviri işlemi süresi tüm konuşma tanıma ve ses bekleme gecikmesi değildir.
+- Oturum geçmişinde en fazla 100 replik saklanır, son dört replik gösterilir; paylaş ve temizle düğmeleri eklendi. Paylaşım yalnızca Android seçim ekranını açar; kullanıcı uygulamayı ve alıcıyı seçer. Geçmiş disk üzerinde kalıcı olarak tutulmaz.
+- Sabit debug test imzası: sonraki test APK'larında aynı anahtarla güncelleme mümkün olur. Play Store üretim imzası değildir.
+- Kamera altyazı alanı, sabit HUD/süre filtresi ve görsel çeviri korunur. Play Store yayın, mağaza materyalleri ve ödeme sistemi bu paket kapsamında değildir.
+
+## GitHub
+
+ZIP içindeki Android_Game_Translator_0_11 klasörünün tüm içeriğini mevcut repo köküne aktar. Gizli `.github`, `.gitignore`, `app`, `signing` ve Gradle dosyalarının üzerine yaz. İç içe proje klasörü oluşturma.
 
 ```bash
 git add .
-git commit -m "v0.10.1: Dinle modunda Turkce sesli okuma duzeltmesi"
+git commit -m "v0.11: hizli dinleme, 16 konusmaci profili ve birlesik iyilestirmeler"
 git push origin main
 ```
 
-4. GitHub Actions → Android APK yeşil olduğunda `AI-Game-Translator-0.10.1-voice-fix-debug` artifact'ını indir. İçindeki `app-debug.apk` dosyasını yükle.
+Actions → Android APK yeşil olunca `AI-Game-Translator-0.11-complete-debug` artifact'ını indir, APK'yı telefona kur. `.gitignore` yalnızca bu test jks dosyasını istisna tutar; başka anahtarlar ignored kalır.
 
-Sürüm kodu 11. Sabit yayın imzalama bu sürümde eklenmedi; farklı CI debug imzaları mevcut uygulamanın üzerine yüklemeyi engelleyebilir.
+Sürüm kodu 12. Önceki APK farklı CI debug imzasına sahipse 0.11 ilk geçişte üzerine kurulamayabilir. Sabit test imzası yalnızca bu sürümden sonraki paketlerde sorunu önler. Eski uygulamayı kaldırmak tercihlerini ve modellerini siler; gerekirse yeniden indir. `signing/README.md` detayları açıklar. Bu test anahtarını değiştirme ve üretim imzası olarak kullanma.
 
-## Telefonda ilk kurulum
+## İlk kullanım
 
-1. İnternet açıkken uygulamayı aç. `Çeviri modelini hazırla` düğmesine bas, hazır olmasını bekle. Bu, mevcut İngilizce → Türkçe yerel ML Kit modelidir.
-2. **Dinle → İngilizce konuşma modelini indir / kontrol et** düğmesine bas. Yaklaşık 40 MB Vosk modeli resmî alphacephei.com adresinden indirilir, açılır ve yüklenebilirliği doğrulanır. Açılmış model için ek depolama gerekir.
-3. `Anahtarsız sürekli dinleme (Vosk)` seçili kalsın. Başlat ve mikrofon izni ver.
-4. Bir TV/PC/başka cihazdan İngilizce oyun/video sesi oynat. Kaynak metin ve ara çeviri düğmeye basmadan güncellenmeli; duraklamada tamamlanan replik geçmişe eklenmeli.
-5. `Türkçe sesli oku` seçeneğini aç. Hoparlör veya bağlı kulaklık üzerinden tamamlanan replikler okunur. Kulaklık zorunlu değildir. Gerçekten kulaklık kullanıyorsan ilgili kutuyu aç; kutu gerçek ses çıkışını değiştirmez.
+1. Çeviri modelini hazırla.
+2. Dinle → İngilizce konuşma modelini indir / kontrol et. Yaklaşık 40 MB resmi Vosk modeli cihazda açılır; ek depolama gerekir. Azure/API anahtarı gerekmez.
+3. Ayarlar → Dinleme: Hızlı seçili olsun. Başlat, mikrofon izni ver. Başka cihazdan İngilizce video/oyun sesi oynat.
+4. Türkçe sesli oku seçili olsun. Kulaklık önerilir, zorunlu değildir. Hoparlör sesi mikrofona geri karışabilir.
+5. Gerçek sesler için Türkçe ses seç / Konuşmacı seslerini ayarla. Ek ton varyasyonları için Konuşmacı tonunu / tarzını ayarla.
 
-Vosk model dosyası: https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
+Modeller ve yerel Türkçe TTS hazırsa internet gerekmez. İnternet sesi veya Android konuşma test modu seçilirse ilgili hizmet ağ kullanabilir. Telefonun iç oyun sesini doğrudan yakalama özelliği yok; çevrede duyulan ses mikrofondan alınır. Arka plana geçince ve Durdur'a basılınca kamera/mikrofon, zamanlayıcılar ve ses kuyruğu durur. Model indirmesi de iptal edilir.
 
-## Ücretsiz / çevrimdışı kullanım
+## Doğrulama
 
-Azure hesabı, API anahtarı ve dakika başına bulut servis ücreti gerekmez. Vosk dinlemesi ve ML Kit çevirisi cihazda çalışır. Modeller bir kez hazırlandıktan sonra bu yol için internet gerekmez. Seçilen Türkçe TTS sesi de cihazda kurulu olmalı; `İnternet gerektiren sesleri de göster` seçeneğini kapalı tut. Ağ gerektiren TTS seçersen o ses motoru metni kendi hizmetine gönderebilir. Android konuşma test modu da cihazın sistem servisini kullanır ve internet gerektirebilir; ana yöntem Vosk'tur.
+Bu ortamda Android SDK/Gradle yok. Derleme, unit testleri, lint ve gerçek cihaz gecikmesi burada çalıştırılmadı. XML/YAML/ZIP, debug anahtarı ve statik kod kontrolleri yapıldı. GitHub Actions unit testleri ve lint'i çalıştırır; cihaz testi aşağıdadır.
 
-Mikrofon telefonun çevresindeki sesi alır. Telefonun iç oyun sesini doğrudan yakalayan ekran yakalama özelliği eklenmedi. Uygulama arka plana geçince veya Durdur'a basılınca kayıt durur; geç kalmış sonuçlar elenir. Aktif model indirmesi de durdurulur; tekrar indirme baştan başlar. Tamamlanmamış konuşma Durdur'a basınca seslendirilmez.
+- Aynı 60–90 saniyelik video üzerinde Hızlı ve Dengeli modları karşılaştır. Ekrandaki ilk ara çeviri ve ilk Türkçe sesin ne zaman başladığını ayrı değerlendir.
+- Müzik, hızlı replik, duraklamalı konuşma ve uzun kesintisiz konuşmayı dene.
+- Türkçe okuma sırasında yeni İngilizce repliklerin alındığını ve mevcut sesin yarıda kesilmediğini doğrula.
+- 1, 8, 9 ve 16. profilin gerçek ses ve tarz seçimini dene; mikrofon kişi seçimi elle yapılır.
+- Durdur, arka plana geçiş, mikrofon izni reddi, uçak modu ve yeniden açılışta tercihlerin korunmasını kontrol et.
+- Kamera ve görsel çeviriyi kontrol et. Sabit test imzasıyla sonraki yükselen sürüm kodlu APK'nın üzerine kurulabildiğini doğrula.
 
-Sesli okuma seçeneği dinleme başlayınca veya kulaklık kutusu değişince kapatılmaz. Hoparlörle okuma sırasında mikrofon açık kaldığından kendi Türkçe sesi tekrar algılayabilir; düşük hoparlör sesi veya kulaklık önerilir. Mikrofon seviyesi gerçek PCM verisinden hesaplanır.
-
-## Kalite ve sınırlar
-
-Küçük İngilizce model oyun özel isimleri, müzik, gürültü, hızlı veya aksanlı konuşmalarda hata yapabilir. İşlem yükü, ısınma ve gecikme telefona bağlıdır. Çeviri doğal konuşma duraklamasını bekleyebilir; hiç duraklamayan uzun konuşmada tamamlanan sesli sonuç geç gelir. Ara metin ve çeviri bu sırada güncellenir. Ses kuyruğu hızlı konuşmaya yetişemezse geride kalabilir; dolarsa durum uyarısı çıkar. Sıfır gecikme veya bulut düzeyinde doğruluk garanti edilmez.
-
-## Cihaz testi
-
-- 60–90 saniye İngilizce videoda düğmeye basmadan yeni kaynak ve ara çeviri geldiğini kontrol et.
-- Kulaklıkla Türkçe okunurken yeni İngilizce konuşmanın hâlâ algılandığını doğrula.
-- Aynı kısa cümleyi iki kez söyle: ikisi de çevrilmeli.
-- Modeller indirildikten sonra uçak modunda (kulaklık bağlantısını koruyarak) test et. Yerel Türkçe ses seçili olsun.
-- Durdur ve arka plana geçişte Android mikrofon göstergesinin kapanmasını doğrula.
-- Kamera moduna dönüp altyazı çevirisini kontrol et.
-
-## Kontrol durumu
-
-Bu ortamda Gradle ve Android SDK bulunmadığından APK derlemesi, unit testleri ve lint burada çalıştırılmadı. XML/YAML/ZIP ve kod değişiklikleri statik olarak incelendi. Model indirmesi, Vosk native yüklemesi, mikrofon ve TTS eşzamanlılığı gerçek telefonda doğrulanmalıdır. GitHub Actions derleme/unit test/lint kontrolünü çalıştırır.
-
-## Lisanslar
-
-Vosk API ve `vosk-model-small-en-us-0.15` modeli Apache 2.0 lisanslıdır. JNA LGPL 2.1+ veya Apache 2.0 seçenekleriyle dağıtılır. Model bu ZIP'e gömülmedi; uygulama resmî kaynaktan indirir. Model arşivindeki lisans dosyaları çıkarılırken korunur. Yayın öncesi bağımlılık lisans bildirimlerini ve dağıtılan native paketleri ayrıca kontrol et.
+Vosk API ve İngilizce küçük model Apache 2.0 lisanslıdır. JNA LGPL 2.1+ / Apache 2.0 seçeneklidir. Model lisans dosyaları çıkarılırken korunur. Yeni doğal sesler cihazın TTS paketlerinden gelir; bu pakete lisanssız ses modeli eklenmedi.
 
 Resmî kaynaklar:
-- https://alphacephei.com/vosk/models
-- https://github.com/alphacep/vosk-android-demo
-- https://github.com/alphacep/vosk-api
-- https://developers.google.com/ml-kit/language/translation/android
+https://alphacephei.com/vosk/models
+https://github.com/alphacep/vosk-api
+https://developer.android.com/reference/android/speech/tts/TextToSpeech
+https://developers.google.com/ml-kit/language/translation/android

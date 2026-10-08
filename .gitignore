@@ -4,3 +4,6 @@
 /local.properties
 *.jks
 *.keystore
+
+# Public test-only certificate: keep debug updates consistently signed.
+!/signing/optima-test.jks

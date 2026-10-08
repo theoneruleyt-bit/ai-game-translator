@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var signalLabel: TextView
     private lateinit var voiceChoice: Button
     private var allowNetworkVoice=false
+    private var restoredVoice=false
     private var finalRequested=false
     private var emptySpeechRounds=0
     private lateinit var hint: TextView
@@ -78,6 +79,14 @@ class MainActivity : ComponentActivity() {
     private var lastSpeaker=0
     private var automaticSubtitleNames=true
     private lateinit var speakerChoice: Button
+    private val settings by lazy { getSharedPreferences("app_settings",MODE_PRIVATE) }
+    private var speedMode=0
+    private var adaptiveReading=true
+    private var keepScreen=true
+    private var sessionStarted=0L
+    private val sessionTick=object : Runnable { override fun run() { if(active&&alive) { refreshMetrics();handler.postDelayed(this,1000) } } }
+    private var cachedSource=""
+    private var cachedTranslation=""
     private val profilePrefs by lazy { getSharedPreferences("speaker_profiles",MODE_PRIVATE) }
     private val waiting=LineQueue()
     private val recent=RecentLines()
@@ -157,7 +166,10 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        speakers.restore((1..8).mapNotNull { slot -> profilePrefs.getString("speaker_$slot",null)?.let { it to slot } }.toMap())
+        speedMode=settings.getInt("speed_mode",0).coerceIn(0,2);adaptiveReading=settings.getBoolean("adaptive",true);keepScreen=settings.getBoolean("screen",true)
+        selectedSpeaker=settings.getInt("speaker",0).coerceIn(0,16)
+        automaticSubtitleNames=settings.getBoolean("names",true)
+        speakers.restore((1..16).mapNotNull { slot -> profilePrefs.getString("speaker_$slot",null)?.let { it to slot } }.toMap())
         window.statusBarColor=ink;window.navigationBarColor=ink
         val root=vertical().apply { setPadding(dp(20),dp(24),dp(20),dp(28));background=GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,intArrayOf(ink,Color.rgb(17,30,47))) }
@@ -170,6 +182,7 @@ class MainActivity : ComponentActivity() {
         root.addView(label("İNGİLİZCE   →   TÜRKÇE",12f,mint))
         tabs=listOf(button("Kamera") { selectMode(Mode.CAMERA) },button("Dinle") { selectMode(Mode.MIC) },button("Görsel") { selectMode(Mode.IMAGE) })
         row(root,tabs)
+        row(root,listOf(button("Ayarlar") { showSettings() },button("Kullanım rehberi") { showGuide() }))
         previewBox=card(root)
         preview=PreviewView(this).apply {
             scaleType=PreviewView.ScaleType.FIT_CENTER
@@ -236,14 +249,14 @@ class MainActivity : ComponentActivity() {
         row(controls,listOf(start,button("Durdur") { stopSession();message("Oturum durduruldu.") }))
         metrics=label("",12f,mint);controls.addView(metrics)
         autoVoice=CheckBox(this).apply {
-            text="Türkçe sesli oku";setTextColor(Color.WHITE);isChecked=true
+            text="Türkçe sesli oku";setTextColor(Color.WHITE);isChecked=settings.getBoolean("auto_voice",true)
             setOnCheckedChangeListener { _,checked ->
                 if(!checked&&::voice.isInitialized) voice.stop()
                 if(checked&&active&&mode==Mode.MIC&&offlineMode) message("Türkçe sesli okuma açık. Yeni tamamlanan replikler okunacak; mikrofon açık kalıyor.")
             }
         };controls.addView(autoVoice)
         region=CheckBox(this).apply {
-            text="Yalnızca seçili altyazı alanını oku";setTextColor(muted);isChecked=true
+            text="Yalnızca seçili altyazı alanını oku";setTextColor(muted);isChecked=settings.getBoolean("region",true)
             setOnCheckedChangeListener { _,checked ->
                 subtitleArea.visibility=if(checked) View.VISIBLE else View.GONE
                 if(active) { stopSession();message("Okuma alanı değişti. Kamerayı yeniden başlat.") }
@@ -260,9 +273,9 @@ class MainActivity : ComponentActivity() {
         };controls.addView(headphones)
         controls.addView(label("Okuma hızı",13f,muted))
         controls.addView(SeekBar(this).apply {
-            max=6;progress=2
+            max=6;progress=settings.getInt("rate_step",2).coerceIn(0,6)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { if(::voice.isInitialized) voice.rate=0.9f+progress*0.1f }
+                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { settings.edit().putInt("rate_step",progress).apply();if(::voice.isInitialized) voice.rate=0.9f+progress*0.1f }
                 override fun onStartTrackingTouch(bar: SeekBar?) { }
                 override fun onStopTrackingTouch(bar: SeekBar?) { }
             })
@@ -284,30 +297,33 @@ class MainActivity : ComponentActivity() {
         })
         controls.addView(label("Ses tonu • gerçek aksan değiştirmez",13f,muted))
         controls.addView(SeekBar(this).apply {
-            max=6;progress=3
+            max=6;progress=settings.getInt("pitch_step",3).coerceIn(0,6)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { if(::voice.isInitialized) voice.pitch=.85f+progress*.05f }
+                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { settings.edit().putInt("pitch_step",progress).apply();if(::voice.isInitialized) voice.pitch=.85f+progress*.05f }
                 override fun onStartTrackingTouch(bar: SeekBar?) { }
                 override fun onStopTrackingTouch(bar: SeekBar?) { }
             })
         })
         controls.addView(button("Seçili sesi dinle") { enqueueVoice("Merhaba! Oyun ve video çevirilerini bu sesle dinleyebilirsin.") })
         val speakerCard=card(root)
-        speakerCard.addView(label("KONUŞMACI SESLERİ",11f,mint))
+        speakerCard.addView(label("16 KONUŞMACI PROFİLİ",11f,mint))
         speakerCard.addView(label("İsimli altyazıda aynı kişiye aynı ses. Dinle modunda konuşmacıyı elle seç; sesten otomatik kişi ayrımı bu sürümde yok.",13f,muted))
-        speakerChoice=button("Etiketsiz konuşmacı: Genel ses") {
+        speakerChoice=button(if(selectedSpeaker==0) "Etiketsiz konuşmacı: Genel ses" else "Etiketsiz konuşmacı: $selectedSpeaker") {
             AlertDialog.Builder(this).setTitle("Etiketsiz / mikrofon konuşmacısı")
-                .setItems((0..8).map { if(it==0) "Genel ses" else "Konuşmacı $it" }.toTypedArray()) { _,slot ->
+                .setItems((0..16).map { if(it==0) "Genel ses" else "Konuşmacı $it" }.toTypedArray()) { _,slot ->
                     selectedSpeaker=slot;speakerChoice.text=if(slot==0) "Etiketsiz konuşmacı: Genel ses" else "Etiketsiz konuşmacı: $slot"
                 }.show()
         };speakerCard.addView(speakerChoice)
         speakerCard.addView(CheckBox(this).apply {
-            text="Altyazıdaki konuşmacı adlarını eşleştir";isChecked=true;setTextColor(muted)
+            text="Altyazıdaki konuşmacı adlarını eşleştir";isChecked=automaticSubtitleNames;setTextColor(muted)
             setOnCheckedChangeListener { _,checked -> automaticSubtitleNames=checked }
         })
         speakerCard.addView(button("Konuşmacı seslerini ayarla") {
             AlertDialog.Builder(this).setTitle("Sesini değiştireceğin konuşmacı")
-                .setItems((1..8).map { "Konuşmacı $it" }.toTypedArray()) { _,index -> chooseSpeakerVoice(index+1) }.show()
+                .setItems((1..16).map { "Konuşmacı $it" }.toTypedArray()) { _,index -> chooseSpeakerVoice(index+1) }.show()
+        })
+        speakerCard.addView(button("Konuşmacı tonunu / tarzını ayarla") {
+            AlertDialog.Builder(this).setTitle("Konuşmacı profili").setItems((1..16).map { "Konuşmacı $it" }.toTypedArray()) { _,index -> chooseSpeakerStyle(index+1) }.show()
         })
         speakerCard.addView(button("Konuşmacı eşleştirmelerini sıfırla") {
             profilePrefs.edit().clear().apply();speakers.clear();message("Ses ve isim eşleştirmeleri sıfırlandı.")
@@ -324,14 +340,77 @@ class MainActivity : ComponentActivity() {
         output.addView(button("Son çeviriyi tekrar oku") { enqueueVoice(lastTranslation) })
         val recent=card(root);recent.addView(label("SON REPLİKLER",11f,muted))
         history=label("Henüz çeviri yok.",14f);recent.addView(history)
+        row(recent,listOf(button("Geçmişi paylaş") { shareHistory() },button("Geçmişi temizle") { log.clear();history.text="Geçmiş temizlendi." }))
         root.addView(button("Türkçe ses ayarları") {
             try { startActivity(Intent("com.android.settings.TTS_SETTINGS")) }
             catch (_: Exception) { message("Telefon ayarlarından metinden konuşma bölümünü aç.") }
         })
         setContentView(ScrollView(this).apply { isFillViewport=true;addView(root) })
-        voice=VoicePlayer(this,{ refreshMetrics();if(active&&mode==Mode.MIC) scheduleListening() },
+        voice=VoicePlayer(this,{
+            if(::voice.isInitialized&&voice.ready&&!restoredVoice) {
+                restoredVoice=true
+                settings.getString("default_voice",null)?.let { name -> voice.availableVoices(false).firstOrNull { it.name==name }?.let { voice.selectVoice(it) } }
+            }
+            refreshMetrics();if(active&&mode==Mode.MIC) scheduleListening() },
             { if(active&&mode==Mode.MIC&&!offlineMode&&!headphones.isChecked) pauseMicrophone() },{ message(it) })
+        voice.rate=.9f+settings.getInt("rate_step",2)*.1f;voice.pitch=.85f+settings.getInt("pitch_step",3)*.05f
+        voice.adaptiveSpeed=adaptiveReading
         selectMode(Mode.CAMERA)
+        if(!settings.getBoolean("guide_seen",false)) { settings.edit().putBoolean("guide_seen",true).apply();showGuide() }
+    }
+    private fun beginSession() {
+        sessionStarted=SystemClock.elapsedRealtime();handler.removeCallbacks(sessionTick);handler.post(sessionTick)
+        if(keepScreen) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+    private fun savePreferences() {
+        if(!::autoVoice.isInitialized)return
+        settings.edit().putBoolean("auto_voice",autoVoice.isChecked).putBoolean("region",region.isChecked)
+            .putInt("speaker",selectedSpeaker).putBoolean("names",automaticSubtitleNames).apply()
+    }
+    private fun showGuide() {
+        AlertDialog.Builder(this).setTitle("Canlı çeviri rehberi")
+            .setMessage("1. Çeviri modelini hazırla. Dinle modunda İngilizce konuşma modelini de bir kez indir.\n\n2. Kamera: yeşil çerçeveyi yalnızca altyazıya çiz. Dinle: başka bir cihazdaki İngilizce sesi mikrofona duyur.\n\n3. Hızlı mod kısa duraklamalarda sonuç verir ve uzun konuşmayı daha kısa bölümlere ayırır. Daha bütünlüklü cümle için Dengeli / Tam cümle seç.\n\n4. Ara çeviri değişebilir; ses yalnızca tamamlanan parçalardan okunur. Kulaklık kendi sesinin tekrar algılanmasını azaltır.\n\n5. Konuşmacı profillerinde gerçek TTS sesi ve ton tarzını seç. Dinle modunda kişi seçimi elle yapılır.\n\n6. Durdur veya arka plana geçiş mikrofonu kapatır. Modeller hazırsa Vosk ve yerel TTS ile internet gerekmez.")
+            .setPositiveButton("Anladım",null).show()
+    }
+    private fun showSettings() {
+        val view=vertical().apply { setPadding(dp(20),dp(12),dp(20),dp(12)) }
+        val modes=arrayOf("Hızlı • kısa parçalar","Dengeli • daha fazla bağlam","Tam cümle • daha uzun bekleme")
+        view.addView(button("Dinleme: ${modes[speedMode]}") {
+            AlertDialog.Builder(this).setTitle("Dinleme hızı").setSingleChoiceItems(modes,speedMode) { dialog,index ->
+                stopSession();speedMode=index;settings.edit().putInt("speed_mode",index).apply();dialog.dismiss()
+                message("${modes[index]} seçildi. Dinlemeyi yeniden başlat.")
+            }.show()
+        })
+        view.addView(CheckBox(this).apply {
+            text="Ses kuyruğu uzarsa kontrollü hızlandır";setTextColor(Color.WHITE);isChecked=adaptiveReading
+            setOnCheckedChangeListener { _,checked -> adaptiveReading=checked;voice.adaptiveSpeed=checked;settings.edit().putBoolean("adaptive",checked).apply() }
+        })
+        view.addView(CheckBox(this).apply {
+            text="Aktif çeviride ekranı açık tut";setTextColor(Color.WHITE);isChecked=keepScreen
+            setOnCheckedChangeListener { _,checked ->
+                keepScreen=checked;settings.edit().putBoolean("screen",checked).apply()
+                if(active&&checked)window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        })
+        view.addView(label("Sıfır gecikme garanti edilmez. Hızlı mod cümle bağlamını azaltabilir. Gerçek ses sayısı telefonun TTS motoruna bağlıdır.",13f,muted))
+        view.addView(button("Türkçe ses motoru ayarları") {
+            try { startActivity(Intent("com.android.settings.TTS_SETTINGS")) } catch (_: Exception) { message("Telefon ayarlarından Türkçe konuşma paketini kontrol et.") }
+        })
+        AlertDialog.Builder(this).setTitle("Uygulama ayarları").setView(view).setPositiveButton("Kapat",null).show()
+    }
+    private fun chooseSpeakerStyle(slot: Int) {
+        AlertDialog.Builder(this).setTitle("Konuşmacı $slot • ton varyasyonu")
+            .setSingleChoiceItems(SpeakerStyle.names,profilePrefs.getInt("style_$slot",(slot-1)%SpeakerStyle.names.size)) { dialog,index ->
+                profilePrefs.edit().putInt("style_$slot",index).apply();dialog.dismiss()
+                enqueueVoice("Bu konuşmacının ton ve okuma tarzı böyle duyulacak.",slot)
+            }.setNegativeButton("Kapat",null).show()
+    }
+    private fun shareHistory() {
+        if(log.isEmpty()) { message("Paylaşılacak replik yok.");return }
+        try { startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+            type="text/plain";putExtra(Intent.EXTRA_TEXT,log.joinToString("\n\n"))
+        },"Çeviri geçmişini paylaş")) } catch (_: Exception) { message("Paylaşım uygulaması bulunamadı.") }
     }
     private fun speakerVoiceName(slot: Int): String? {
         if(slot==0)return null
@@ -362,7 +441,7 @@ class MainActivity : ComponentActivity() {
         }.toTypedArray()
         AlertDialog.Builder(this).setTitle("Türkçe sesler (${voices.size})")
             .setItems(labels) { _,index ->
-                if(voice.selectVoice(voices[index])) { voiceChoice.text=labels[index];message("Ses seçildi. Seçili sesi dinle ile karşılaştır.") }
+                if(voice.selectVoice(voices[index])) { settings.edit().putString("default_voice",voices[index].name).apply();voiceChoice.text=labels[index];message("Ses seçildi. Seçili sesi dinle ile karşılaştır.") }
                 else message("Bu ses seçilemedi. Başka bir ses dene.")
             }.setNegativeButton("Kapat",null).show()
     }
@@ -412,7 +491,7 @@ class MainActivity : ComponentActivity() {
     @androidx.annotation.OptIn(markerClass=[ExperimentalGetImage::class, androidx.camera.view.TransformExperimental::class])
     private fun startCamera() {
         if(mode!=Mode.CAMERA)return
-        stopSession();active=true;start.text="Kamerayı durdur";val token=epoch;message("Kamera açılıyor…")
+        stopSession();active=true;beginSession();start.text="Kamerayı durdur";val token=epoch;message("Kamera açılıyor…")
         val future=ProcessCameraProvider.getInstance(this)
         future.addListener({
             if(valid(token)&&active) try {
@@ -492,13 +571,15 @@ class MainActivity : ComponentActivity() {
         if(translating||!alive)return
         val line=waiting.take()?:return
         val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;translating=true
-        translator.translate(line.text).addOnSuccessListener { translated ->
+        val translationTask=if(mode==Mode.MIC&&offlineMode&&line.text==cachedSource&&cachedTranslation.isNotBlank())
+            com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translator.translate(line.text)
+        translationTask.addOnSuccessListener { translated ->
             if(valid(token) && (!fromCamera || SystemClock.elapsedRealtime()-line.seenAt<=3000)) {
                 completed++;lastLag=SystemClock.elapsedRealtime()-line.seenAt
                 lastTranslation=translated;lastSpeaker=line.speakerSlot
                 result.text=if(line.speakerName.isBlank()) translated else "${line.speakerName} • Konuşmacı ${line.speakerSlot}\n$translated"
                 log.addFirst("${if(line.speakerName.isBlank()) "Konuşmacı ${line.speakerSlot}" else line.speakerName} • ${line.text}\n$translated")
-                while(log.size>12) log.removeLast()
+                while(log.size>100) log.removeLast()
                 history.text=log.take(4).joinToString("\n\n")
                 if(autoVoice.isChecked) enqueueVoice(translated,line.speakerSlot)
                 if(active&&mode==Mode.MIC&&offlineMode) message("Replik çevrildi • mikrofon dinlemeye devam ediyor")
@@ -512,13 +593,14 @@ class MainActivity : ComponentActivity() {
     private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker) {
         if(text.isBlank())return
         if(!voice.ready) { message("Türkçe ses hazır değil. Ses ayarlarından Türkçe paket yükle.");return }
-        if(!voice.add(text, active&&mode==Mode.CAMERA,speakerVoiceName(speakerSlot))) { rejected++;message("Ses sırası doldu. Çeviri ekranda korunuyor.") }
+        val style=if(speakerSlot==0) 0 else profilePrefs.getInt("style_$speakerSlot",(speakerSlot-1)%SpeakerStyle.names.size)
+        if(!voice.add(text, active&&mode==Mode.CAMERA,speakerVoiceName(speakerSlot),voice.pitch*SpeakerStyle.pitch(style),voice.rate*SpeakerStyle.rate(style))) { rejected++;message("Ses sırası doldu. Çeviri ekranda korunuyor.") }
         refreshMetrics()
     }
     private fun refreshMetrics() {
         if(!::metrics.isInitialized)return
         val sounds=if(::voice.isInitialized) voice.count else 0
-        metrics.text="Çevrilen $completed  •  Bekleyen ${waiting.size + if(translating) 1 else 0}  •  Ses $sounds\nSon çeviri ${lastLag/1000.0} sn  •  Sıra/işlem uyarısı $rejected"
+        metrics.text="${if(active) "Oturum ${(SystemClock.elapsedRealtime()-sessionStarted)/1000} sn • " else ""}Çevrilen $completed  •  Bekleyen ${waiting.size + if(translating) 1 else 0}  •  Ses $sounds\nSon çeviri işlemi ${lastLag/1000.0} sn  •  Sıra/işlem uyarısı $rejected"
     }
     private fun prepareSpeechModel() {
         stopSession()
@@ -532,11 +614,11 @@ class MainActivity : ComponentActivity() {
         stopSession()
         if(!offline.ready()) { prepareSpeechModel();return }
         if(!modelReady) { prepareModel();return }
-        active=true;val token=epoch;start.text="Dinlemeyi durdur"
+        active=true;beginSession();val token=epoch;start.text="Dinlemeyi durdur"
         signal.isIndeterminate=false;signal.progress=0;signalLabel.text="Yerel konuşma modeli açılıyor…"
         source.text="İngilizce konuşma bekleniyor…";result.text="Ara çeviri burada görünecek."
         message("Cihaz içi dinleme hazırlanıyor…")
-        offline.start({
+        offline.start(speedMode,{
             if(valid(token)&&active) { signalLabel.text="Mikrofon açık • cihaz içi İngilizce → Türkçe";message("Sürekli dinleme açık. İngilizce konuşma bekleniyor…") }
         },{ english,final ->
             if(valid(token)&&active&&mode==Mode.MIC) {
@@ -549,7 +631,7 @@ class MainActivity : ComponentActivity() {
                 } else {
                     if(english.isNotBlank()) {
                         source.text=english;message("Konuşma sürüyor • cihaz içi dinleme açık")
-                        schedulePartial(400)
+                        schedulePartial(if(speedMode==0) 100 else 200)
                     }
                 }
             }
@@ -565,12 +647,14 @@ class MainActivity : ComponentActivity() {
         val token=epoch;val revision=partialRevision;val utterance=partialUtterance;val text=pendingPartial
         partialBusy=true
         translator.translate(text).addOnSuccessListener { translated ->
-            if(valid(token)&&active&&utterance==partialUtterance&&pendingPartial.isNotBlank())
+            if(valid(token)&&active&&utterance==partialUtterance&&pendingPartial.isNotBlank()) {
+                cachedSource=text;cachedTranslation=translated
                 result.text="Ara çeviri • değişebilir\n$translated"
+            }
         }.addOnCompleteListener {
             if(valid(token)) {
                 partialBusy=false
-                if(revision!=partialRevision&&pendingPartial.isNotBlank()) schedulePartial(200)
+                if(revision!=partialRevision&&pendingPartial.isNotBlank()) schedulePartial(100)
             }
         }
     }
@@ -579,7 +663,7 @@ class MainActivity : ComponentActivity() {
         if(offlineMode) { startOfflineMicrophone();return }
         stopSession()
         if(!SpeechRecognizer.isRecognitionAvailable(this)) { message("Bu telefonda konuşma tanıma servisi bulunamadı.");return }
-        active=true;start.text="Dinlemeyi durdur";errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
+        active=true;beginSession();start.text="Dinlemeyi durdur";errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
         message("İngilizce oyun / video konuşması dinleniyor…");listenOnce()
     }
     private fun canListen()=alive&&active&&mode==Mode.MIC&&!offlineMode&&has(Manifest.permission.RECORD_AUDIO)&&
@@ -713,8 +797,9 @@ class MainActivity : ComponentActivity() {
         if(active&&mode==Mode.MIC) message("Türkçe okunuyor • Okuma bitince dinleme devam edecek")
     }
     private fun stopSession() {
+        savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         epoch++;active=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
-        provider?.unbindAll();pauseMicrophone();offline.stop();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";handler.removeCallbacks(partialTask)
+        provider?.unbindAll();pauseMicrophone();offline.stop();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;signalLabel.text="Mikrofon bekliyor" }
         if(::voice.isInitialized)voice.stop()
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->"Kamerayı başlat";Mode.MIC->"Dinlemeyi başlat";Mode.IMAGE->"Görsel seç" }

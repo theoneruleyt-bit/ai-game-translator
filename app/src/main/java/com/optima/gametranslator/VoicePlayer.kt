@@ -19,6 +19,8 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     private var sequence = 0L
     private var closed = false
     var networkAllowed=false
+    var adaptiveSpeed=true
+    fun currentVoiceName(): String?=defaultVoiceName
     var ready = false
         private set
     var rate = 1.1f
@@ -59,7 +61,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
             override fun onError(id: String?, errorCode: Int) { finish(id,true) }
         })
     }
-    fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch): Boolean {
+    fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch,selectedRate: Float=rate): Boolean {
         if(!ready || closed || text.isBlank()) return false
         val selected=voiceName ?: defaultVoiceName
         val requestedVoice=engine?.voices?.firstOrNull { it.name==selected }
@@ -76,7 +78,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         // speech with the latest translation so it cannot lag dozens of lines.
         if(latestPending) pending.clear()
         if(count+chunks.size>64) return false
-        chunks.forEach { pending.addLast(Job(it,selected,rate,selectedPitch)) };pump();onChange();return true
+        chunks.forEach { pending.addLast(Job(it,selected,selectedRate,selectedPitch)) };pump();onChange();return true
     }
     private fun pump() {
         if(currentId!=null || pending.isEmpty() || closed) return
@@ -86,7 +88,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
             if(selected.isNetworkConnectionRequired&&!networkAllowed) { finish(id,true);return }
             if(engine?.setVoice(selected)!=TextToSpeech.SUCCESS) { finish(id,true);return }
         } else if(job.voiceName!=null) { finish(id,true);return }
-        engine?.setSpeechRate(job.rate);engine?.setPitch(job.pitch)
+        engine?.setSpeechRate(SpeakerStyle.catchUpRate(job.rate,pending.size,adaptiveSpeed));engine?.setPitch(job.pitch)
         beforeSpeak()
         if(engine?.speak(job.text,TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS) finish(id,true)
     }
