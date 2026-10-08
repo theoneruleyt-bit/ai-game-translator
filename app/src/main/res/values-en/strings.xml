@@ -251,4 +251,11 @@
     <string name="pro_lifetime">Lifetime</string>
     <string name="pro_terms">Subscriptions renew until canceled. Lifetime is a one-time purchase. Review the local price and terms on the Google Play checkout screen before paying.</string>
     <string name="pro_close">Close</string>
+
+ <string name="account_sign_in">Sign in with Google</string>
+ <string name="account_required">Sign in with Google from the Pro card to start live translation.</string>
+ <string name="account_checking">Verifying account access…</string>
+ <string name="account_ready">Account connected. Demo and Pro status updated.</string>
+ <string name="account_failed">Sign-in failed. Check the account and server configuration.</string>
+ <string name="account_offline">Account service unavailable. Live use stopped; restart when connected.</string>
 </resources>

@@ -12,7 +12,8 @@ class TrialMeter(used: Long=0) {
     fun tick(now: Long) {
         val last=previous?:return
         usedMillis=(usedMillis+(now-last).coerceAtLeast(0)).coerceAtMost(LIMIT)
-        previous=if(remainingMillis==0L) null else now
+        previous=if(remainingMillis==0L) null else maxOf(last,now)
     }
+    fun reconcile(used: Long) { usedMillis=maxOf(usedMillis,used.coerceIn(0,LIMIT));if(remainingMillis==0L)previous=null }
     fun stop(now: Long) { tick(now);previous=null }
 }

@@ -8,10 +8,11 @@ import java.security.spec.X509EncodedKeySpec
 import android.util.Base64
 
 /** Never grants access from a button or an unverified purchase. Configure the Play license key. */
-class PlayBilling(private val activity: Activity, private val changed: () -> Unit) : PurchasesUpdatedListener {
+class PlayBilling(private val activity: Activity, private val changed: () -> Unit, private val authority: ProService) : PurchasesUpdatedListener {
     data class Plan(val name: String,val price: String,val details: ProductDetails,val token: String?)
     val plans=mutableListOf<Plan>()
-    var pro=false; private set
+    private var localPro=false
+    val pro get()=if(authority.enabled)authority.pro else localPro
     private var closed=false
     private var refreshId=0
     private val client=BillingClient.newBuilder(activity).setListener(this)
@@ -47,22 +48,36 @@ class PlayBilling(private val activity: Activity, private val changed: () -> Uni
                 activity.runOnUiThread {
                     if(!closed&&request==refreshId) {
                         responses++;if(result.responseCode==BillingClient.BillingResponseCode.OK)owned.addAll(purchases) else failed=true
-                        if(responses==2&&!failed) { pro=false;owned.forEach { verify(it) };changed() }
+                        if(responses==2&&!failed) {
+                            if(authority.enabled)verifyOnServer(owned)
+                            else { localPro=false;owned.forEach { verify(it,request) };changed() }
+                        }
                     }
                 }
             }
         }
     }
     fun buy(plan: Plan) {
-        if(closed||!client.isReady)return
+        if(closed||!client.isReady||authority.enabled&&!authority.signedIn)return
         val item=BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(plan.details)
         plan.token?.let { item.setOfferToken(it) }
-        client.launchBillingFlow(activity,BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(item.build())).build())
+        val flow=BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(item.build()))
+        if(authority.enabled)flow.setObfuscatedAccountId(authority.accountId)
+        client.launchBillingFlow(activity,flow.build())
     }
     override fun onPurchasesUpdated(result: BillingResult,purchases: MutableList<Purchase>?) {
-        if(result.responseCode==BillingClient.BillingResponseCode.OK)purchases.orEmpty().forEach { verify(it) }
+        if(result.responseCode==BillingClient.BillingResponseCode.OK) { if(authority.enabled)refresh() else { val request=++refreshId;purchases.orEmpty().forEach { verify(it,request) } } }
     }
-    private fun verify(purchase: Purchase) {
+    private fun verifyOnServer(purchases: List<Purchase>) {
+        val payload=org.json.JSONArray()
+        purchases.filter { it.purchaseState==Purchase.PurchaseState.PURCHASED }.forEach { purchase ->
+            purchase.products.filter { it=="translator_pro"||it=="translator_pro_lifetime" }.forEach { product ->
+                payload.put(org.json.JSONObject().put("product",product).put("token",purchase.purchaseToken))
+            }
+        }
+        authority.refresh(payload) { if(!closed)changed() }
+    }
+    private fun verify(purchase: Purchase,request: Int) {
         if(closed||purchase.purchaseState!=Purchase.PurchaseState.PURCHASED||purchase.products.none { it=="translator_pro"||it=="translator_pro_lifetime" })return
         val key=activity.getString(R.string.play_license_key)
         if(key.isBlank())return
@@ -72,9 +87,9 @@ class PlayBilling(private val activity: Activity, private val changed: () -> Uni
             Signature.getInstance("SHA1withRSA").run { initVerify(publicKey);update(purchase.originalJson.toByteArray(Charsets.UTF_8));verify(Base64.decode(purchase.signature,Base64.DEFAULT)) }
         } catch (_: Exception) { false }
         if(!valid)return
-        if(purchase.isAcknowledged) { activity.runOnUiThread { if(!closed) { pro=true;changed() } };return }
+        if(purchase.isAcknowledged) { activity.runOnUiThread { if(!closed&&request==refreshId) { localPro=true;changed() } };return }
         client.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()) { result ->
-            activity.runOnUiThread { if(!closed&&result.responseCode==BillingClient.BillingResponseCode.OK) { pro=true;changed() } }
+            activity.runOnUiThread { if(!closed&&request==refreshId&&result.responseCode==BillingClient.BillingResponseCode.OK) { localPro=true;changed() } }
         }
     }
     fun close() { closed=true;client.endConnection() }

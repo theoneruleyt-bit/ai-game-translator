@@ -252,4 +252,13 @@
     <string name="pro_terms">Abonelikler iptal edilene kadar yenilenir. Ömür boyu tek seferliktir. Ödeme öncesi Google Play ekranındaki yerel fiyatı ve koşulları kontrol edin.</string>
     <string name="pro_close">Kapat</string>
     <string name="play_license_key" translatable="false"></string>
+
+ <string name="account_sign_in">Google hesabıyla giriş</string>
+ <string name="account_required">Canlı kullanım için Pro kartından Google hesabınla giriş yap.</string>
+ <string name="account_checking">Hesap erişimi doğrulanıyor…</string>
+ <string name="account_ready">Hesap bağlandı. Deneme ve Pro durumu güncellendi.</string>
+ <string name="account_failed">Giriş tamamlanamadı. Hesap ve sunucu yapılandırmasını kontrol et.</string>
+ <string name="account_offline">Hesap sunucusuna ulaşılamadı. Canlı kullanım durduruldu; bağlantı gelince tekrar başlat.</string>
+ <string name="pro_server_url" translatable="false"></string>
+ <string name="google_web_client_id" translatable="false"></string>
 </resources>

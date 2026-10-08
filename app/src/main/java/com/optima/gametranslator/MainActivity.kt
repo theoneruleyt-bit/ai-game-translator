@@ -86,36 +86,75 @@ class MainActivity : ComponentActivity() {
     private var lastSpeaker=0
     private var automaticSubtitleNames=true
     private lateinit var speakerChoice: Button
+    private lateinit var proService: ProService
+    private var captureClockStarted=false
+    private var sessionTrialUsed=0L
+    private var lastUsageSync=0L
+    private var lastServerCheck=0L
+    private var accessChecking=false
+    private var visible=true
     private lateinit var billing: PlayBilling
     private lateinit var proStatus: TextView
+    private var proDialog: AlertDialog?=null
+    private var proOffers: LinearLayout?=null
     private val trial by lazy { TrialMeter(settings.getLong("trial_used",0)) }
     private val trialTick=object : Runnable {
         override fun run() {
             if(!alive||!active)return
-            if(billing.pro)trial.stop(SystemClock.elapsedRealtime()) else trial.tick(SystemClock.elapsedRealtime())
+            val now=SystemClock.elapsedRealtime()
+            val before=trial.usedMillis
+            if(billing.pro)trial.stop(now) else { if(!trial.running)trial.start(now);trial.tick(now) }
+            sessionTrialUsed+=(trial.usedMillis-before).coerceAtLeast(0)
+            if(proService.enabled&&sessionTrialUsed>0&&now-lastUsageSync>=5000) {
+                lastUsageSync=now
+                proService.reportUsage(sessionTrialUsed) { ok ->
+                    if(alive&&active) {
+                        trial.reconcile(proService.usedMillis)
+                        if(!ok) { stopSession();message(getString(R.string.account_offline)) }
+                    }
+                }
+            }
+            if(proService.enabled&&now-lastServerCheck>=60000) {
+                lastServerCheck=now
+                proService.refresh { ok -> if(alive&&active&&!ok) { stopSession();message(getString(R.string.account_offline)) } }
+            }
             settings.edit().putLong("trial_used",trial.usedMillis).apply();refreshPro()
             if(!billing.pro&&trial.remainingMillis==0L) { stopSession(true);showPro();return }
             handler.postDelayed(this,250)
         }
     }
     private fun countLiveUse() {
+        if(!captureClockStarted) {
+            captureClockStarted=true;lastUsageSync=SystemClock.elapsedRealtime();lastServerCheck=lastUsageSync
+            sessionTrialUsed=0;proService.beginUsage()
+        }
         if(!billing.pro)trial.start(SystemClock.elapsedRealtime())
         handler.removeCallbacks(trialTick);handler.post(trialTick)
     }
     private fun refreshPro() {
         if(::proStatus.isInitialized)proStatus.text=if(billing.pro)getString(R.string.pro_active) else getString(R.string.pro_remaining,((trial.remainingMillis+999)/1000).toString())
     }
+    private fun renderProOffers() {
+        val content=proOffers?:return
+        content.removeAllViews()
+        val configured=if(proService.enabled)proService.signedIn else getString(R.string.play_license_key).isNotBlank()
+        if(billing.plans.isEmpty()||!configured)content.addView(label(getString(R.string.pro_unavailable),14f,muted))
+        billing.plans.sortedBy { listOf("monthly","yearly","lifetime").indexOf(it.name) }.forEach { plan ->
+            val title=when(plan.name) { "monthly"->R.string.pro_monthly;"yearly"->R.string.pro_yearly;else->R.string.pro_lifetime }
+            content.addView(button(getString(title)+" • "+plan.price) { proDialog?.dismiss();billing.buy(plan) }.apply { isEnabled=configured })
+        }
+    }
     private fun showPro() {
         val content=vertical().apply { setPadding(dp(20),dp(12),dp(20),dp(12)) }
         content.addView(label(getString(R.string.pro_detail),16f))
         content.addView(label(getString(R.string.pro_plans),14f,mint))
-        val configured=getString(R.string.play_license_key).isNotBlank()
-        if(billing.plans.isEmpty()||!configured)content.addView(label(getString(R.string.pro_unavailable),14f,muted))
-        val dialog=AlertDialog.Builder(this).setTitle(getString(R.string.pro_title)).setView(content).setNegativeButton(getString(R.string.pro_close),null).create()
-        billing.plans.sortedBy { listOf("monthly","yearly","lifetime").indexOf(it.name) }.forEach { plan ->
-            val title=when(plan.name) { "monthly"->R.string.pro_monthly;"yearly"->R.string.pro_yearly;else->R.string.pro_lifetime }
-            content.addView(button(getString(title)+" • "+plan.price) { dialog.dismiss();billing.buy(plan) }.apply { isEnabled=configured })
-        }
+        proDialog?.dismiss()
+        val offers=vertical();proOffers=offers;content.addView(offers)
+        val scroll=ScrollView(this).apply { addView(content) }
+        val dialog=AlertDialog.Builder(this).setTitle(getString(R.string.pro_title)).setView(scroll).setNegativeButton(getString(R.string.pro_close),null).create()
+        proDialog=dialog
+        dialog.setOnDismissListener { if(proDialog===dialog) { proDialog=null;proOffers=null } }
+        renderProOffers()
         content.addView(label(getString(R.string.pro_terms),12f,muted))
         dialog.show();billing.refresh()
     }
@@ -154,10 +193,10 @@ class MainActivity : ComponentActivity() {
     private val log=java.util.ArrayDeque<String>()
     private val restart=Runnable { listenOnce() }
     private val cameraPermission=registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-        if(it) startCamera() else message(getString(R.string.ui_000))
+        if(it&&visible&&mode==Mode.CAMERA) startCamera() else if(!it) message(getString(R.string.ui_000))
     }
     private val microphonePermission=registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-        if(it) startMicrophone() else message(getString(R.string.ui_001))
+        if(it&&visible&&mode==Mode.MIC) startMicrophone() else if(!it) message(getString(R.string.ui_001))
     }
     private val speechTest=registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { response ->
         if(response.resultCode==RESULT_OK) {
@@ -240,11 +279,17 @@ class MainActivity : ComponentActivity() {
         root.addView(brand,LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(18) })
         root.addView(label(getString(R.string.ui_011),12f,mint))
         readiness=label("",12f,muted);root.addView(readiness)
-        billing=PlayBilling(this) { refreshPro() }
+        proService=ProService(this)
+        billing=PlayBilling(this,{ if(alive) { trial.reconcile(proService.usedMillis);refreshPro();renderProOffers() } },proService)
         val proCard=card(root)
         proStatus=label("",15f,mint);proCard.addView(proStatus)
         proCard.addView(button(getString(R.string.pro_open)) { showPro() })
         proCard.addView(button(getString(R.string.pro_restore)) { billing.refresh() })
+        if(proService.enabled)proCard.addView(button(getString(R.string.account_sign_in)) {
+            stopSession();proService.signIn { ok ->
+                if(alive) { trial.reconcile(proService.usedMillis);refreshPro();message(getString(if(ok) R.string.account_ready else R.string.account_failed));if(ok)billing.refresh() }
+            }
+        })
         refreshPro();billing.connect()
         tabs=listOf(button(getString(R.string.ui_012)) { selectMode(Mode.CAMERA) },button(getString(R.string.ui_013)) { selectMode(Mode.MIC) },button(getString(R.string.ui_014)) { selectMode(Mode.IMAGE) })
         row(root,tabs)
@@ -256,7 +301,7 @@ class MainActivity : ComponentActivity() {
         }
         subtitleArea=SubtitleAreaView(this).apply { onAreaChanged={
             if(active&&mode==Mode.CAMERA) {
-                epoch++;translating=false;waiting.clear();gate.reset();recent.clear();subtitleFilter.clear();voice.stop()
+                epoch++;busy=false;translating=false;waiting.clear();gate.reset();recent.clear();subtitleFilter.clear();voice.stop()
                 message(getString(R.string.ui_017))
             }
         } }
@@ -637,10 +682,24 @@ class MainActivity : ComponentActivity() {
             if(alive) { modelReady=true;refreshReadiness();prepare.isEnabled=true;prepare.text=getString(R.string.ui_167);message(getString(R.string.ui_168)) }
         }.addOnFailureListener { if(alive) { prepare.isEnabled=true;message(getString(R.string.ui_169)) } }
     }
-    private fun primaryAction() {
+    private fun primaryAction(serverChecked: Boolean=false) {
+        if(!visible||!alive)return
         if(active) { stopSession();message(getString(R.string.ui_044));return }
         if(!modelReady) { prepareModel();return }
         if(mode==Mode.MIC&&offlineMode&&!offline.ready()) { prepareSpeechModel();return }
+        if(mode!=Mode.IMAGE&&proService.enabled&&!serverChecked) {
+            if(!proService.signedIn) { message(getString(R.string.account_required));return }
+            if(accessChecking)return
+            accessChecking=true;val token=epoch;message(getString(R.string.account_checking))
+            proService.refresh { ok ->
+                accessChecking=false
+                if(valid(token)&&visible) {
+                    trial.reconcile(proService.usedMillis);refreshPro()
+                    if(ok)primaryAction(true) else message(getString(R.string.account_offline))
+                }
+            }
+            return
+        }
         if(mode!=Mode.IMAGE&&!billing.pro) {
             if(trial.remainingMillis==0L) { showPro();return }
             if(!settings.getBoolean("trial_started",false)) {
@@ -653,7 +712,7 @@ class MainActivity : ComponentActivity() {
             Mode.CAMERA->if(has(Manifest.permission.CAMERA)) startCamera() else cameraPermission.launch(Manifest.permission.CAMERA)
             Mode.IMAGE->{ stopSession();photo.launch("image/*") }
             Mode.MIC->{
-                AlertDialog.Builder(this).setTitle("Oyun sesini dinle")
+                AlertDialog.Builder(this).setTitle(getString(R.string.ui_013))
                     .setMessage(if(offlineMode) getString(R.string.ui_170) else getString(R.string.ui_171))
                     .setPositiveButton(getString(R.string.ui_160)) { _,_ -> if(has(Manifest.permission.RECORD_AUDIO)) startMicrophone() else microphonePermission.launch(Manifest.permission.RECORD_AUDIO) }
                     .setNegativeButton(getString(R.string.ui_039),null).show()
@@ -663,7 +722,7 @@ class MainActivity : ComponentActivity() {
     private fun has(permission: String)=ContextCompat.checkSelfPermission(this,permission)==PackageManager.PERMISSION_GRANTED
     @androidx.annotation.OptIn(markerClass=[ExperimentalGetImage::class, androidx.camera.view.TransformExperimental::class])
     private fun startCamera() {
-        if(mode!=Mode.CAMERA)return
+        if(mode!=Mode.CAMERA||!visible||!alive)return
         stopSession();active=true;beginSession();start.text=getString(R.string.ui_172);val token=epoch;message(getString(R.string.ui_173))
         val future=ProcessCameraProvider.getInstance(this)
         future.addListener({
@@ -716,7 +775,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             }.addOnFailureListener { if(valid(frameToken)) message(getString(R.string.ui_176)) }
-                             .addOnCompleteListener { proxy.close();busy=false }
+                             .addOnCompleteListener { proxy.close();if(valid(frameToken))busy=false }
                         }
                     }
                 }
@@ -795,10 +854,11 @@ class MainActivity : ComponentActivity() {
         },{ message(it);signalLabel.text=getString(R.string.ui_192) })
     }
     private fun startOfflineMicrophone() {
+        if(!visible||!alive||mode!=Mode.MIC)return
         stopSession()
         if(!offline.ready()) { prepareSpeechModel();return }
         if(!modelReady) { prepareModel();return }
-        active=true;beginSession();val token=epoch;start.text="Dinlemeyi durdur"
+        active=true;beginSession();val token=epoch;start.text=getString(R.string.ui_172)
         signal.isIndeterminate=false;signal.progress=0;signalLabel.text=getString(R.string.ui_193)
         source.text=getString(R.string.ui_194);result.text=getString(R.string.ui_195)
         message(getString(R.string.ui_196))
@@ -843,11 +903,12 @@ class MainActivity : ComponentActivity() {
         }
     }
     private fun startMicrophone() {
+        if(!visible||!alive||mode!=Mode.MIC)return
         if(mode!=Mode.MIC)return
         if(offlineMode) { startOfflineMicrophone();return }
         stopSession()
         if(!SpeechRecognizer.isRecognitionAvailable(this)) { message(getString(R.string.ui_202));return }
-        active=true;beginSession();start.text="Dinlemeyi durdur";errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
+        active=true;beginSession();start.text=getString(R.string.ui_172);errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
         message(getString(R.string.ui_203));listenOnce()
     }
     private fun canListen()=alive&&active&&mode==Mode.MIC&&!offlineMode&&has(Manifest.permission.RECORD_AUDIO)&&
@@ -981,19 +1042,23 @@ class MainActivity : ComponentActivity() {
         if(active&&mode==Mode.MIC) message(getString(R.string.ui_219))
     }
     private fun stopSession(keepCurrentVoice: Boolean=false) {
-        trial.stop(SystemClock.elapsedRealtime());settings.edit().putLong("trial_used",trial.usedMillis).apply();handler.removeCallbacks(trialTick)
+        val before=trial.usedMillis;trial.stop(SystemClock.elapsedRealtime())
+        if(captureClockStarted)sessionTrialUsed+=(trial.usedMillis-before).coerceAtLeast(0)
+        if(captureClockStarted&&sessionTrialUsed>0&&::proService.isInitialized)proService.reportUsage(sessionTrialUsed)
+        captureClockStarted=false
+        settings.edit().putLong("trial_used",trial.usedMillis).commit();handler.removeCallbacks(trialTick)
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        epoch++;active=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
+        epoch++;active=false;busy=false;accessChecking=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
         provider?.unbindAll();pauseMicrophone();offline.stop();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
         if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->getString(R.string.ui_042);Mode.MIC->getString(R.string.ui_160);Mode.IMAGE->getString(R.string.ui_161) }
         refreshMetrics()
     }
-    override fun onResume() { super.onResume();if(::billing.isInitialized)billing.refresh() }
-    override fun onStop() { stopSession();super.onStop() }
+    override fun onResume() { super.onResume();visible=true;if(::billing.isInitialized)billing.refresh() }
+    override fun onStop() { visible=false;proDialog?.dismiss();stopSession();super.onStop() }
     override fun onDestroy() {
-        if(::billing.isInitialized)billing.close();alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
+        if(::billing.isInitialized)billing.close();if(::proService.isInitialized)proService.close();alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
         speech?.destroy();if(::voice.isInitialized)voice.close()
         offline.close();recognizer.close();translator.close();super.onDestroy()
     }

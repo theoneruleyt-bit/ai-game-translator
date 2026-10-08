@@ -20,4 +20,13 @@ class TrialMeterTest {
   assertEquals(100000L,TrialMeter(80000).remainingMillis)
   assertEquals(0L,TrialMeter(Long.MAX_VALUE).remainingMillis)
  }
+ @Test fun serverReconcileCannotResetLocalUsage() {
+  val t=TrialMeter(50000);t.reconcile(10000);assertEquals(50000L,t.usedMillis)
+  t.reconcile(100000);assertEquals(80000L,t.remainingMillis)
+  t.start(0);t.reconcile(180000);assertFalse(t.running)
+ }
+ @Test fun backwardsClockCannotDoubleCount() {
+  val t=TrialMeter();t.start(1000);t.tick(500);t.tick(1500)
+  assertEquals(500L,t.usedMillis)
+ }
 }
