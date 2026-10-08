@@ -43,7 +43,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
             override fun onError(id: String?, errorCode: Int) { finish(id,true) }
         })
     }
-    fun add(text: String): Boolean {
+    fun add(text: String, latestPending: Boolean = false): Boolean {
         if(!ready || closed || text.isBlank()) return false
         val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100)
         val chunks = mutableListOf<String>()
@@ -53,6 +53,9 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
             chunks.add(rest.substring(0,split));rest=rest.substring(split).trimStart()
         }
         if(rest.isNotEmpty()) chunks.add(rest)
+        // Keep the current spoken utterance intact, but replace waiting camera
+        // speech with the latest translation so it cannot lag dozens of lines.
+        if(latestPending) pending.clear()
         if(count+chunks.size>64) return false
         chunks.forEach { pending.addLast(it) };pump();onChange();return true
     }

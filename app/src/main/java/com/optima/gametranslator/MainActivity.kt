@@ -5,6 +5,9 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.RectF
+import androidx.camera.view.transform.CoordinateTransform
+import androidx.camera.view.transform.ImageProxyTransformFactory
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.*
@@ -37,6 +40,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var result: TextView
     private lateinit var history: TextView
     private lateinit var preview: PreviewView
+    private lateinit var subtitleArea: SubtitleAreaView
+    private val subtitleFilter=SubtitleFilter()
     private lateinit var previewBox: LinearLayout
     private lateinit var micHero: LinearLayout
     private lateinit var hint: TextView
@@ -54,6 +59,10 @@ class MainActivity : ComponentActivity() {
         .setSourceLanguage(TranslateLanguage.ENGLISH).setTargetLanguage(TranslateLanguage.TURKISH).build())
     private val gate=StabilityGate()
     private val waiting=LineQueue()
+    private val recent=RecentLines()
+    private var speechDeadline: Runnable?=null
+    private var speechHardDeadline: Runnable?=null
+    private var partialText=""
     private var provider: ProcessCameraProvider?=null
     private var speech: SpeechRecognizer?=null
     private var active=false
@@ -82,7 +91,7 @@ class MainActivity : ComponentActivity() {
     }
     private val photo=registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if(uri!=null) {
-            stopSession();val token=epoch;message("Görseldeki metin okunuyor…")
+            stopSession();val token=epoch;source.text="Görsel okunuyor…";result.text="Yeni görsel çevriliyor…";lastTranslation="";message("Görseldeki metin okunuyor…")
             try {
                 recognizer.process(InputImage.fromFilePath(this,uri)).addOnSuccessListener {
                     if(valid(token)) {
@@ -132,8 +141,21 @@ class MainActivity : ComponentActivity() {
         tabs=listOf(button("Kamera") { selectMode(Mode.CAMERA) },button("Dinle") { selectMode(Mode.MIC) },button("Görsel") { selectMode(Mode.IMAGE) })
         row(root,tabs)
         previewBox=card(root)
-        preview=PreviewView(this).apply { scaleType=PreviewView.ScaleType.FIT_CENTER }
-        previewBox.addView(preview,LinearLayout.LayoutParams(-1,dp(250)))
+        preview=PreviewView(this).apply {
+            scaleType=PreviewView.ScaleType.FIT_CENTER
+            implementationMode=PreviewView.ImplementationMode.COMPATIBLE
+        }
+        subtitleArea=SubtitleAreaView(this).apply { onAreaChanged={
+            if(active&&mode==Mode.CAMERA) {
+                epoch++;translating=false;waiting.clear();gate.reset();recent.clear();subtitleFilter.clear();voice.stop()
+                message("Yeni altyazı alanı seçildi. Yalnızca çerçevenin içi okunuyor.")
+            }
+        } }
+        val cameraFrame=FrameLayout(this)
+        cameraFrame.addView(preview,FrameLayout.LayoutParams(-1,-1))
+        cameraFrame.addView(subtitleArea,FrameLayout.LayoutParams(-1,-1))
+        previewBox.addView(cameraFrame,LinearLayout.LayoutParams(-1,dp(250)))
+        previewBox.addView(button("Altyazı alanını sıfırla") { subtitleArea.resetArea() })
         previewBox.addView(label("CANLI KAMERA",11f,mint))
         micHero=card(root)
         micHero.addView(label("▂  ▅  ▇  ▄  ▆  ▂",34f,mint).apply { gravity=Gravity.CENTER })
@@ -152,8 +174,11 @@ class MainActivity : ComponentActivity() {
             setOnCheckedChangeListener { _,checked -> if(!checked) voice.stop() }
         };controls.addView(autoVoice)
         region=CheckBox(this).apply {
-            text="Yalnızca görüntünün altındaki yazılar";setTextColor(muted);isChecked=false
-            setOnCheckedChangeListener { _,_ -> if(active) { stopSession();message("Okuma alanı değişti. Kamerayı yeniden başlat.") } }
+            text="Yalnızca seçili altyazı alanını oku";setTextColor(muted);isChecked=true
+            setOnCheckedChangeListener { _,checked ->
+                subtitleArea.visibility=if(checked) View.VISIBLE else View.GONE
+                if(active) { stopSession();message("Okuma alanı değişti. Kamerayı yeniden başlat.") }
+            }
         };controls.addView(region)
         headphones=CheckBox(this).apply {
             text="Türkçe sesi kulaklıkla dinliyorum";setTextColor(muted);isChecked=false
@@ -208,7 +233,7 @@ class MainActivity : ComponentActivity() {
         freeze.visibility=if(mode==Mode.CAMERA) View.VISIBLE else View.GONE
         start.text=when(mode) { Mode.CAMERA->"Kamerayı başlat";Mode.MIC->"Dinlemeyi başlat";Mode.IMAGE->"Görsel seç" }
         hint.text=when(mode) {
-            Mode.CAMERA->"TV veya monitörde İngilizce altyazıyı aç. Telefonu sabit tut ve yazıları net kadraja al."
+            Mode.CAMERA->"TV veya monitörde İngilizce altyazıyı aç. Telefonu sabit tut. Yeşil alanı yalnızca altyazı satırlarına çiz; süre ve simgeleri dışarıda bırak."
             Mode.MIC->"Dinleme deneysel. Android konuşma servisi internet kullanabilir. Kulaklık yoksa Türkçe okuma sırasında mikrofon durur; o aradaki oyun konuşması yakalanmaz."
             Mode.IMAGE->"Fotoğraf veya ekran görüntüsündeki İngilizce yazıyı Türkçeye çevir ve sesli dinle."
         }
@@ -235,7 +260,7 @@ class MainActivity : ComponentActivity() {
         }
     }
     private fun has(permission: String)=ContextCompat.checkSelfPermission(this,permission)==PackageManager.PERMISSION_GRANTED
-    @androidx.annotation.OptIn(markerClass=[ExperimentalGetImage::class])
+    @androidx.annotation.OptIn(markerClass=[ExperimentalGetImage::class, androidx.camera.view.TransformExperimental::class])
     private fun startCamera() {
         if(mode!=Mode.CAMERA)return
         stopSession();active=true;start.text="Kamerayı durdur";val token=epoch;message("Kamera açılıyor…")
@@ -255,16 +280,33 @@ class MainActivity : ComponentActivity() {
                         if(image==null) proxy.close() else {
                             busy=true;lastFrame=now;val frameToken=epoch;val still=frozen
                             val rotation=proxy.imageInfo.rotationDegrees
-                            val height=if(rotation==90||rotation==270)proxy.width else proxy.height
+                            val factory=ImageProxyTransformFactory().apply { isUsingCropRect=false;isUsingRotationDegrees=true }
+                            val target=preview.outputTransform
+                            val transform=target?.let { CoordinateTransform(factory.getOutputTransform(proxy),it) }
                             recognizer.process(InputImage.fromMediaImage(image,rotation)).addOnSuccessListener { text ->
                                 if(valid(frameToken)&&active) {
-                                    val selected=if(region.isChecked&&!still) text.textBlocks.filter { (it.boundingBox?.centerY()?:0)>=height*0.55 }.joinToString("\n") { it.text } else text.text
+                                    val selected=if(still) text.text else {
+                                        val area=subtitleArea.bounds()
+                                        text.textBlocks.flatMap { it.lines }.filter { line ->
+                                            val box=line.boundingBox
+                                            if(box==null||transform==null) false else {
+                                                val mapped=RectF(box);transform.mapRect(mapped)
+                                                val inArea=!region.isChecked||area.contains(mapped.centerX(),mapped.centerY())
+                                                inArea&&subtitleFilter.keep(line.text,
+                                                    mapped.centerX()/preview.width.coerceAtLeast(1),
+                                                    mapped.centerY()/preview.height.coerceAtLeast(1),SystemClock.elapsedRealtime())
+                                            }
+                                        }.joinToString("\n") { it.text }
+                                    }
                                     source.text=selected.ifBlank { "Okunabilir yazı bekleniyor…" }
                                     if(still) {
                                         stopSession()
                                         if(selected.isBlank()) message("Bu karede yazı bulunamadı.") else accept(selected,SystemClock.elapsedRealtime())
-                                    } else gate.observe(selected,SystemClock.elapsedRealtime())?.let {
+                                    } else {
+                                        recent.observeVisibility(selected,SystemClock.elapsedRealtime())
+                                        gate.observe(selected,SystemClock.elapsedRealtime())?.let {
                                         if(accept(it,SystemClock.elapsedRealtime())) gate.commit(it)
+                                        }
                                     }
                                 }
                             }.addOnFailureListener { if(valid(frameToken)) message("Kare okunamadı. Kameranın netliğini kontrol et.") }
@@ -272,22 +314,28 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                provider?.unbindAll();provider?.bindToLifecycle(this,CameraSelector.DEFAULT_BACK_CAMERA,view,analysis)
+                val viewport=preview.viewPort ?: error("Camera preview layout is not ready")
+                val group=UseCaseGroup.Builder().setViewPort(viewport).addUseCase(view).addUseCase(analysis).build()
+                provider?.unbindAll();provider?.bindToLifecycle(this,CameraSelector.DEFAULT_BACK_CAMERA,group)
                 message("Kamera açık. Altyazıyı takip ediyoruz.")
             } catch (_: Exception) { stopSession();message("Kamera açılamadı. İzinleri kontrol et.") }
         },ContextCompat.getMainExecutor(this))
     }
     private fun accept(text: String,seenAt: Long): Boolean {
         if(text.isBlank()||!modelReady)return false
+        if(active&&mode==Mode.CAMERA) {
+            if(!recent.shouldSubmit(text,seenAt)) return true
+            waiting.clear() // One current pending camera line, not a backlog of old screen text.
+        }
         if(!waiting.offer(text,seenAt)) { rejected++;message("Çeviri sırası doldu. Akış çok hızlı; bazı replikler alınamadı.");refreshMetrics();return false }
         pumpTranslation();refreshMetrics();return true
     }
     private fun pumpTranslation() {
         if(translating||!alive)return
         val line=waiting.take()?:return
-        val token=epoch;translating=true
+        val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;translating=true
         translator.translate(line.text).addOnSuccessListener { translated ->
-            if(valid(token)) {
+            if(valid(token) && (!fromCamera || SystemClock.elapsedRealtime()-line.seenAt<=3000)) {
                 completed++;lastLag=SystemClock.elapsedRealtime()-line.seenAt
                 lastTranslation=translated;result.text=translated
                 log.addFirst("${line.text}\n$translated")
@@ -298,13 +346,13 @@ class MainActivity : ComponentActivity() {
                 else if(!active) message("Görsel çevirisi hazır")
             }
         }.addOnFailureListener {
-            if(valid(token)) { gate.release(line.text);rejected++;message("Bir replik çevrilemedi. İnterneti/modeli kontrol et.") }
+            if(valid(token)) { gate.release(line.text);recent.forget(line.text);rejected++;message("Bir replik çevrilemedi. İnterneti/modeli kontrol et.") }
         }.addOnCompleteListener { if(valid(token)) { translating=false;refreshMetrics();pumpTranslation();if(mode==Mode.MIC) scheduleListening() } }
     }
     private fun enqueueVoice(text: String) {
         if(text.isBlank())return
         if(!voice.ready) { message("Türkçe ses hazır değil. Ses ayarlarından Türkçe paket yükle.");return }
-        if(!voice.add(text)) { rejected++;message("Ses sırası doldu. Çeviri ekranda korunuyor.") }
+        if(!voice.add(text, active&&mode==Mode.CAMERA)) { rejected++;message("Ses sırası doldu. Çeviri ekranda korunuyor.") }
         refreshMetrics()
     }
     private fun refreshMetrics() {
@@ -335,23 +383,35 @@ class MainActivity : ComponentActivity() {
             speech?.setRecognitionListener(object : RecognitionListener {
                 private fun current()=valid(token)&&round==micRound&&active&&mode==Mode.MIC
                 override fun onReadyForSpeech(params: Bundle?) { if(current()) message("Dinleniyor • İngilizce konuşma bekleniyor") }
-                override fun onBeginningOfSpeech() { if(current()) message("Konuşma algılandı…") }
+                override fun onBeginningOfSpeech() {
+                    if(current()) { message("Konuşma algılandı…");armSpeechDeadline(token,round,4000) }
+                }
                 override fun onRmsChanged(rmsdB: Float) { }
                 override fun onBufferReceived(buffer: ByteArray?) { }
-                override fun onEndOfSpeech() { if(current()) message("Konuşma çözümleniyor…") }
+                override fun onEndOfSpeech() {
+                    if(current()) { message("Konuşma çözümleniyor…");armSpeechDeadline(token,round,1200) }
+                }
                 override fun onPartialResults(partialResults: Bundle?) {
-                    if(current()) partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.let { source.text=it }
+                    if(current()) partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.let {
+                        if(it.isNotBlank()) {
+                            val changed=it!=partialText;partialText=it;source.text=it
+                            if(changed) armSpeechDeadline(token,round,900)
+                        }
+                    }
                 }
                 override fun onResults(results: Bundle?) {
                     if(!current())return
-                    listening=false;errors=0
-                    val text=results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
-                    if(text.isNotBlank()) { source.text=text;accept(text,SystemClock.elapsedRealtime()) }
-                    scheduleListening()
+                    errors=0
+                    val text=results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty().ifBlank { partialText }
+                    finishSpeechChunk(text,token,round,false)
                 }
                 override fun onError(error: Int) {
                     if(!current())return
+                    clearSpeechDeadline()
                     listening=false
+                    if(partialText.isNotBlank() && (error==SpeechRecognizer.ERROR_NO_MATCH||error==SpeechRecognizer.ERROR_SPEECH_TIMEOUT)) {
+                        finishSpeechChunk(partialText,token,round,true);return
+                    }
                     if(error==SpeechRecognizer.ERROR_NO_MATCH||error==SpeechRecognizer.ERROR_SPEECH_TIMEOUT) scheduleListening(600)
                     else {
                         val languageError=Build.VERSION.SDK_INT>=31 && (error==SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED||error==SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE)
@@ -368,7 +428,13 @@ class MainActivity : ComponentActivity() {
                 }
                 override fun onEvent(eventType: Int,params: Bundle?) { }
             })
-            listening=true
+            partialText="";listening=true
+            armSpeechDeadline(token,round,8000)
+            val hard=Runnable {
+                if(valid(token)&&round==micRound&&active&&mode==Mode.MIC)
+                    finishSpeechChunk(partialText,token,round,true)
+            }
+            speechHardDeadline=hard;handler.postDelayed(hard,6000)
             speech?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE,"en-US")
@@ -377,13 +443,36 @@ class MainActivity : ComponentActivity() {
             })
         } catch (_: Exception) { stopSession();message("Konuşma tanıma başlatılamadı. Telefonun konuşma servisini kontrol et.") }
     }
+    private fun clearSpeechDeadline() {
+        speechDeadline?.let { handler.removeCallbacks(it) };speechDeadline=null
+        speechHardDeadline?.let { handler.removeCallbacks(it) };speechHardDeadline=null
+    }
+    private fun armSpeechDeadline(token: Long,round: Long,delay: Long) {
+        speechDeadline?.let { handler.removeCallbacks(it) }
+        val task=Runnable {
+            if(valid(token)&&round==micRound&&active&&mode==Mode.MIC)
+                finishSpeechChunk(partialText,token,round,true)
+        }
+        speechDeadline=task;handler.postDelayed(task,delay)
+    }
+    private fun finishSpeechChunk(text: String,token: Long,round: Long,interim: Boolean) {
+        if(!valid(token)||round!=micRound||!active||mode!=Mode.MIC)return
+        clearSpeechDeadline();micRound++;listening=false
+        speech?.cancel();speech?.destroy();speech=null;partialText=""
+        if(text.isNotBlank()) {
+            source.text=text
+            message(if(interim) "Ara konuşma sonucu çevriliyor…" else "Konuşma çevriliyor…")
+            accept(text,SystemClock.elapsedRealtime())
+        } else message("Konuşma metni alınamadı. Sesi yaklaştır veya internet/İngilizce tanıma paketini kontrol et.")
+        scheduleListening(300)
+    }
     private fun pauseMicrophone() {
-        handler.removeCallbacks(restart);micRound++;listening=false
+        handler.removeCallbacks(restart);clearSpeechDeadline();micRound++;listening=false;partialText=""
         speech?.cancel();speech?.destroy();speech=null
         if(active&&mode==Mode.MIC) message("Türkçe okunuyor • Okuma bitince dinleme devam edecek")
     }
     private fun stopSession() {
-        epoch++;active=false;frozen=false;translating=false;gate.reset();waiting.clear()
+        epoch++;active=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
         provider?.unbindAll();pauseMicrophone()
         if(::voice.isInitialized)voice.stop()
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->"Kamerayı başlat";Mode.MIC->"Dinlemeyi başlat";Mode.IMAGE->"Görsel seç" }
@@ -391,7 +480,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onStop() { stopSession();super.onStop() }
     override fun onDestroy() {
-        alive=false;epoch++;handler.removeCallbacks(restart);provider?.unbindAll()
+        alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
         speech?.destroy();if(::voice.isInitialized)voice.close()
         recognizer.close();translator.close();super.onDestroy()
     }
