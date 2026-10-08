@@ -1,4 +1,4 @@
-# AI Game Translator 0.12 — Yeni görünüm, tema ve dil
+# AI Game Translator 0.12.1 — Yeni görünüm, tema ve dil
 
 Android 10+ · İngilizce → Türkçe · Cihaz içi kamera, görsel ve canlı ses çevirisi.
 
@@ -23,6 +23,8 @@ Android 10+ · İngilizce → Türkçe · Cihaz içi kamera, görsel ve canlı s
 
 ## Bulunan ve düzeltilen durumlar
 
+0.12.1: Activity renk değişkeni `foreground`, Android View Drawable özelliğiyle çakışıyordu. `textInk` olarak yeniden adlandırıldı; setTextColor çağrıları artık Activity içindeki Int renk değerini kullanıyor. Bu sürüm yalnızca derleme düzeltmesidir; demo/ödeme özellikleri eklenmedi.
+
 - Kayıtlı altyazı alanı filtresi kapalıyken çerçevenin görünür kalabilmesi düzeltildi.
 - İptal edilen sürükleme hareketinin alanı geçersiz/küçük bırakması düzeltildi; önceki alan geri gelir.
 - İnternet sesi engeli veya hazır olmayan TTS durumunun yanlışlıkla kuyruk dolu diye gösterilmesi düzeltildi.
@@ -33,17 +35,17 @@ Vosk kayıt/segment algoritması, Hızlı/Dengeli/Tam cümle ayarları ve ses ku
 
 ## GitHub
 
-ZIP içindeki Android_Game_Translator_0_12 klasörünün tüm içeriğini mevcut repo köküne aktar. `.github`, `.gitignore`, `app`, `signing` ve Gradle dosyalarını üzerine yaz. İç içe ikinci proje klasörü oluşturma.
+ZIP içindeki Android_Game_Translator_0_12_1 klasörünün tüm içeriğini mevcut repo köküne aktar. `.github`, `.gitignore`, `app`, `signing` ve Gradle dosyalarını üzerine yaz. İç içe ikinci proje klasörü oluşturma.
 
 ```bash
 git add .
-git commit -m "v0.12: profesyonel arayuz, tema, English ve kaydedilen replikler"
+git commit -m "v0.12.1: tema renklerinde Kotlin isim cakismasi duzeltmesi"
 git push origin main
 ```
 
-Actions → Android APK yeşil olunca `AI-Game-Translator-0.12-design-debug` artifact'ını indir. İçindeki APK'yı kur.
+Actions → Android APK yeşil olunca `AI-Game-Translator-0.12.1-theme-fix-debug` artifact'ını indir. İçindeki APK'yı kur.
 
-Sürüm kodu 13. 0.11'deki aynı test anahtarı byte olarak korunmuştur; 0.11 APK'nın üzerine güncellenebilmesi beklenir. Anahtar değiştirildiyse veya önceki kurulum daha eski CI runner imzalıysa eşleşmeyebilir. `signing` klasörünü koru. Açık test anahtarı üretim/Play Store imzası değildir.
+Sürüm kodu 14. 0.11'deki aynı test anahtarı byte olarak korunmuştur; 0.11 APK'nın üzerine güncellenebilmesi beklenir. Anahtar değiştirildiyse veya önceki kurulum daha eski CI runner imzalıysa eşleşmeyebilir. `signing` klasörünü koru. Açık test anahtarı üretim/Play Store imzası değildir.
 
 ## Ayarlar
 

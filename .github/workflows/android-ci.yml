@@ -22,6 +22,6 @@ jobs:
       - run: gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: AI-Game-Translator-0.12-design-debug
+          name: AI-Game-Translator-0.12.1-theme-fix-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

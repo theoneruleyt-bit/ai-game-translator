@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
     private var panel=Color.rgb(23,34,53)
     private var mint=Color.rgb(100,235,204)
     private var muted=Color.rgb(170,185,209)
-    private var foreground=Color.WHITE
+    private var textInk=Color.WHITE
     private var dark=true
     private lateinit var meter: AudioMeterView
     private var lastSource=""
@@ -151,12 +151,12 @@ class MainActivity : ComponentActivity() {
     private fun rounded(color: Int, radius: Float=20f)=GradientDrawable().apply {
         setColor(color);cornerRadius=dp(radius.toInt()).toFloat()
     }
-    private fun label(text: String,size: Float=15f,color: Int=foreground)=TextView(this).apply {
+    private fun label(text: String,size: Float=15f,color: Int=textInk)=TextView(this).apply {
         this.text=text;textSize=size;setTextColor(color);includeFontPadding=false;setLineSpacing(dp(3).toFloat(),1.04f);setPadding(0,dp(5),0,dp(5))
     }
     private fun button(text: String, primary: Boolean=false, action: () -> Unit)=Button(this).apply {
         this.text=text;isAllCaps=false;textSize=14f;minHeight=dp(48);stateListAnimator=null
-        setTextColor(if(primary) (if(dark) ink else Color.WHITE) else foreground)
+        setTextColor(if(primary) (if(dark) ink else Color.WHITE) else textInk)
         background=android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(if(dark) 0x2257d9c0 else 0x22006462),rounded(if(primary) mint else panel,14f),null)
         setPadding(dp(12),dp(8),dp(12),dp(8));setOnClickListener { action() }
     }
@@ -185,7 +185,7 @@ class MainActivity : ComponentActivity() {
         dark=resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK==android.content.res.Configuration.UI_MODE_NIGHT_YES
         ink=if(dark)Color.rgb(10,17,29) else Color.rgb(243,247,251)
         panel=if(dark)Color.rgb(20,31,48) else Color.WHITE
-        foreground=if(dark)Color.rgb(238,244,250) else Color.rgb(20,36,53)
+        textInk=if(dark)Color.rgb(238,244,250) else Color.rgb(20,36,53)
         mint=if(dark)Color.rgb(100,235,204) else Color.rgb(0,112,101)
         muted=if(dark)Color.rgb(163,181,201) else Color.rgb(82,102,121)
         androidx.core.view.WindowInsetsControllerCompat(window,window.decorView).apply {
@@ -278,7 +278,7 @@ class MainActivity : ComponentActivity() {
         row(controls,listOf(start,button(getString(R.string.ui_043)) { stopSession();message(getString(R.string.ui_044)) }))
         metrics=label("",12f,mint);controls.addView(metrics)
         autoVoice=CheckBox(this).apply {
-            text=getString(R.string.ui_045);setTextColor(foreground);isChecked=settings.getBoolean("auto_voice",true)
+            text=getString(R.string.ui_045);setTextColor(textInk);isChecked=settings.getBoolean("auto_voice",true)
             setOnCheckedChangeListener { _,checked ->
                 if(!checked&&::voice.isInitialized) voice.stop()
                 if(checked&&active&&mode==Mode.MIC&&offlineMode) message(getString(R.string.ui_046))
@@ -431,7 +431,7 @@ class MainActivity : ComponentActivity() {
     private fun translateTypedText() {
         if(!modelReady) { prepareModel();return }
         val field=EditText(this).apply {
-            hint=getString(R.string.ui_101);setTextColor(foreground);setHintTextColor(muted)
+            hint=getString(R.string.ui_101);setTextColor(textInk);setHintTextColor(muted)
             minLines=3;maxLines=6;setPadding(dp(20),dp(12),dp(20),dp(12))
             inputType=android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
         }
@@ -506,11 +506,11 @@ class MainActivity : ComponentActivity() {
             }.show()
         })
         view.addView(CheckBox(this).apply {
-            text=getString(R.string.ui_139);setTextColor(foreground);isChecked=adaptiveReading
+            text=getString(R.string.ui_139);setTextColor(textInk);isChecked=adaptiveReading
             setOnCheckedChangeListener { _,checked -> adaptiveReading=checked;voice.adaptiveSpeed=checked;settings.edit().putBoolean("adaptive",checked).apply() }
         })
         view.addView(CheckBox(this).apply {
-            text=getString(R.string.ui_140);setTextColor(foreground);isChecked=keepScreen
+            text=getString(R.string.ui_140);setTextColor(textInk);isChecked=keepScreen
             setOnCheckedChangeListener { _,checked ->
                 keepScreen=checked;settings.edit().putBoolean("screen",checked).apply()
                 if(active&&checked)window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -575,7 +575,7 @@ class MainActivity : ComponentActivity() {
         stopSession();mode=next
         tabs.forEachIndexed { index,b ->
             val selected=index==mode.ordinal;b.background=rounded(if(selected) mint else panel,14f)
-            b.setTextColor(if(selected) ink else foreground)
+            b.setTextColor(if(selected) ink else textInk)
         }
         previewBox.visibility=if(mode==Mode.CAMERA) View.VISIBLE else View.GONE
         micHero.visibility=if(mode==Mode.MIC) View.VISIBLE else View.GONE
