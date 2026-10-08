@@ -343,10 +343,10 @@ class MainActivity : ComponentActivity() {
         speakerCard.addView(button(getString(R.string.ui_062)) { speakerContent.visibility=if(speakerContent.visibility==View.VISIBLE)View.GONE else View.VISIBLE })
         speakerCard.addView(speakerContent)
         speakerContent.addView(label(getString(R.string.ui_063),13f,muted))
-        speakerChoice=button(if(selectedSpeaker==0) getString(R.string.ui_064) else getString(R.string.ui_065, selectedSpeaker)) {
+        speakerChoice=button(if(selectedSpeaker==0) getString(R.string.ui_064) else getString(R.string.ui_065, (selectedSpeaker).toString())) {
             AlertDialog.Builder(this).setTitle(getString(R.string.ui_066))
-                .setItems((0..16).map { if(it==0) getString(R.string.ui_067) else getString(R.string.ui_068, it) }.toTypedArray()) { _,slot ->
-                    selectedSpeaker=slot;speakerChoice.text=if(slot==0) getString(R.string.ui_064) else getString(R.string.ui_065, slot)
+                .setItems((0..16).map { if(it==0) getString(R.string.ui_067) else getString(R.string.ui_068, (it).toString()) }.toTypedArray()) { _,slot ->
+                    selectedSpeaker=slot;speakerChoice.text=if(slot==0) getString(R.string.ui_064) else getString(R.string.ui_065, (slot).toString())
                 }.show()
         };speakerContent.addView(speakerChoice)
         speakerContent.addView(CheckBox(this).apply {
@@ -355,10 +355,10 @@ class MainActivity : ComponentActivity() {
         })
         speakerContent.addView(button(getString(R.string.ui_070)) {
             AlertDialog.Builder(this).setTitle(getString(R.string.ui_071))
-                .setItems((1..16).map { getString(R.string.ui_068, it) }.toTypedArray()) { _,index -> chooseSpeakerVoice(index+1) }.show()
+                .setItems((1..16).map { getString(R.string.ui_068, (it).toString()) }.toTypedArray()) { _,index -> chooseSpeakerVoice(index+1) }.show()
         })
         speakerContent.addView(button(getString(R.string.ui_072)) {
-            AlertDialog.Builder(this).setTitle(getString(R.string.ui_073)).setItems((1..16).map { getString(R.string.ui_068, it) }.toTypedArray()) { _,index -> chooseSpeakerStyle(index+1) }.show()
+            AlertDialog.Builder(this).setTitle(getString(R.string.ui_073)).setItems((1..16).map { getString(R.string.ui_068, (it).toString()) }.toTypedArray()) { _,index -> chooseSpeakerStyle(index+1) }.show()
         })
         speakerContent.addView(button(getString(R.string.ui_074)) {
             profilePrefs.edit().clear().apply();speakers.clear();message(getString(R.string.ui_075))
@@ -459,7 +459,7 @@ class MainActivity : ComponentActivity() {
     private fun showModelStatus() {
         val voices=if(::voice.isInitialized)voice.availableVoices(false).size else 0
         AlertDialog.Builder(this).setTitle(getString(R.string.ui_112))
-            .setMessage(getString(R.string.ui_113, if(offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115), if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116), voices))
+            .setMessage(getString(R.string.ui_113, (if(offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115)).toString(), (if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116)).toString(), (voices).toString()))
             .setPositiveButton(getString(R.string.ui_106),null).show()
     }
     private fun beginSession() {
@@ -499,10 +499,10 @@ class MainActivity : ComponentActivity() {
         })
         view.addView(button(getString(R.string.ui_112)) { showModelStatus() })
         val modes=arrayOf(getString(R.string.ui_133),getString(R.string.ui_134),getString(R.string.ui_135))
-        view.addView(button(getString(R.string.ui_136, modes[speedMode])) {
+        view.addView(button(getString(R.string.ui_136, (modes[speedMode]).toString())) {
             AlertDialog.Builder(this).setTitle(getString(R.string.ui_137)).setSingleChoiceItems(modes,speedMode) { dialog,index ->
                 stopSession();speedMode=index;settings.edit().putInt("speed_mode",index).apply();dialog.dismiss()
-                message(getString(R.string.ui_138, modes[index]))
+                message(getString(R.string.ui_138, (modes[index]).toString()))
             }.show()
         })
         view.addView(CheckBox(this).apply {
@@ -524,7 +524,7 @@ class MainActivity : ComponentActivity() {
         AlertDialog.Builder(this).setTitle(getString(R.string.ui_144)).setView(ScrollView(this).apply { addView(view) }).setPositiveButton(getString(R.string.ui_106),null).show()
     }
     private fun chooseSpeakerStyle(slot: Int) {
-        AlertDialog.Builder(this).setTitle(getString(R.string.ui_145, slot))
+        AlertDialog.Builder(this).setTitle(getString(R.string.ui_145, (slot).toString()))
             .setSingleChoiceItems(resources.getStringArray(R.array.speaker_styles),profilePrefs.getInt("style_${slot}",(slot-1)%resources.getStringArray(R.array.speaker_styles).size)) { dialog,index ->
                 profilePrefs.edit().putInt("style_${slot}",index).apply();dialog.dismiss()
                 enqueueVoice("Bu konuşmacının ton ve okuma tarzı böyle duyulacak.",slot)
@@ -548,11 +548,11 @@ class MainActivity : ComponentActivity() {
     private fun chooseSpeakerVoice(slot: Int) {
         val voices=voice.availableVoices(allowNetworkVoice)
         if(voices.isEmpty()) { message(getString(R.string.ui_149));return }
-        val labels=voices.mapIndexed { i,v -> getString(R.string.ui_150, i+1, if(v.isNetworkConnectionRequired) getString(R.string.ui_151) else getString(R.string.ui_152)) }.toTypedArray()
-        AlertDialog.Builder(this).setTitle(getString(R.string.ui_153, slot))
+        val labels=voices.mapIndexed { i,v -> getString(R.string.ui_150, (i+1).toString(), (if(v.isNetworkConnectionRequired) getString(R.string.ui_151) else getString(R.string.ui_152)).toString()) }.toTypedArray()
+        AlertDialog.Builder(this).setTitle(getString(R.string.ui_153, (slot).toString()))
             .setItems(labels) { _,index ->
                 profilePrefs.edit().putString("voice_${slot}",voices[index].name).apply()
-                message(getString(R.string.ui_154, slot))
+                message(getString(R.string.ui_154, (slot).toString()))
                 voice.add("Bu konuşmacının Türkçe sesi böyle duyulacak.",false,voices[index].name)
             }.setNegativeButton(getString(R.string.ui_106),null).show()
     }
@@ -561,9 +561,9 @@ class MainActivity : ComponentActivity() {
         if(voices.isEmpty()) { message(getString(R.string.ui_155));return }
         val locale=java.util.Locale.forLanguageTag("tr-TR")
         val labels=voices.mapIndexed { index,v ->
-            getString(R.string.ui_156, index+1, v.locale.getDisplayCountry(locale).ifBlank { getString(R.string.ui_127) }, if(v.isNetworkConnectionRequired) getString(R.string.ui_151) else getString(R.string.ui_152))
+            getString(R.string.ui_156, (index+1).toString(), (v.locale.getDisplayCountry(locale).ifBlank { getString(R.string.ui_127) }).toString(), (if(v.isNetworkConnectionRequired) getString(R.string.ui_151) else getString(R.string.ui_152)).toString())
         }.toTypedArray()
-        AlertDialog.Builder(this).setTitle(getString(R.string.ui_157, voices.size))
+        AlertDialog.Builder(this).setTitle(getString(R.string.ui_157, (voices.size).toString()))
             .setItems(labels) { _,index ->
                 if(voice.selectVoice(voices[index])) { settings.edit().putString("default_voice",voices[index].name).apply();voiceChoice.text=labels[index];message(getString(R.string.ui_158)) }
                 else message(getString(R.string.ui_159))
@@ -702,8 +702,8 @@ class MainActivity : ComponentActivity() {
             if(valid(token) && (!fromCamera || SystemClock.elapsedRealtime()-line.seenAt<=3000)) {
                 completed++;lastLag=SystemClock.elapsedRealtime()-line.seenAt
                 lastTranslation=translated;lastSource=line.text;lastSpeaker=line.speakerSlot
-                result.text=if(line.speakerName.isBlank()) translated else getString(R.string.ui_180, line.speakerName, line.speakerSlot, translated)
-                log.addFirst("${if(line.speakerName.isBlank()) getString(R.string.ui_068, line.speakerSlot) else line.speakerName} • ${line.text}\n${translated}")
+                result.text=if(line.speakerName.isBlank()) translated else getString(R.string.ui_180, (line.speakerName).toString(), (line.speakerSlot).toString(), (translated).toString())
+                log.addFirst("${if(line.speakerName.isBlank()) getString(R.string.ui_068, (line.speakerSlot).toString()) else line.speakerName} • ${line.text}\n${translated}")
                 while(log.size>100) log.removeLast()
                 history.text=log.take(4).joinToString("\n\n")
                 if(autoVoice.isChecked) enqueueVoice(translated,line.speakerSlot)
@@ -724,15 +724,13 @@ class MainActivity : ComponentActivity() {
     }
     private fun refreshReadiness() {
         if(!::readiness.isInitialized)return
-        readiness.text=getString(R.string.model_readiness,
-            if(offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115),
-            if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116))
+        readiness.text=getString(R.string.model_readiness, (if(offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115)).toString(), (if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116)).toString())
     }
     private fun refreshMetrics() {
         refreshReadiness()
         if(!::metrics.isInitialized)return
         val sounds=if(::voice.isInitialized) voice.count else 0
-        metrics.text=getString(R.string.ui_187, if(active) getString(R.string.ui_188, (SystemClock.elapsedRealtime()-sessionStarted)/1000) else "", completed, waiting.size + if(translating) 1 else 0, sounds, lastLag/1000.0, rejected)
+        metrics.text=getString(R.string.ui_187, (if(active) getString(R.string.ui_188, ((SystemClock.elapsedRealtime()-sessionStarted)/1000).toString()) else "").toString(), (completed).toString(), (waiting.size + if(translating) 1 else 0).toString(), (sounds).toString(), (lastLag/1000.0).toString(), (rejected).toString())
     }
     private fun prepareSpeechModel() {
         stopSession()
@@ -781,7 +779,7 @@ class MainActivity : ComponentActivity() {
         translator.translate(text).addOnSuccessListener { translated ->
             if(valid(token)&&active&&utterance==partialUtterance&&pendingPartial.isNotBlank()) {
                 cachedSource=text;cachedTranslation=translated
-                result.text=getString(R.string.ui_201, translated)
+                result.text=getString(R.string.ui_201, (translated).toString())
             }
         }.addOnCompleteListener {
             if(valid(token)) {
@@ -820,7 +818,7 @@ class MainActivity : ComponentActivity() {
                     if(current()) { message(getString(R.string.ui_206));armSpeechDeadline(token,round,6000) }
                 }
                 override fun onRmsChanged(rmsdB: Float) {
-                    if(current()) { signal.progress=((rmsdB+2f)*8f).toInt().coerceIn(0,100);signalLabel.text=getString(R.string.ui_207, signal.progress) }
+                    if(current()) { signal.progress=((rmsdB+2f)*8f).toInt().coerceIn(0,100);signalLabel.text=getString(R.string.ui_207, (signal.progress).toString()) }
                 }
                 override fun onBufferReceived(buffer: ByteArray?) { }
                 override fun onEndOfSpeech() {
@@ -861,7 +859,7 @@ class MainActivity : ComponentActivity() {
                         }
                         errors++
                         if(error==SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS||languageError||errors>=3) {
-                            stopSession();message(getString(R.string.ui_212, error))
+                            stopSession();message(getString(R.string.ui_212, (error).toString()))
                         } else { message("Dinleme yeniden deneniyor (kod ${error})…");scheduleListening(1500) }
                     }
                 }

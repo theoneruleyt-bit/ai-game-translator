@@ -2,7 +2,7 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
  namespace = "com.optima.gametranslator"
  compileSdk = 35
- defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 35; versionCode = 14; versionName = "0.12.1-theme-fix" }
+ defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 35; versionCode = 15; versionName = "0.12.2-lint-fix" }
  signingConfigs { getByName("debug") { storeFile = rootProject.file("signing/optima-test.jks"); storePassword = "android"; keyAlias = "optima-test"; keyPassword = "android" } }
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
  kotlinOptions { jvmTarget = "17" }

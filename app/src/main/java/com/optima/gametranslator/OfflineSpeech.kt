@@ -61,7 +61,7 @@ class OfflineSpeech(context: Context) {
                         output.write(buffer,0,count)
                         val progress=if(total>0) (size*100/total).toInt().coerceIn(0,100) else (size/1024/1024).toInt()
                         if(progress!=lastProgress) { lastProgress=progress;deliver(token) {
-                            onProgress(if(total>0) messages.getString(R.string.ui_221, progress) else messages.getString(R.string.ui_222, size/1024/1024))
+                            onProgress(if(total>0) messages.getString(R.string.ui_221, (progress).toString()) else messages.getString(R.string.ui_222, (size/1024/1024).toString()))
                         } }
                     }
                 } }
