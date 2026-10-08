@@ -1,35 +1,55 @@
-# Android 0.3 — Akan altyazı düzeltmesi
+# AI Game Translator 0.4 — Kamera, Dinle, Görsel
 
-Ana akış: arka kamera → İngilizce görüntü yazısı → yerel Türkçe çeviri → Android Türkçe sesli okuma. Fotoğraf/ekran görüntüsü ve tek kare modu korunur. Oyun sesini dinleme eklenmedi.
+Oyun ve video için Android kamera altyazı çevirisi, mikrofon konuşma çevirisi deneyi, fotoğraf/ekran görüntüsü modu. Kaynak İngilizce, hedef Türkçe.
 
-## Düzeltilen nedenler
-0.2 her 450 ms'de OCR yapıp 600 ms birebir aynı metin bekliyordu; pratikte en az üç eşleşen gözlem ve yaklaşık 900 ms gerekiyordu. Dahası çeviri bitince mevcut OCR metni değişmişse sonuç tamamen atılıyordu. Akan altyazıda bu iki koşul çeviri/ses kaybına neden olabilir.
+## Replik ve ses düzeltmesi
+0.3 yeni çeviri gelince QUEUE_FLUSH ile mevcut okumayı kesiyordu; bekleyen altyazının sadece en yenisini tutuyor, eski sonuçları yaş sınırıyla eliyordu. 0.4 alınan çevirileri FIFO sırasına koyar. Kabul edilen replikler yeni replikle değiştirilmez veya zaman yüzünden silinmez. Ses motoru bir repliği bitirdikten sonra sıradakini okur; yeni çeviri mevcut sesi kesmez. Açık Durdur, mod değişimi, ses kutusunu kapatma veya uygulamadan ayrılma sesi bilerek durdurur.
 
-0.3 minimum OCR aralığı 150 ms (gerçek hız cihaz/OCR süresine bağlı). En az iki uyumlu gözlem ve 150 ms kararlılık gerekir. Uzun metinde küçük harf OCR hatalarına tolerans; noktalama/büyük harf farklılıklarını normalleştirme. Sayı değişiklikleri ve kısa kelime değişiklikleri ayrı metin sayılır. Bu sezgisel filtre çok benzer iki gerçek repliği birleştirebilir; cihaz testi gerekir.
+Sınır: çeviri kuyruğu 32, ses kuyruğu 64 parça. Dolduğunda yeni kayıt alınmayabilir; sıra/işlem uyarısı sayacı ve mesajı görünür. Kaynak metnin OCR veya konuşma tanımada hiç algılanmaması bu sayaçla ölçülemez; sayaç benzersiz atlanan replik sayısı değil, hata/dolu kuyruk olay sayısıdır. Çok hızlı konuşmada okumayı hiç atlamamak ve aynı anda sıfır gecikme sağlamak mümkün değildir; yeni kuyruk tamamlamayı önceler ve gecikme artabilir. Okuma hızı 0.9–1.5 aralığında ayarlanır. OCR kararlılık filtresi hâlâ iki gözlem ister; çok kısa veya benzer replikler kaçabilir.
 
-Çeviri işlenirken altyazı değişse de sonuç 3.5 sn yaş sınırı içinde gösterilip okunabilir. İşlenmekte olan bir çevirinin yanında yalnızca en yeni kararlı altyazı bekler; eski bekleyen kayıt değiştirilebilir. Bekleyen kayıt 3 sn sonra geçersiz olur. Bu sınırlı kuyruk her repliğin çevrileceği anlamına gelmez; hızlı akışta aradaki replikler atlanabilir. Anlık/sıfır gecikme vaadi yoktur.
+## Dinle modu — deneysel
+RECORD_AUDIO izniyle telefon mikrofonundan İngilizce oyun/video konuşması alınır. Android SpeechRecognizer kısmi metni gösterir, kesinleşmiş konuşma sonucunu çevirir. Konuşma bitişine/model yanıtına bağlı gecikme vardır; sözcük sözcük anlık dublaj veya garantili kesintisiz streaming değildir. Android bu API'yi kesintisiz tanıma için tasarlamaz; oturumlar yeniden başlatılırken kısa boşluklar oluşabilir.
 
-Canlı kaynak metin her başarılı OCR'da gösterilir. Böylece yakalama mı çeviri mi başarısız ayrıştırılabilir. Alt %45 filtresi başlangıçta kapalı; TV kadrajı nedeniyle altyazı kaçırılmasın. İsteğe bağlı açılabilir. TTS halen cihazın Türkçe sesi; doğal bulut ses sağlayıcısı henüz eklenmedi. Yeni sonuç eskisini keser, ses kuyruğu birikmez.
+Android31+ ve uygun servis varsa önce cihazdaki tanıma kullanılır. İngilizce desteklenmiyorsa kullanıcıya gösterilerek sistem konuşma servisine dönülür; internet kullanabilir. İlk başlatmada bunu anlatan onay ekranı vardır. Ses dosyası uygulamada kaydedilmez; sistem servisi sesi işlemek üzere dışarı gönderebilir. Play gizlilik/veri güvenliği incelemesi yayın öncesi gerekir.
 
-## Yükleme
-ZIP içeriğini mevcut depo köküne kopyala, aynı dosyaları değiştir. .github klasörünü de kopyala. 0.1'den kalmış CaptureService.kt varsa sil.
+Telefonun kendi Türkçe sesini yeniden tanımaması için varsayılan mod Türkçe okurken mikrofonu durdurur. Bu sırada oyundaki konuşma yakalanmaz. Türkçe sesi gerçekten kulaklıkla dinliyorsan 'Türkçe sesi kulaklıkla dinliyorum' seçeneği okuma boyunca mikrofonu açık tutar. Kulaklık bağlı olmadan bunu açmak çeviri geri beslemesine neden olabilir. Bluetooth kulaklığın mikrofon yönlendirmesi oyun sesini iyi duymayabilir; cihaz/rota testi gerekir. Bu ilk deney dijital oyun sesi yakalama veya yankı giderme motoru içermez.
+
+## Arayüz / simge
+Koyu lacivert ve mint tema, Kamera / Dinle / Görsel sekmeleri, büyük önizleme, net kaynak/çeviri kartı, son dört replik, sıra sayıları ve son çeviri gecikmesi. Model hazırlama tek başlangıç adımıdır. Yeni imagegen simgesi adaptive Android launcher ve ekran marka alanına entegre edilir. Son kullanıcı düzeltmesi: oyun ve video canlı çeviri odağı.
+
+Android TTS'nin kurulu çevrimdışı Türkçe seslerinden kaliteye göre tercih yapılır. Hız ayarı ve ses ayarlarına erişim eklenir. Yeni premium doğal TTS veya karakter aksanı eklenmedi; ses kalitesi kurulu motora bağlıdır. Bulut sesi/API anahtarı fiyat seçimi yapılmadan gömülmez.
+
+## GitHub yükleme
+ZIP içeriğini mevcut depo köküne kopyala; aynı dosyaları değiştir, .github klasörünü de taşı.
+Eski 0.3'ten şu iki dosyayı sil (yeni FIFO sınıfı bunların yerini alır):
+- app/src/main/java/com/optima/gametranslator/LatestLine.kt
+- app/src/test/java/com/optima/gametranslator/LatestLineTest.kt
+0.1'den CaptureService.kt kaldıysa onu da sil.
 
 ```bash
 git add .
-git commit -m "Fix live subtitle detection and translation delivery"
+git commit -m "Add microphone translation, FIFO speech and redesigned UI"
 git push
 ```
 
-GitHub Actions → Android APK → yeşil çalışma → Artifacts → AI-Game-Translator-0.3-live-debug → app-debug.apk. VersionCode3; aynı imzalı kurulum üzerine güncellenir.
+Actions → Android APK → başarılı çalışma → Artifacts → AI-Game-Translator-0.4-studio-debug → app-debug.apk. versionCode4. minAndroid29, compile/target35; hedef SDK mağaza yayını öncesi yeniden doğrulanır. GitHub→APK/AAB akışı, Android Studio/Hermes gerektirmeden korunur. Gradle wrapper yok; workflow Gradle8.11.1 kurar.
 
-## Gerçek kullanım testi
-1. Modeli hazırla; kamerayı başlat. Alt %45 seçeneğini ilk testte kapalı tut.
-2. Videoyu duraklatmadan 2–3 saniye görünen İngilizce altyazılarla dene. Kaynak metin, Türkçe sonuç, ses ayrı ayrı takip et.
-3. Aynı replik 10 sn kalınca sürekli okunmamalı.
-4. Hızlı altyazıda replik atlama, kesilen ses veya gecikme varsa not et; cihaz modeli/Android sürümüyle bildir.
-5. Galeriden fotoğraf/ekran görüntüsü ve tek kare modunu tekrar dene.
-6. Durdur veya uygulamadan ayrıl; bekleyen çeviri sonradan ses çıkarmamalı.
+## Telefon kabul testi
+1. Kamera modunda model hazırla. Birkaç replik peş peşe gelirken Türkçe ses yarıda kesilmeden sırayla okunmalı; hız/ sıra gecikmesini kontrol et.
+2. Sabit tek replikte tekrarlı okuma olmamalı. Son çeviriyi tekrar oku bilinçli olarak yeni bir ses kaydı ekler.
+3. Dinle modunda sessiz ortamda İngilizce konuşma/videosu dene. Mikrofon izni, kısmi İngilizce metin, kesin Türkçe sonuç ve ses ayrı kontrol edilir.
+4. Kulaklıksız testte ses sırasında mikrofon durmalı, sonra yeniden açılmalı. Kulaklıkla testte kendi çevirisini tekrar yakalamamalı.
+5. Fotoğraf / ekran görüntüsü ve kamera tek kare modunu kontrol et.
+6. Durdur, mod değiştir, uygulamadan ayrıl: eski sonuç veya ses sonra gelmemeli.
+7. İnternet yok, İngilizce tanıma paketi yok, Türkçe TTS yok: açık hata olmalı. Cihaz modeli/Android sürümünü bildir.
 
-13 davranış testi CI'ya dahil: hızlı replik, tek kare gürültü, noktalama/harf jitter, sayı farkı, kısa kelime farkı, tekrar/boşluk, yeni replik, başarısız çeviri yeniden denemesi; kuyruk değiştirme/yaş sınırı/durdurma. Bu ortamda SDK/Gradle/Kotlin compiler bulunmadığından testler ve APK derlemesi çalıştırılmadı. Yeni CI ve gerçek telefon testi gerekli. Önceki 0.2 kullanıcı tarafından yeşil/telefon çalışıyor olarak doğrulandı; yeni canlı akış henüz doğrulanmadı.
+## Doğrulama
+14 unit test bildirimi (10 metin kararlılığı + 4 FIFO davranışı). Kamera/ses/izin yaşam döngüsü cihaz testi ister. Bu ortamda Android SDK/Gradle/Kotlin compiler yok: APK, test ve lint çalıştırılmadı. XML/YAML/ZIP ve kaynak akış kontrolleri yapılır; yeni GitHub CI sonucu beklenir. Önceki 0.3 kullanıcı telefonunda çalıştı; 0.4 henüz doğrulanmadı.
 
-İlk model indirimi internet gerektirir. OCR ve çeviri yerel; Android TTS motoru çevrimdışı Türkçe sese göre değişebilir. Görüntü kayıt/yükleme eklenmedi. Uygulamadan ayrılınca kamera/ses durur.
+Resmi kaynaklar:
+https://developer.android.com/reference/android/speech/SpeechRecognizer
+https://developer.android.com/reference/android/speech/tts/TextToSpeech
+https://developer.android.com/reference/android/speech/tts/UtteranceProgressListener
+
+## Simge tasarımı
+Yerleşik imagegen ile kaynak simgeye düzenleme. Prompt özeti: aynı lacivert/mint konuşma balonunu koru; video oynatma işareti, iki altyazı çizgisi ve küçük oyun yön tuşuyla oyun/video canlı çevirisini anlat; yazısız, merkezi güvenli alanda, küçük boyutta okunaklı Android simgesi.
