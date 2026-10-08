@@ -11,15 +11,30 @@ import java.util.Locale
 class VoicePlayer(context: Context, private val onChange: () -> Unit,
                   private val beforeSpeak: () -> Unit, private val onError: (String) -> Unit) {
     private val handler = Handler(Looper.getMainLooper())
-    private val pending = java.util.ArrayDeque<String>()
+    private data class Job(val text: String,val voiceName: String?,val rate: Float,val pitch: Float)
+    private val pending = java.util.ArrayDeque<Job>()
+    private var defaultVoiceName: String?=null
     private var engine: TextToSpeech? = null
     private var currentId: String? = null
     private var sequence = 0L
     private var closed = false
+    var networkAllowed=false
     var ready = false
         private set
     var rate = 1.1f
         set(value) { field=value;engine?.setSpeechRate(value) }
+    var pitch=1f
+        set(value) { field=value;engine?.setPitch(value) }
+    fun availableVoices(includeNetwork: Boolean): List<android.speech.tts.Voice> = engine?.voices
+        ?.filter { it.locale.language=="tr" && (includeNetwork || !it.isNetworkConnectionRequired) && !it.features.contains("notInstalled") }
+        ?.sortedWith(compareBy<android.speech.tts.Voice> { it.isNetworkConnectionRequired }
+            .thenByDescending { it.quality }.thenBy { it.name }).orEmpty()
+    fun selectVoice(selected: android.speech.tts.Voice): Boolean {
+        stop()
+        val selectedOk=engine?.setVoice(selected)==TextToSpeech.SUCCESS
+        if(selectedOk)defaultVoiceName=selected.name
+        return selectedOk
+    }
     val count: Int get() = pending.size + if(currentId==null) 0 else 1
     init {
         engine = TextToSpeech(context) { code ->
@@ -30,7 +45,8 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
                     val best=engine?.voices?.filter { it.locale.language=="tr" && !it.isNetworkConnectionRequired }
                         ?.sortedWith(compareByDescending<android.speech.tts.Voice> { it.quality }.thenBy { it.latency })?.firstOrNull()
                     if(best!=null) engine?.voice=best
-                    engine?.setSpeechRate(rate)
+                    defaultVoiceName=engine?.voice?.name
+                    engine?.setSpeechRate(rate);engine?.setPitch(pitch)
                 } else onError("Türkçe ses paketi bulunamadı. Ses ayarlarından Türkçe ses yükle.")
                 onChange()
             }
@@ -43,8 +59,11 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
             override fun onError(id: String?, errorCode: Int) { finish(id,true) }
         })
     }
-    fun add(text: String, latestPending: Boolean = false): Boolean {
+    fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch): Boolean {
         if(!ready || closed || text.isBlank()) return false
+        val selected=voiceName ?: defaultVoiceName
+        val requestedVoice=engine?.voices?.firstOrNull { it.name==selected }
+        if(requestedVoice?.isNetworkConnectionRequired==true&&!networkAllowed)return false
         val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100)
         val chunks = mutableListOf<String>()
         var rest=text.trim()
@@ -57,13 +76,19 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         // speech with the latest translation so it cannot lag dozens of lines.
         if(latestPending) pending.clear()
         if(count+chunks.size>64) return false
-        chunks.forEach { pending.addLast(it) };pump();onChange();return true
+        chunks.forEach { pending.addLast(Job(it,selected,rate,selectedPitch)) };pump();onChange();return true
     }
     private fun pump() {
         if(currentId!=null || pending.isEmpty() || closed) return
-        val text=pending.removeFirst();val id="voice-${++sequence}";currentId=id
+        val job=pending.removeFirst();val id="voice-${++sequence}";currentId=id
+        val selected=engine?.voices?.firstOrNull { it.name==job.voiceName }
+        if(selected!=null) {
+            if(selected.isNetworkConnectionRequired&&!networkAllowed) { finish(id,true);return }
+            if(engine?.setVoice(selected)!=TextToSpeech.SUCCESS) { finish(id,true);return }
+        } else if(job.voiceName!=null) { finish(id,true);return }
+        engine?.setSpeechRate(job.rate);engine?.setPitch(job.pitch)
         beforeSpeak()
-        if(engine?.speak(text,TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS) finish(id,true)
+        if(engine?.speak(job.text,TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS) finish(id,true)
     }
     private fun finish(id: String?, failed: Boolean) {
         handler.post {
