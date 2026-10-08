@@ -44,6 +44,10 @@ class MainActivity : ComponentActivity() {
     private val subtitleFilter=SubtitleFilter()
     private lateinit var previewBox: LinearLayout
     private lateinit var micHero: LinearLayout
+    private val streaming=StreamingTranslator()
+    private val streamFinals=StreamFinals()
+    private val cloudSettings by lazy { SpeechSettings(this) }
+    private var cloudMode=true
     private lateinit var localSpeech: CheckBox
     private lateinit var signal: ProgressBar
     private lateinit var signalLabel: TextView
@@ -182,16 +186,26 @@ class MainActivity : ComponentActivity() {
         micHero=card(root)
         micHero.addView(label("▂  ▅  ▇  ▄  ▆  ▂",34f,mint).apply { gravity=Gravity.CENTER })
         micHero.addView(label("Oyunu veya videoyu Türkçe takip et",21f).apply { gravity=Gravity.CENTER })
-        micHero.addView(label("Telefonu oyun sesinin duyulabileceği yere koy. Bu mod konuşma bitişlerinde çevirir; tanıma cihazına göre değişir.",14f,muted))
+        micHero.addView(label("Sürekli mikrofon akışı • Konuşma sürerken ara çeviri, cümle tamamlanınca sesli okuma. İnternet ve Azure Speech hesabı gerekir.",14f,muted))
         signalLabel=label("Mikrofon bekliyor",13f,mint);micHero.addView(signalLabel)
         signal=ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply { max=100 }
         micHero.addView(signal,LinearLayout.LayoutParams(-1,dp(10)))
+        micHero.addView(button("Azure bağlantı ayarları") { showCloudSettings() })
+        micHero.addView(CheckBox(this).apply {
+            text="Sürekli canlı çeviri (Azure)";setTextColor(mint);isChecked=true
+            setOnCheckedChangeListener { _,checked ->
+                stopSession();cloudMode=checked;localSpeech.visibility=if(checked) View.GONE else View.VISIBLE
+                message(if(checked) "Sürekli canlı çeviri seçildi." else "Android konuşma testi seçildi; sürekli akış sağlamaz.")
+            }
+        })
         localSpeech=CheckBox(this).apply {
+            visibility=View.GONE
             text="Cihazda konuşma tanımayı dene";setTextColor(muted);isChecked=false
             setOnCheckedChangeListener { _,_ -> if(active&&mode==Mode.MIC) { stopSession();message("Tanıma seçimi değişti. Dinlemeyi yeniden başlat.") } }
         };micHero.addView(localSpeech)
         micHero.addView(button("Konuşmayı bitir ve çevir") {
-            if(active&&mode==Mode.MIC&&listening) requestSpeechFinal(epoch,micRound)
+            if(mode==Mode.MIC&&cloudMode) message("Sürekli akışta cümleler otomatik tamamlanır; ara çeviri ekranda güncellenir.")
+            else if(active&&mode==Mode.MIC&&listening) requestSpeechFinal(epoch,micRound)
             else message("Önce dinlemeyi başlat.")
         })
         micHero.addView(button("Kısa konuşma testi") {
@@ -219,7 +233,10 @@ class MainActivity : ComponentActivity() {
         metrics=label("",12f,mint);controls.addView(metrics)
         autoVoice=CheckBox(this).apply {
             text="Türkçe sesli oku";setTextColor(Color.WHITE);isChecked=true
-            setOnCheckedChangeListener { _,checked -> if(!checked) voice.stop() }
+            setOnCheckedChangeListener { box,checked ->
+                if(!checked&&::voice.isInitialized) voice.stop()
+                if(checked&&active&&mode==Mode.MIC&&cloudMode&&!headphones.isChecked) { box.isChecked=false;message("Sürekli dinlerken Türkçe ses için kulaklık seçeneğini aç. Mikrofon kesilmeden metin çevirisi devam ediyor.") }
+            }
         };controls.addView(autoVoice)
         region=CheckBox(this).apply {
             text="Yalnızca seçili altyazı alanını oku";setTextColor(muted);isChecked=true
@@ -232,7 +249,8 @@ class MainActivity : ComponentActivity() {
             text="Türkçe sesi kulaklıkla dinliyorum";setTextColor(muted);isChecked=false
             setOnCheckedChangeListener { _,checked ->
                 if(active&&mode==Mode.MIC) {
-                    if(!checked&&voice.count>0) pauseMicrophone() else scheduleListening()
+                    if(cloudMode) { if(!checked) { autoVoice.isChecked=false;voice.stop();message("Mikrofon kesilmeden metin çevirisi devam ediyor. Sesli okuma için kulaklık kullan.") } }
+                    else if(!checked&&voice.count>0) pauseMicrophone() else scheduleListening()
                 }
             }
         };controls.addView(headphones)
@@ -308,7 +326,7 @@ class MainActivity : ComponentActivity() {
         })
         setContentView(ScrollView(this).apply { isFillViewport=true;addView(root) })
         voice=VoicePlayer(this,{ refreshMetrics();if(active&&mode==Mode.MIC) scheduleListening() },
-            { if(active&&mode==Mode.MIC&&!headphones.isChecked) pauseMicrophone() },{ message(it) })
+            { if(active&&mode==Mode.MIC&&!cloudMode&&!headphones.isChecked) pauseMicrophone() },{ message(it) })
         selectMode(Mode.CAMERA)
     }
     private fun speakerVoiceName(slot: Int): String? {
@@ -360,7 +378,7 @@ class MainActivity : ComponentActivity() {
         start.text=when(mode) { Mode.CAMERA->"Kamerayı başlat";Mode.MIC->"Dinlemeyi başlat";Mode.IMAGE->"Görsel seç" }
         hint.text=when(mode) {
             Mode.CAMERA->"TV veya monitörde İngilizce altyazıyı aç. Telefonu sabit tut. Yeşil alanı yalnızca altyazı satırlarına çiz; süre ve simgeleri dışarıda bırak."
-            Mode.MIC->"Dinleme deneysel. Android konuşma servisi internet kullanabilir. Kulaklık yoksa Türkçe okuma sırasında mikrofon durur; o aradaki oyun konuşması yakalanmaz."
+            Mode.MIC->"Azure modunda mikrofon sürekli açık kalır. Ses Azure hizmetine gönderilir. Türkçe okumada kulaklık kullan; kulaklıksız metin çevirisi devam eder. Uygulama arka plana geçince durur."
             Mode.IMAGE->"Fotoğraf veya ekran görüntüsündeki İngilizce yazıyı Türkçeye çevir ve sesli dinle."
         }
         if(modelReady) message("Hazır. Başlatabilirsin.")
@@ -372,14 +390,14 @@ class MainActivity : ComponentActivity() {
         }.addOnFailureListener { if(alive) { prepare.isEnabled=true;message("Model indirilemedi. İnterneti kontrol edip yeniden dene.") } }
     }
     private fun primaryAction() {
-        if(!modelReady) { prepareModel();return }
+        if(!modelReady&&!(mode==Mode.MIC&&cloudMode)) { prepareModel();return }
         if(active) { stopSession();message("Oturum durduruldu.");return }
         when(mode) {
             Mode.CAMERA->if(has(Manifest.permission.CAMERA)) startCamera() else cameraPermission.launch(Manifest.permission.CAMERA)
             Mode.IMAGE->{ stopSession();photo.launch("image/*") }
             Mode.MIC->{
                 AlertDialog.Builder(this).setTitle("Oyun sesini dinle")
-                    .setMessage("Telefon mikrofonu İngilizce konuşmayı Android konuşma tanıma servisine iletir. Servis cihazına göre internet kullanabilir. Türkçe sesi kulaklıkla dinlemek, okuma sırasında oyunu dinlemeye devam etmeyi sağlar. Kulaklık yoksa okuma sırasında dinleme durur.")
+                    .setMessage(if(cloudMode) "Mikrofon sesi sürekli Azure Speech hizmetine gönderilecek. İnternet gerekir; hesabının tarife ve kotasına göre ücret oluşabilir. Türkçe sesli okumada kulaklık kullan. Ara sonuçlar değişebilir, tamamlanan cümleler okunur." else "Android konuşma servisi kullanılacak; internet gerekebilir. Bu test modu kesintisiz akış sağlamaz.")
                     .setPositiveButton("Dinlemeyi başlat") { _,_ -> if(has(Manifest.permission.RECORD_AUDIO)) startMicrophone() else microphonePermission.launch(Manifest.permission.RECORD_AUDIO) }
                     .setNegativeButton("Vazgeç",null).show()
             }
@@ -487,6 +505,7 @@ class MainActivity : ComponentActivity() {
     }
     private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker) {
         if(text.isBlank())return
+        if(active&&mode==Mode.MIC&&cloudMode&&!headphones.isChecked) { message("Canlı mikrofon açıkken sesli okuma için kulaklık seçeneğini aç.");return }
         if(!voice.ready) { message("Türkçe ses hazır değil. Ses ayarlarından Türkçe paket yükle.");return }
         if(!voice.add(text, active&&mode==Mode.CAMERA,speakerVoiceName(speakerSlot))) { rejected++;message("Ses sırası doldu. Çeviri ekranda korunuyor.") }
         refreshMetrics()
@@ -494,16 +513,63 @@ class MainActivity : ComponentActivity() {
     private fun refreshMetrics() {
         if(!::metrics.isInitialized)return
         val sounds=if(::voice.isInitialized) voice.count else 0
-        metrics.text="Çevrilen $completed  •  Bekleyen ${waiting.size + if(translating) 1 else 0}  •  Ses $sounds\nSon çeviri ${lastLag/1000.0} sn  •  Sıra/işlem uyarısı $rejected"
+        metrics.text="Çevrilen $completed  •  Bekleyen ${waiting.size + if(translating) 1 else 0}  •  Ses $sounds\nSon çeviri ${if(mode==Mode.MIC&&cloudMode) "bulut akışı (gecikme ölçülmedi)" else "${lastLag/1000.0} sn"}  •  Sıra/işlem uyarısı $rejected"
+    }
+    private fun showCloudSettings() {
+        if(active)stopSession()
+        val existing=cloudSettings.load()
+        val fields=vertical().apply { setPadding(dp(20),dp(8),dp(20),0) }
+        fields.addView(label("Azure Speech kaynağındaki bölgeyi ve anahtarı gir. Anahtar telefonda şifrelenir; GitHub'a ekleme. Boş anahtar mevcut kaydı korur.",14f,muted))
+        val area=EditText(this).apply { hint="Bölge: westeurope / eastus";setText(existing?.region.orEmpty());setTextColor(Color.WHITE);setSingleLine(true) }
+        val key=EditText(this).apply { hint=if(existing==null) "Speech anahtarı" else "Anahtar kayıtlı • değiştirmek için yaz";setTextColor(Color.WHITE);setSingleLine(true);inputType=android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD }
+        fields.addView(area);fields.addView(key)
+        val dialog=AlertDialog.Builder(this).setTitle("Canlı ses bağlantısı").setView(fields)
+            .setPositiveButton("Kaydet",null).setNegativeButton("Kapat",null)
+            .setNeutralButton("Kaydı sil") { _,_ -> cloudSettings.clear();message("Canlı ses bağlantı bilgileri silindi.") }.create()
+        dialog.setOnShowListener { dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            try { cloudSettings.save(key.text.toString(),area.text.toString().trim().lowercase(java.util.Locale.ROOT));key.text.clear();dialog.dismiss();message("Bağlantı ayarları kaydedildi. Dinlemeyi başlat; henüz bağlantı testi yapılmadı.") }
+            catch (_: Exception) { area.error="Geçerli Azure bölgesi ve anahtarı gerekir." }
+        } }
+        dialog.show()
+    }
+    private fun startCloudMicrophone() {
+        stopSession()
+        val credentials=cloudSettings.load()
+        if(credentials==null) { message("Önce Azure bağlantı ayarlarını kaydet.");showCloudSettings();return }
+        active=true;val token=epoch;start.text="Dinlemeyi durdur"
+        if(!headphones.isChecked) autoVoice.isChecked=false
+        signal.isIndeterminate=true;signalLabel.text="Canlı bağlantı kuruluyor…"
+        source.text="İngilizce konuşma bekleniyor…";result.text="Ara çeviri burada görünecek."
+        message("Azure canlı ses bağlantısı kuruluyor…")
+        streaming.start(credentials,{
+            if(valid(token)&&active) { signalLabel.text="Mikrofon akışı açık • İngilizce → Türkçe";message("Sürekli dinleme açık. Konuşma bekleniyor…") }
+        },{ id,english,turkish,final ->
+            if(valid(token)&&active&&mode==Mode.MIC) {
+                if(!final) {
+                    source.text=english
+                    if(turkish.isNotBlank()) result.text="Ara çeviri • değişebilir\n$turkish"
+                    message("Konuşma sürüyor • mikrofon akışı açık")
+                } else if(streamFinals.accept(id)) {
+                    source.text=english;result.text=turkish;lastTranslation=turkish;lastSpeaker=selectedSpeaker
+                    completed++;lastLag=0
+                    log.addFirst("Konuşmacı $selectedSpeaker • $english\n$turkish")
+                    while(log.size>12)log.removeLast()
+                    history.text=log.take(4).joinToString("\n\n")
+                    if(autoVoice.isChecked&&headphones.isChecked) enqueueVoice(turkish,selectedSpeaker)
+                    message("Cümle çevrildi • mikrofon dinlemeye devam ediyor");refreshMetrics()
+                }
+            }
+        },{ error -> if(valid(token)&&active) { stopSession();message(error) } })
     }
     private fun startMicrophone() {
         if(mode!=Mode.MIC)return
+        if(cloudMode) { startCloudMicrophone();return }
         stopSession()
         if(!SpeechRecognizer.isRecognitionAvailable(this)) { message("Bu telefonda konuşma tanıma servisi bulunamadı.");return }
         active=true;start.text="Dinlemeyi durdur";errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
         message("İngilizce oyun / video konuşması dinleniyor…");listenOnce()
     }
-    private fun canListen()=alive&&active&&mode==Mode.MIC&&has(Manifest.permission.RECORD_AUDIO)&&
+    private fun canListen()=alive&&active&&mode==Mode.MIC&&!cloudMode&&has(Manifest.permission.RECORD_AUDIO)&&
         (headphones.isChecked||voice.count==0)
     private fun scheduleListening(delay: Long=350) {
         handler.removeCallbacks(restart)
@@ -635,7 +701,8 @@ class MainActivity : ComponentActivity() {
     }
     private fun stopSession() {
         epoch++;active=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
-        provider?.unbindAll();pauseMicrophone()
+        provider?.unbindAll();pauseMicrophone();streaming.stop();streamFinals.clear()
+        if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;signalLabel.text="Mikrofon bekliyor" }
         if(::voice.isInitialized)voice.stop()
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->"Kamerayı başlat";Mode.MIC->"Dinlemeyi başlat";Mode.IMAGE->"Görsel seç" }
         refreshMetrics()
@@ -644,6 +711,6 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
         speech?.destroy();if(::voice.isInitialized)voice.close()
-        recognizer.close();translator.close();super.onDestroy()
+        streaming.close();recognizer.close();translator.close();super.onDestroy()
     }
 }
