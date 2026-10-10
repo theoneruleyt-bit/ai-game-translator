@@ -114,9 +114,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            if(proService.enabled&&now-lastServerCheck>=60000) {
+            if(now-lastServerCheck>=60000) {
                 lastServerCheck=now
-                proService.refresh { ok -> if(alive&&active&&!ok) { stopSession();message(getString(R.string.account_offline)) } }
+                if(proService.enabled)proService.refresh { ok -> if(alive&&active&&!ok) { stopSession();message(getString(R.string.account_offline)) } } else billing.refresh()
             }
             settings.edit().putLong("trial_used",trial.usedMillis).apply();refreshPro()
             if(!billing.pro&&trial.remainingMillis==0L) { stopSession(true);showPro();return }
