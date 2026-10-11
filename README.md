@@ -1,3 +1,7 @@
+# 0.16 — Canlı konuşma çevirisi
+
+Güncel kurulum, dil paketleri ve telefon testi: [LIVE_SPEECH_0_16.md](LIVE_SPEECH_0_16.md). APK indirmesi Releases taslağından yapılır.
+
 # 0.15.1 indirme düzeltmesi
 
 Yeni indirme adımları için [CI_DOWNLOAD_FIX.md](CI_DOWNLOAD_FIX.md) dosyasını okuyun. Önceki 0.15 artifact indirme yönergeleri bu pakette geçersizdir.

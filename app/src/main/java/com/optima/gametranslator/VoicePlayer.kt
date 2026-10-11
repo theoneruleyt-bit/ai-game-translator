@@ -15,6 +15,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     private data class Job(val text: String,val voiceName: String?,val rate: Float,val pitch: Float)
     private val pending = java.util.ArrayDeque<Job>()
     private var defaultVoiceName: String?=null
+    private var targetLanguage="tr"
     private var engine: TextToSpeech? = null
     private var currentId: String? = null
     private var sequence = 0L
@@ -31,10 +32,22 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     var pitch=1f
         set(value) { field=value;engine?.setPitch(value) }
     fun availableVoices(includeNetwork: Boolean): List<android.speech.tts.Voice> = engine?.voices
-        ?.filter { it.locale.language=="tr" && (includeNetwork || !it.isNetworkConnectionRequired) && !it.features.contains("notInstalled") }
+        ?.filter { it.locale.language==targetLanguage && (includeNetwork || !it.isNetworkConnectionRequired) && !it.features.contains("notInstalled") }
         ?.sortedWith(compareBy<android.speech.tts.Voice> { it.isNetworkConnectionRequired }
             .thenByDescending { it.quality }.thenBy { it.name }).orEmpty()
+    fun setTargetLanguage(language: String) {
+        if(targetLanguage==language)return
+        stop();targetLanguage=language;defaultVoiceName=null
+        val code=engine?.setLanguage(Locale.forLanguageTag(if(language=="tr") "tr-TR" else "en-US"))
+        ready=code!=null&&code>=TextToSpeech.LANG_AVAILABLE
+        if(ready) {
+            availableVoices(false).firstOrNull()?.let { engine?.voice=it }
+            defaultVoiceName=engine?.voice?.name
+        }
+        onChange()
+    }
     fun selectVoice(selected: android.speech.tts.Voice): Boolean {
+        if(selected.locale.language!=targetLanguage)return false
         stop()
         val selectedOk=engine?.setVoice(selected)==TextToSpeech.SUCCESS
         if(selectedOk)defaultVoiceName=selected.name
@@ -44,7 +57,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     init {
         engine = TextToSpeech(context) { code ->
             if(!closed) {
-                val language = if(code==TextToSpeech.SUCCESS) engine?.setLanguage(Locale.forLanguageTag("tr-TR")) else null
+                val language = if(code==TextToSpeech.SUCCESS) engine?.setLanguage(Locale.forLanguageTag(if(targetLanguage=="tr") "tr-TR" else "en-US")) else null
                 ready = language != null && language>=TextToSpeech.LANG_AVAILABLE
                 if(ready) {
                     val best=availableVoices(false).firstOrNull()
@@ -68,6 +81,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         if(!ready || closed || text.isBlank()) { lastFailure=messages.getString(R.string.ui_228);return false }
         val selected=voiceName ?: defaultVoiceName
         val requestedVoice=engine?.voices?.firstOrNull { it.name==selected }
+        if(requestedVoice!=null&&requestedVoice.locale.language!=targetLanguage) { lastFailure=messages.getString(R.string.ui_228);return false }
         if(requestedVoice?.isNetworkConnectionRequired==true&&!networkAllowed) { lastFailure=messages.getString(R.string.ui_229);return false }
         val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100)
         val chunks = mutableListOf<String>()

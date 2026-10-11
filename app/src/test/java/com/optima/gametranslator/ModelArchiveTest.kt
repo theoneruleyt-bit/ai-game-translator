@@ -39,6 +39,27 @@ class ModelArchiveTest {
             files.keys.forEach { assertEquals("data",File(base,"${ModelArchive.ROOT}/$it").readText()) }
         } finally { base.deleteRecursively() }
     }
+    @Test fun alternateStaticGraphAndPackRootAreSupported() {
+        val base=Files.createTempDirectory("vosk-static").toFile()
+        val root=SpeechPack.TURKISH.root
+        val bytes=ByteArrayOutputStream()
+        ZipOutputStream(bytes).use { zip ->
+            listOf("am/final.mdl","conf/model.conf","graph/HCLG.fst").forEach {
+                zip.putNextEntry(ZipEntry("$root/$it"));zip.write("data".toByteArray());zip.closeEntry()
+            }
+        }
+        try {
+            ModelArchive.unpack(ByteArrayInputStream(bytes.toByteArray()),base,root) { false }
+            assertTrue(File(base,"$root/graph/HCLG.fst").isFile)
+        } finally { base.deleteRecursively() }
+    }
+    @Test fun expandedLimitIsEnforced() {
+        val base=Files.createTempDirectory("vosk-limit").toFile()
+        try {
+            try { ModelArchive.unpack(ByteArrayInputStream(archive(mapOf("am/final.mdl" to "data"))),base,expandedLimit=2) { false };fail("Limit ignored") }
+            catch (_: IllegalArgumentException) { }
+        } finally { base.deleteRecursively() }
+    }
     @Test fun canceledExtractionStops() {
         val base=Files.createTempDirectory("vosk-cancel").toFile()
         try {

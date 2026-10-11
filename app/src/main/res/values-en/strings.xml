@@ -20,9 +20,9 @@
  <string name="ui_018" formatted="false">"Reset subtitle area"</string>
  <string name="ui_019" formatted="false">"LIVE CAMERA"</string>
  <string name="ui_020" formatted="false">"Follow the action in Turkish"</string>
- <string name="ui_021" formatted="false">"Continuous on-device listening • English speech is recognized and translated into Turkish locally. Download both models once before use."</string>
+ <string name="ui_021" formatted="false">"Continuous on-device listening • English ↔ Turkish. Stable speech segments are translated before the utterance ends."</string>
  <string name="ui_022" formatted="false">"Microphone idle"</string>
- <string name="ui_023" formatted="false">"Download / check speech model"</string>
+ <string name="ui_023" formatted="false">"Download / check selected speech pack"</string>
  <string name="ui_024" formatted="false">"Continuous offline listening (Vosk)"</string>
  <string name="ui_025" formatted="false">"Continuous on-device listening selected."</string>
  <string name="ui_026" formatted="false">"Android speech test selected. This mode does not provide continuous streaming."</string>
@@ -189,15 +189,15 @@
  <string name="ui_187">"%1$sTranslated %2$s  •  Pending %3$s  •  Speech %4$s\nLast translation step %5$s s  •  Queue/process warnings %6$s"</string>
  <string name="ui_188">"Session %1$s s • "</string>
  <string name="ui_189" formatted="false">"Preparing the speech model… First download uses about 40 MB."</string>
- <string name="ui_190" formatted="false">"English speech model ready ✓ Prepare the translation model too, then start listening."</string>
+ <string name="ui_190" formatted="false">"Selected speech model ready. Prepare the translation pack, then start listening."</string>
  <string name="ui_191" formatted="false">"On-device speech model ready"</string>
  <string name="ui_192" formatted="false">"Model preparation failed • try again"</string>
  <string name="ui_193" formatted="false">"Loading the local speech model…"</string>
- <string name="ui_194" formatted="false">"Waiting for English speech…"</string>
+ <string name="ui_194" formatted="false">"Waiting for speech in the selected language…"</string>
  <string name="ui_195" formatted="false">"Partial translation will appear here."</string>
  <string name="ui_196" formatted="false">"Preparing on-device listening…"</string>
  <string name="ui_197" formatted="false">"Microphone active • on-device English → Turkish"</string>
- <string name="ui_198" formatted="false">"Continuous listening active. Waiting for English speech…"</string>
+ <string name="ui_198" formatted="false">"Continuous listening active. Waiting for speech in the selected language…"</string>
  <string name="ui_199" formatted="false">"Translating phrase • microphone stays active"</string>
  <string name="ui_200" formatted="false">"Speech continuing • on-device listening active"</string>
  <string name="ui_201">"Partial translation • may change\n%1$s"</string>
@@ -226,7 +226,7 @@
  <string name="ui_224" formatted="false">"Could not prepare speech model. Check your connection and free storage, then retry."</string>
  <string name="ui_225" formatted="false">"Could not load speech engine on this device. Report your phone model and Android version."</string>
  <string name="ui_226" formatted="false">"Local listening could not start or was interrupted. Check microphone permission and other apps using the microphone."</string>
- <string name="ui_227" formatted="false">"No Turkish speech package found. Install one in speech settings."</string>
+ <string name="ui_227" formatted="false">"No speech pack for the target language. Install a Turkish or English voice in phone speech settings."</string>
  <string name="ui_228" formatted="false">"Turkish voice is not ready. Check speech settings."</string>
  <string name="ui_229" formatted="false">"The selected voice needs internet. Choose a local Turkish voice."</string>
  <string name="ui_230" formatted="false">"The speech engine could not read a phrase. Its translation remains on screen."</string>
@@ -258,4 +258,10 @@
  <string name="account_ready">Account connected. Demo and Pro status updated.</string>
  <string name="account_failed">Sign-in failed. Check the account and server configuration.</string>
  <string name="account_offline">Account service unavailable. Live use stopped; restart when connected.</string>
+ <string name="speech_pack_title" formatted="false">"Speech language and model"</string>
+ <string name="speech_pack_selected" formatted="false">"Download/check the selected speech pack, then start listening."</string>
+ <string name="speech_pack_help" formatted="false">"The fast pack is recommended for low latency. The extended English pack uses more memory and may be slower on some phones. The Turkish pack enables Turkish → English listening. Initial downloads need internet."</string>
+ <string name="slang_support" formatted="false">"Everyday speech, slang and gaming phrases"</string>
+ <string-array name="speech_packs"><item>"English → Turkish · Fast · 40 MB"</item><item>"English → Turkish · Extended · 128 MB"</item><item>"Turkish → English · 35 MB"</item></string-array>
+ <string name="speech_memory_error" formatted="false">"This phone could not load the selected model. Select the fast English pack and retry."</string>
 </resources>

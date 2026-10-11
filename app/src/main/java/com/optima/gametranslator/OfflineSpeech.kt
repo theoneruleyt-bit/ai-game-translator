@@ -25,7 +25,10 @@ class OfflineSpeech(context: Context) {
     private val messages=context.resources
     private val app=context.applicationContext
     private val root=File(app.filesDir,"speech-models")
-    private val modelPath=File(root,ModelArchive.ROOT)
+    var pack=SpeechPack.FAST
+        private set
+    private val modelPath get()=File(root,pack.root)
+    fun selectPack(selected: SpeechPack) { stop();pack=selected }
     private val main=Handler(Looper.getMainLooper())
     private val worker=Executors.newSingleThreadExecutor()
     private val generation=AtomicLong()
@@ -34,20 +37,20 @@ class OfflineSpeech(context: Context) {
     @Volatile private var connection: HttpURLConnection?=null
     @Volatile private var closed=false
     @Volatile private var flushRequested=false
-    fun ready()=File(modelPath,"ready-v1").isFile
+    fun ready()=File(modelPath,"ready-v1").isFile&&File(modelPath,"am/final.mdl").isFile&&File(modelPath,"conf/model.conf").isFile
     private fun deliver(token: Long,action: ()->Unit) { main.post { if(!closed&&generation.get()==token) action() } }
     fun prepare(onProgress: (String)->Unit,onDone: ()->Unit,onError: (String)->Unit) {
         if(closed)return
-        stop();val token=generation.get()
+        stop();val token=generation.get();val selected=pack;val target=File(root,selected.root)
         worker.execute {
             if(generation.get()!=token||closed)return@execute
             val staging=File(root,"staging-${token}")
             val archive=File(root,"download-${token}.zip")
             try {
-                if(ready()) { deliver(token,onDone);return@execute }
+                if(File(target,"ready-v1").isFile) { deliver(token,onDone);return@execute }
                 check(root.mkdirs()||root.isDirectory)
                 deliver(token) { onProgress(messages.getString(R.string.ui_220)) }
-                val http=URL("https://alphacephei.com/vosk/models/${ModelArchive.ROOT}.zip").openConnection() as HttpURLConnection
+                val http=URL("https://alphacephei.com/vosk/models/${selected.root}.zip").openConnection() as HttpURLConnection
                 connection=http;http.connectTimeout=15000;http.readTimeout=15000
                 require(http.responseCode==200&&http.url.protocol=="https")
                 val total=http.contentLengthLong
@@ -57,7 +60,7 @@ class OfflineSpeech(context: Context) {
                     while(true) {
                         check(generation.get()==token&&!closed)
                         val count=input.read(buffer);if(count<0)break
-                        size+=count;require(size<=100L*1024*1024)
+                        size+=count;require(size<=selected.archiveLimit)
                         output.write(buffer,0,count)
                         val progress=if(total>0) (size*100/total).toInt().coerceIn(0,100) else (size/1024/1024).toInt()
                         if(progress!=lastProgress) { lastProgress=progress;deliver(token) {
@@ -68,18 +71,20 @@ class OfflineSpeech(context: Context) {
                 http.disconnect();connection=null
                 deliver(token) { onProgress(messages.getString(R.string.ui_223)) }
                 check(staging.mkdirs()||staging.isDirectory)
-                archive.inputStream().use { ModelArchive.unpack(it,staging) { generation.get()!=token||closed } }
-                val unpacked=File(staging,ModelArchive.ROOT)
+                archive.inputStream().use { ModelArchive.unpack(it,staging,selected.root,selected.expandedLimit) { generation.get()!=token||closed } }
+                val unpacked=File(staging,selected.root)
                 Model(unpacked.absolutePath).close()
                 synchronized(lock) {
                     check(generation.get()==token&&!closed)
-                    if(modelPath.exists()) check(modelPath.deleteRecursively())
-                    check(unpacked.renameTo(modelPath))
-                    File(modelPath,"ready-v1").writeText("vosk-small-en-us-0.15")
+                    if(target.exists()) check(target.deleteRecursively())
+                    check(unpacked.renameTo(target))
+                    File(target,"ready-v1").writeText(selected.root)
                 }
                 deliver(token,onDone)
             } catch (_: Exception) {
                 deliver(token) { onError(messages.getString(R.string.ui_224)) }
+            } catch (_: OutOfMemoryError) {
+                deliver(token) { onError(messages.getString(R.string.speech_memory_error)) }
             } catch (_: LinkageError) {
                 deliver(token) { onError(messages.getString(R.string.ui_225)) }
             } finally {
@@ -90,20 +95,20 @@ class OfflineSpeech(context: Context) {
     @SuppressLint("MissingPermission")
     fun start(mode: Int=0,onReady: ()->Unit,onText: (String,Boolean)->Unit,onLevel: (Int)->Unit,onError: (String)->Unit) {
         if(closed)return
-        stop();val token=generation.get();flushRequested=false
+        stop();val token=generation.get();val target=modelPath;flushRequested=false
         worker.execute {
             if(generation.get()!=token||closed)return@execute
             var model: Model?=null;var recognizer: Recognizer?=null;var input: AudioRecord?=null
             try {
                 check(ContextCompat.checkSelfPermission(app,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)
                 check(ready())
-                RecognitionTuning.configure(modelPath,mode)
-                model=Model(modelPath.absolutePath)
+                RecognitionTuning.configure(target,mode)
+                try { model=Model(target.absolutePath) } catch (error: Exception) { File(target,"ready-v1").delete();throw error }
                 val decoder=Recognizer(model,16000f);recognizer=decoder
                 val minimum=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT)
                 check(minimum>0)
                 val mic=AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION,16000,
-                    AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT,maxOf(minimum*4,32000));input=mic
+                    AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT,maxOf(minimum*2,6400));input=mic
                 check(mic.state==AudioRecord.STATE_INITIALIZED)
                 synchronized(lock) {
                     check(generation.get()==token&&!closed)
@@ -111,7 +116,7 @@ class OfflineSpeech(context: Context) {
                 }
                 check(mic.recordingState==AudioRecord.RECORDSTATE_RECORDING)
                 deliver(token,onReady)
-                val buffer=ShortArray(800);var previous="";var lastLevel=0L
+                val buffer=ShortArray(800);var previous="";var lastLevel=0L;var lastPartial=0L
                 while(generation.get()==token&&!closed) {
                     val count=mic.read(buffer,0,buffer.size,AudioRecord.READ_BLOCKING)
                     if(generation.get()!=token||closed)break
@@ -129,14 +134,16 @@ class OfflineSpeech(context: Context) {
                         if(flushRequested&&!ended)decoder.reset()
                         flushRequested=false;previous=""
                         val text=JSONObject(json).optString("text").trim()
-                        if(text.isNotBlank()) deliver(token) { onText(text,true) }
+                        deliver(token) { onText(text,true) }
                     } else {
                         val partial=JSONObject(decoder.partialResult).optString("partial").trim()
-                        if(partial!=previous) { previous=partial;deliver(token) { onText(partial,false) } }
+                        if(partial!=previous&&now-lastPartial>=120) { previous=partial;lastPartial=now;deliver(token) { onText(partial,false) } }
                     }
                 }
             } catch (_: Exception) {
                 deliver(token) { onError(messages.getString(R.string.ui_226)) }
+            } catch (_: OutOfMemoryError) {
+                deliver(token) { onError(messages.getString(R.string.speech_memory_error)) }
             } catch (_: LinkageError) {
                 deliver(token) { onError(messages.getString(R.string.ui_225)) }
             } finally {

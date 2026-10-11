@@ -58,6 +58,22 @@ class MainActivity : ComponentActivity() {
     private var partialScheduled=false
     private var partialUtterance=0L
     private var pendingPartial=""
+    private var pendingPartialFinal=false
+    private var latestRecognized=""
+    private val liveCaption=java.util.ArrayDeque<String>()
+    private val deferredSystemVoice=java.util.ArrayDeque<Pair<String,Int>>()
+    private val liveSegments=LiveSpeechSegments()
+    private val conversation by lazy { ConversationLexicon(this) }
+    private lateinit var packChoice: Button
+    private var slangEnabled=true
+    private val speechPulse=object : Runnable {
+        override fun run() {
+            if(alive&&active&&mode==Mode.MIC) {
+                if(latestRecognized.isNotBlank()) processLiveSpeech(latestRecognized,false)
+                handler.postDelayed(this,180)
+            }
+        }
+    }
     private val partialTask=Runnable { partialScheduled=false;translatePartial() }
     private lateinit var localSpeech: CheckBox
     private lateinit var signal: ProgressBar
@@ -80,6 +96,19 @@ class MainActivity : ComponentActivity() {
     private val recognizer=TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     private val translator=Translation.getClient(TranslatorOptions.Builder()
         .setSourceLanguage(TranslateLanguage.ENGLISH).setTargetLanguage(TranslateLanguage.TURKISH).build())
+    private val reverseTranslator=Translation.getClient(TranslatorOptions.Builder()
+        .setSourceLanguage(TranslateLanguage.TURKISH).setTargetLanguage(TranslateLanguage.ENGLISH).build())
+    private fun translatingTurkish()=mode==Mode.MIC&&offline.pack.language=="tr"
+    private fun translateSmart(text: String): com.google.android.gms.tasks.Task<String> {
+        val reverse=translatingTurkish()
+        val exact=if(slangEnabled) conversation.exact(text,reverse) else null
+        if(exact!=null)return com.google.android.gms.tasks.Tasks.forResult(exact)
+        val prepared=if(slangEnabled&&!reverse) conversation.normalizeEnglish(text) else text
+        return (if(reverse) reverseTranslator else translator).translate(prepared)
+    }
+    private fun updateSpeechDirection() {
+        if(::voice.isInitialized) voice.setTargetLanguage(if(translatingTurkish()) "en" else "tr")
+    }
     private val gate=StabilityGate()
     private val speakers=SpeakerRouter()
     private var selectedSpeaker=0
@@ -264,6 +293,7 @@ class MainActivity : ComponentActivity() {
         androidx.core.view.WindowInsetsControllerCompat(window,window.decorView).apply {
             isAppearanceLightStatusBars=!dark;isAppearanceLightNavigationBars=!dark
         }
+        offline.selectPack(SpeechPack.ALL[settings.getInt("speech_pack",0).coerceIn(0,2)]);slangEnabled=settings.getBoolean("slang",true)
         speedMode=settings.getInt("speed_mode",0).coerceIn(0,2);adaptiveReading=settings.getBoolean("adaptive",true);keepScreen=settings.getBoolean("screen",true)
         selectedSpeaker=settings.getInt("speaker",0).coerceIn(0,16)
         automaticSubtitleNames=settings.getBoolean("names",true)
@@ -321,6 +351,22 @@ class MainActivity : ComponentActivity() {
         signalLabel=label(getString(R.string.ui_022),13f,mint);micHero.addView(signalLabel)
         signal=ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply { max=100 }
         micHero.addView(signal,LinearLayout.LayoutParams(-1,dp(10)))
+        packChoice=button(resources.getStringArray(R.array.speech_packs)[SpeechPack.ALL.indexOf(offline.pack)]) {
+            AlertDialog.Builder(this).setTitle(getString(R.string.speech_pack_title))
+                .setSingleChoiceItems(resources.getStringArray(R.array.speech_packs),SpeechPack.ALL.indexOf(offline.pack)) { dialog,index ->
+                    stopSession();offline.selectPack(SpeechPack.ALL[index]);settings.edit().putInt("speech_pack",index).apply()
+                    packChoice.text=resources.getStringArray(R.array.speech_packs)[index]
+                    updateSpeechDirection();refreshReadiness();dialog.dismiss()
+                    message(getString(R.string.speech_pack_selected))
+                }.setNegativeButton(getString(R.string.ui_039),null).show()
+        };micHero.addView(packChoice)
+        micHero.addView(label(getString(R.string.speech_pack_help),13f,muted))
+        micHero.addView(CheckBox(this).apply {
+            text=getString(R.string.slang_support);setTextColor(textInk);isChecked=slangEnabled
+            setOnCheckedChangeListener { _,checked ->
+                stopSession();slangEnabled=checked;settings.edit().putBoolean("slang",checked).apply()
+            }
+        })
         micHero.addView(button(getString(R.string.ui_023)) { prepareSpeechModel() })
         micHero.addView(CheckBox(this).apply {
             text=getString(R.string.ui_024);setTextColor(mint);isChecked=true
@@ -348,7 +394,7 @@ class MainActivity : ComponentActivity() {
                     .setPositiveButton(getString(R.string.ui_036)) { _,_ ->
                         try { speechTest.launch(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                            putExtra(RecognizerIntent.EXTRA_LANGUAGE,"en-US")
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE,if(translatingTurkish()) "tr-TR" else "en-US")
                             putExtra(RecognizerIntent.EXTRA_PROMPT,getString(R.string.ui_037))
                         }) } catch (_: Exception) { message(getString(R.string.ui_038)) }
                     }.setNegativeButton(getString(R.string.ui_039),null).show()
@@ -365,7 +411,7 @@ class MainActivity : ComponentActivity() {
         autoVoice=CheckBox(this).apply {
             text=getString(R.string.ui_045);setTextColor(textInk);isChecked=settings.getBoolean("auto_voice",true)
             setOnCheckedChangeListener { _,checked ->
-                if(!checked&&::voice.isInitialized) voice.stop()
+                if(!checked) { deferredSystemVoice.clear();if(::voice.isInitialized)voice.stop() }
                 if(checked&&active&&mode==Mode.MIC&&offlineMode) message(getString(R.string.ui_046))
             }
         };controls.addView(autoVoice)
@@ -657,7 +703,7 @@ class MainActivity : ComponentActivity() {
     private fun message(text: String) { if(alive&&::status.isInitialized) status.text=text }
     private fun valid(token: Long)=alive&&token==epoch
     private fun selectMode(next: Mode) {
-        stopSession();mode=next
+        stopSession();mode=next;updateSpeechDirection()
         tabs.forEachIndexed { index,b ->
             val selected=index==mode.ordinal;b.background=rounded(if(selected) mint else panel,14f)
             b.setTextColor(if(selected) ink else textInk)
@@ -678,7 +724,10 @@ class MainActivity : ComponentActivity() {
     }
     private fun prepareModel() {
         prepare.isEnabled=false;message(getString(R.string.ui_166))
-        translator.downloadModelIfNeeded().addOnSuccessListener {
+        translator.downloadModelIfNeeded().continueWithTask { task ->
+            if(!task.isSuccessful) throw (task.exception ?: IllegalStateException("Translation download failed"))
+            reverseTranslator.downloadModelIfNeeded()
+        }.addOnSuccessListener {
             if(alive) { modelReady=true;refreshReadiness();prepare.isEnabled=true;prepare.text=getString(R.string.ui_167);message(getString(R.string.ui_168)) }
         }.addOnFailureListener { if(alive) { prepare.isEnabled=true;message(getString(R.string.ui_169)) } }
     }
@@ -806,16 +855,17 @@ class MainActivity : ComponentActivity() {
         pumpTranslation();refreshMetrics();return accepted
     }
     private fun pumpTranslation() {
-        if(translating||!alive)return
+        if(translating||partialBusy||!alive)return
         val line=waiting.take()?:return
         val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;val cameraToken=cameraRevision;translating=true
         val translationTask=if(mode==Mode.MIC&&offlineMode&&line.text==cachedSource&&cachedTranslation.isNotBlank())
-            com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translator.translate(line.text)
+            com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translateSmart(line.text)
         translationTask.addOnSuccessListener { translated ->
             if(valid(token) && (!fromCamera || cameraToken==cameraRevision&&SystemClock.elapsedRealtime()-line.seenAt<=1500)) {
                 completed++;lastLag=SystemClock.elapsedRealtime()-line.seenAt
                 lastTranslation=translated;lastSource=line.text;lastSpeaker=line.speakerSlot
-                result.text=if(line.speakerName.isBlank()) translated else getString(R.string.ui_180, (line.speakerName).toString(), (line.speakerSlot).toString(), (translated).toString())
+                if(active&&mode==Mode.MIC) { liveCaption.addLast(translated);while(liveCaption.size>4)liveCaption.removeFirst() }
+                result.text=if(active&&mode==Mode.MIC) liveCaption.joinToString(" ") else if(line.speakerName.isBlank()) translated else getString(R.string.ui_180, (line.speakerName).toString(), (line.speakerSlot).toString(), (translated).toString())
                 log.addFirst("${if(line.speakerName.isBlank()) getString(R.string.ui_068, (line.speakerSlot).toString()) else line.speakerName} • ${line.text}\n${translated}")
                 while(log.size>100) log.removeLast()
                 history.text=log.take(4).joinToString("\n\n")
@@ -826,13 +876,18 @@ class MainActivity : ComponentActivity() {
             }
         }.addOnFailureListener {
             if(valid(token)) { gate.release(line.text);recent.forget(line.text);rejected++;message(getString(R.string.ui_184)) }
-        }.addOnCompleteListener { if(valid(token)) { translating=false;refreshMetrics();pumpTranslation();if(mode==Mode.MIC) scheduleListening() } }
+        }.addOnCompleteListener { if(valid(token)) { translating=false;refreshMetrics();pumpTranslation();if(mode==Mode.MIC) { scheduleListening();if(pendingPartial.isNotBlank()) schedulePartial(0) } } }
     }
     private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker) {
         if(text.isBlank())return
+        if(active&&mode==Mode.MIC&&!offlineMode&&!headphones.isChecked&&listening) {
+            if(deferredSystemVoice.size<16)deferredSystemVoice.addLast(text to speakerSlot)
+            else { rejected++;message(getString(R.string.ui_186)) }
+            return
+        }
         if(!voice.ready) { message(getString(R.string.ui_185));return }
         val style=if(speakerSlot==0) 0 else profilePrefs.getInt("style_${speakerSlot}",(speakerSlot-1)%resources.getStringArray(R.array.speaker_styles).size)
-        if(!voice.add(text, active&&mode==Mode.CAMERA,speakerVoiceName(speakerSlot),voice.pitch*SpeakerStyle.pitch(style),voice.rate*SpeakerStyle.rate(style))) { rejected++;message(voice.lastFailure ?: getString(R.string.ui_186)) }
+        if(!voice.add(text, active&&mode==Mode.CAMERA,if(translatingTurkish()) null else speakerVoiceName(speakerSlot),voice.pitch*SpeakerStyle.pitch(style),voice.rate*SpeakerStyle.rate(style))) { rejected++;message(voice.lastFailure ?: getString(R.string.ui_186)) }
         refreshMetrics()
     }
     private fun refreshReadiness() {
@@ -863,41 +918,46 @@ class MainActivity : ComponentActivity() {
         source.text=getString(R.string.ui_194);result.text=getString(R.string.ui_195)
         message(getString(R.string.ui_196))
         offline.start(speedMode,{
-            if(valid(token)&&active) { countLiveUse();signalLabel.text=getString(R.string.ui_197);message(getString(R.string.ui_198)) }
+            if(valid(token)&&active) { countLiveUse();signalLabel.text=packChoice.text;message(getString(R.string.ui_198));handler.post(speechPulse) }
         },{ english,final ->
             if(valid(token)&&active&&mode==Mode.MIC) {
-                partialRevision++;pendingPartial=if(final) "" else english
-                if(final) { partialUtterance++;handler.removeCallbacks(partialTask);partialScheduled=false }
-                if(final) {
-                    source.text=english
-                    accept(english,SystemClock.elapsedRealtime())
-                    message(getString(R.string.ui_199))
-                } else {
-                    if(english.isNotBlank()) {
-                        source.text=english;message(getString(R.string.ui_200))
-                        schedulePartial(if(speedMode==0) 100 else 200)
-                    }
-                }
+                processLiveSpeech(english,final)
             }
         },{ level -> if(valid(token)&&active) { signal.progress=level;meter.level=level } },{ error ->
             if(valid(token)&&active) { stopSession();message(error) }
         })
     }
+    private fun processLiveSpeech(text: String,final: Boolean) {
+        if(!active||mode!=Mode.MIC)return
+        source.text=text
+        if(!final&&latestRecognized.isBlank()&&text.isNotBlank())partialUtterance++
+        latestRecognized=if(final) "" else text
+        val update=liveSegments.update(text,final,SystemClock.elapsedRealtime())
+        if(final||update.chunks.isNotEmpty()) partialUtterance++
+        val preview=text
+        if(preview!=pendingPartial||pendingPartialFinal!=final)partialRevision++
+        pendingPartial=preview;pendingPartialFinal=final
+        if(final) { handler.removeCallbacks(partialTask);partialScheduled=false }
+        update.chunks.forEach { accept(it,SystemClock.elapsedRealtime()) }
+        if(preview.isNotBlank()&&(preview!=cachedSource||final)) schedulePartial(80)
+    }
     private fun schedulePartial(delay: Long) {
         if(!partialScheduled) { partialScheduled=true;handler.postDelayed(partialTask,delay) }
     }
     private fun translatePartial() {
-        if(!alive||!active||mode!=Mode.MIC||!offlineMode||pendingPartial.isBlank()||partialBusy||!modelReady)return
-        val token=epoch;val revision=partialRevision;val utterance=partialUtterance;val text=pendingPartial
+        if(!alive||!active||mode!=Mode.MIC||pendingPartial.isBlank()||partialBusy||translating||waiting.size>0||!modelReady)return
+        val token=epoch;val revision=partialRevision;val utterance=partialUtterance;val text=pendingPartial;val finalPreview=pendingPartialFinal;val previewStarted=SystemClock.elapsedRealtime()
         partialBusy=true
-        translator.translate(text).addOnSuccessListener { translated ->
-            if(valid(token)&&active&&utterance==partialUtterance&&pendingPartial.isNotBlank()) {
-                cachedSource=text;cachedTranslation=translated
-                result.text=getString(R.string.ui_201, (translated).toString())
+        val task=if(text==cachedSource&&cachedTranslation.isNotBlank()) com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translateSmart(text)
+        task.addOnSuccessListener { translated ->
+            if(valid(token)) { cachedSource=text;cachedTranslation=translated }
+            if(valid(token)&&active&&utterance==partialUtterance&&finalPreview==pendingPartialFinal&&(pendingPartial==text||pendingPartial.startsWith("$text "))) {
+                lastLag=SystemClock.elapsedRealtime()-previewStarted;refreshMetrics()
+                result.text=if(finalPreview) translated else getString(R.string.ui_201, (translated).toString())
             }
         }.addOnCompleteListener {
             if(valid(token)) {
-                partialBusy=false
+                partialBusy=false;pumpTranslation()
                 if(revision!=partialRevision&&pendingPartial.isNotBlank()) schedulePartial(100)
             }
         }
@@ -909,11 +969,11 @@ class MainActivity : ComponentActivity() {
         stopSession()
         if(!SpeechRecognizer.isRecognitionAvailable(this)) { message(getString(R.string.ui_202));return }
         active=true;beginSession();start.text=getString(R.string.ui_172);errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
-        message(getString(R.string.ui_203));listenOnce()
+        message(getString(R.string.ui_203));handler.post(speechPulse);listenOnce()
     }
     private fun canListen()=alive&&active&&mode==Mode.MIC&&!offlineMode&&has(Manifest.permission.RECORD_AUDIO)&&
         (headphones.isChecked||voice.count==0)
-    private fun scheduleListening(delay: Long=350) {
+    private fun scheduleListening(delay: Long=120) {
         handler.removeCallbacks(restart)
         if(canListen()&&!listening) handler.postDelayed(restart,delay)
     }
@@ -937,13 +997,13 @@ class MainActivity : ComponentActivity() {
                 }
                 override fun onBufferReceived(buffer: ByteArray?) { }
                 override fun onEndOfSpeech() {
-                    if(current()&&!finalRequested) { message(getString(R.string.ui_208));armSpeechDeadline(token,round,5000) }
+                    if(current()&&!finalRequested) { message(getString(R.string.ui_208));armSpeechDeadline(token,round,1200) }
                 }
                 override fun onPartialResults(partialResults: Bundle?) {
                     if(current()) partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.let {
                         if(it.isNotBlank()) {
-                            val changed=it!=partialText;partialText=it;source.text=it
-                            if(changed&&!finalRequested) armSpeechDeadline(token,round,1400)
+                            val changed=it!=partialText;partialText=it;processLiveSpeech(it,false)
+                            if(changed&&!finalRequested) armSpeechDeadline(token,round,700)
                         }
                     }
                 }
@@ -989,7 +1049,7 @@ class MainActivity : ComponentActivity() {
             speechHardDeadline=hard;handler.postDelayed(hard,20000)
             speech?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE,"en-US")
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE,if(translatingTurkish()) "tr-TR" else "en-US")
                 putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS,true)
                 putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,1)
             })
@@ -1016,7 +1076,7 @@ class MainActivity : ComponentActivity() {
             if(valid(token)&&round==micRound&&active&&mode==Mode.MIC)
                 finishSpeechChunk(partialText,token,round,true)
         }
-        speechDeadline=fallback;handler.postDelayed(fallback,5000)
+        speechDeadline=fallback;handler.postDelayed(fallback,1200)
     }
     private fun finishSpeechChunk(text: String,token: Long,round: Long,interim: Boolean) {
         if(!valid(token)||round!=micRound||!active||mode!=Mode.MIC)return
@@ -1025,8 +1085,9 @@ class MainActivity : ComponentActivity() {
         if(text.isNotBlank()) {
             source.text=text
             message(if(interim) getString(R.string.ui_215) else getString(R.string.ui_216))
-            accept(text,SystemClock.elapsedRealtime())
+            processLiveSpeech(text,true)
         } else {
+            latestRecognized="";liveSegments.reset();pendingPartial="";partialUtterance++
             emptySpeechRounds++
             if(emptySpeechRounds>=2) {
                 stopSession();message(getString(R.string.ui_217));return
@@ -1034,9 +1095,13 @@ class MainActivity : ComponentActivity() {
             message(getString(R.string.ui_218))
         }
         if(text.isNotBlank())emptySpeechRounds=0
-        scheduleListening(700)
+        while(autoVoice.isChecked&&deferredSystemVoice.isNotEmpty()) {
+            val job=deferredSystemVoice.removeFirst();enqueueVoice(job.first,job.second)
+        }
+        scheduleListening(120)
     }
     private fun pauseMicrophone() {
+        if(latestRecognized.isNotBlank()) { latestRecognized="";liveSegments.reset();pendingPartial="";partialUtterance++ }
         handler.removeCallbacks(restart);clearSpeechDeadline();micRound++;listening=false;partialText=""
         speech?.cancel();speech?.destroy();speech=null
         if(active&&mode==Mode.MIC) message(getString(R.string.ui_219))
@@ -1049,7 +1114,7 @@ class MainActivity : ComponentActivity() {
         settings.edit().putLong("trial_used",trial.usedMillis).commit();handler.removeCallbacks(trialTick)
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         epoch++;active=false;busy=false;accessChecking=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
-        provider?.unbindAll();pauseMicrophone();offline.stop();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
+        provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();liveCaption.clear();deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
         if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->getString(R.string.ui_042);Mode.MIC->getString(R.string.ui_160);Mode.IMAGE->getString(R.string.ui_161) }
@@ -1060,6 +1125,6 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         if(::billing.isInitialized)billing.close();if(::proService.isInitialized)proService.close();alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
         speech?.destroy();if(::voice.isInitialized)voice.close()
-        offline.close();recognizer.close();translator.close();super.onDestroy()
+        offline.close();recognizer.close();translator.close();reverseTranslator.close();super.onDestroy()
     }
 }

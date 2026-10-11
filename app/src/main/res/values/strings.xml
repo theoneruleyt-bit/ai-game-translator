@@ -20,9 +20,9 @@
  <string name="ui_018" formatted="false">"Altyazı alanını sıfırla"</string>
  <string name="ui_019" formatted="false">"CANLI KAMERA"</string>
  <string name="ui_020" formatted="false">"Oyunu veya videoyu Türkçe takip et"</string>
- <string name="ui_021" formatted="false">"Anahtarsız sürekli mikrofon • İngilizce konuşma cihazda tanınır ve Türkçeye çevrilir. İlk kullanımda konuşma ve çeviri modellerini indir."</string>
+ <string name="ui_021" formatted="false">"Cihaz içi sürekli dinleme • İngilizce ↔ Türkçe. Kararlı konuşma parçaları konuşma bitmeden çevrilir."</string>
  <string name="ui_022" formatted="false">"Mikrofon bekliyor"</string>
- <string name="ui_023" formatted="false">"İngilizce konuşma modelini indir / kontrol et"</string>
+ <string name="ui_023" formatted="false">"Seçilen konuşma paketini indir / kontrol et"</string>
  <string name="ui_024" formatted="false">"Anahtarsız sürekli dinleme (Vosk)"</string>
  <string name="ui_025" formatted="false">"Cihaz içi sürekli dinleme seçildi."</string>
  <string name="ui_026" formatted="false">"Android konuşma testi seçildi; sürekli akış sağlamaz."</string>
@@ -189,15 +189,15 @@
  <string name="ui_187">"%1$sÇevrilen %2$s  •  Bekleyen %3$s  •  Ses %4$s\nSon çeviri işlemi %5$s sn  •  Sıra/işlem uyarısı %6$s"</string>
  <string name="ui_188">"Oturum %1$s sn • "</string>
  <string name="ui_189" formatted="false">"Konuşma modeli hazırlanıyor… İlk indirme yaklaşık 40 MB internet kullanır."</string>
- <string name="ui_190" formatted="false">"İngilizce konuşma modeli hazır ✓ Çeviri modelini de hazırla, sonra dinlemeyi başlat."</string>
+ <string name="ui_190" formatted="false">"Seçilen konuşma modeli hazır. Çeviri paketini hazırla, sonra dinlemeyi başlat."</string>
  <string name="ui_191" formatted="false">"Cihaz içi konuşma modeli hazır"</string>
  <string name="ui_192" formatted="false">"Model hazırlanamadı • tekrar dene"</string>
  <string name="ui_193" formatted="false">"Yerel konuşma modeli açılıyor…"</string>
- <string name="ui_194" formatted="false">"İngilizce konuşma bekleniyor…"</string>
+ <string name="ui_194" formatted="false">"Seçilen dilde konuşma bekleniyor…"</string>
  <string name="ui_195" formatted="false">"Ara çeviri burada görünecek."</string>
  <string name="ui_196" formatted="false">"Cihaz içi dinleme hazırlanıyor…"</string>
  <string name="ui_197" formatted="false">"Mikrofon açık • cihaz içi İngilizce → Türkçe"</string>
- <string name="ui_198" formatted="false">"Sürekli dinleme açık. İngilizce konuşma bekleniyor…"</string>
+ <string name="ui_198" formatted="false">"Sürekli dinleme açık. Seçilen dilde konuşma bekleniyor…"</string>
  <string name="ui_199" formatted="false">"Replik çevriliyor • mikrofon açık kalıyor"</string>
  <string name="ui_200" formatted="false">"Konuşma sürüyor • cihaz içi dinleme açık"</string>
  <string name="ui_201">"Ara çeviri • değişebilir\n%1$s"</string>
@@ -226,7 +226,7 @@
  <string name="ui_224" formatted="false">"Konuşma modeli hazırlanamadı. İnterneti ve boş depolamayı kontrol edip tekrar indir."</string>
  <string name="ui_225" formatted="false">"Konuşma motoru bu cihazda yüklenemedi. Cihaz modeli ve Android sürümünü bildir."</string>
  <string name="ui_226" formatted="false">"Yerel dinleme başlatılamadı veya kesildi. Mikrofon iznini ve başka uygulamaların mikrofon kullanımını kontrol et."</string>
- <string name="ui_227" formatted="false">"Türkçe ses paketi bulunamadı. Ses ayarlarından Türkçe ses yükle."</string>
+ <string name="ui_227" formatted="false">"Hedef dilin ses paketi bulunamadı. Telefonun ses ayarlarından Türkçe veya İngilizce ses yükle."</string>
  <string name="ui_228" formatted="false">"Türkçe ses hazır değil. Ses ayarlarını kontrol et."</string>
  <string name="ui_229" formatted="false">"Seçili ses internet gerektiriyor. Yerel Türkçe ses seç."</string>
  <string name="ui_230" formatted="false">"Ses motoru bir repliği okuyamadı. Çeviri ekranda korunuyor."</string>
@@ -261,4 +261,10 @@
  <string name="account_offline">Hesap sunucusuna ulaşılamadı. Canlı kullanım durduruldu; bağlantı gelince tekrar başlat.</string>
  <string name="pro_server_url" translatable="false"></string>
  <string name="google_web_client_id" translatable="false"></string>
+ <string name="speech_pack_title" formatted="false">"Konuşma dili ve model"</string>
+ <string name="speech_pack_selected" formatted="false">"Seçilen konuşma paketini indir/kontrol et, sonra dinlemeyi başlat."</string>
+ <string name="speech_pack_help" formatted="false">"Hızlı paket düşük gecikme için önerilir. Kapsamlı İngilizce paketi daha fazla bellek kullanır ve bazı telefonlarda daha yavaş olabilir. Türkçe paketi Türkçe → İngilizce dinleme içindir. İlk indirme internet gerektirir."</string>
+ <string name="slang_support" formatted="false">"Günlük konuşma, argo ve oyun ifadeleri"</string>
+ <string-array name="speech_packs"><item>"İngilizce → Türkçe · Hızlı · 40 MB"</item><item>"İngilizce → Türkçe · Kapsamlı · 128 MB"</item><item>"Türkçe → İngilizce · 35 MB"</item></string-array>
+ <string name="speech_memory_error" formatted="false">"Bu telefon seçilen modeli açamadı. Hızlı İngilizce paketini seçip tekrar dene."</string>
 </resources>
