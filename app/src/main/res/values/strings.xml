@@ -270,4 +270,22 @@
  <string name="listen_version" formatted="false">"Dinleme düzeltmesi · 0.16.2"</string>
  <string name="speech_model_choice">"Konuşma modeli: %1$s"</string>
  <string name="complete_speech_help" formatted="false">"Yazılı ara çeviri konuşurken güncellenir. Ses, cümlenin sözcüklerini kesmeden kısa konuşma bölümünün sonunda okunur. Model ve dinleme hızı yukarıdaki düğmelerden seçilir."</string>
+ <string name="audio_capture_failure">Ses tanıma durdu veya sese yetişemedi. Hızlı modeli deneyin ve ağır uygulamaları kapatın.</string>
+ <string name="professional_title">Doğal internet sesi · Pilot bağlantı</string>
+ <string name="professional_description">Bu seçenek yapılandırılmış HTTPS hizmeti gerektirir. Kesinleşen çeviri metni hizmete gönderilir; ücretli kullanım oluşabilir. Gemini-TTS yapılandırıldığında doğal kadın/erkek ses ve duygu profilleri sunar; canlı bulut ses tanıma henüz eklenmedi. Erişim kodu yalnız bu uygulama oturumunda tutulur.</string>
+ <string name="professional_token">Pilot erişim kodu</string>
+ <string name="professional_female">Doğal kadın sesi</string>
+ <string name="professional_male">Doğal erkek sesi</string>
+ <string name="professional_disable">Bağlantıyı kapat</string>
+ <string name="professional_fallback">İnternet hizmeti kullanılamıyor; cihaz içi motor deneniyor.</string>
+ <string name="professional_enabled">Pilot bağlantı kaydedildi. Hizmet ilk istekte sınanacak.</string>
+ <string name="professional_invalid">Geçerli HTTPS adresi ve en az 16 karakter erişim kodu gerekli.</string>
+ <string name="tempo_title">Seslendirme temposu</string>
+ <string name="tempo_auto">Otomatik · süre ve gecikmeye göre</string>
+ <string name="tempo_slow">Yavaş</string>
+ <string name="tempo_normal">Normal</string>
+ <string name="tempo_fast">Hızlı</string>
+ <string name="tempo_very_fast">Çok hızlı</string>
+ <string-array name="expressive_moods"><item>Doğal · metne göre</item><item>Sakin</item><item>Enerjik</item><item>Gergin</item><item>Meraklı</item></string-array>
+ <string name="tempo_status">Ses: %1$s× · tahmini bekleyen ses: %2$s sn</string>
 </resources>

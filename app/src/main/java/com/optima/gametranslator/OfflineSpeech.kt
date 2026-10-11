@@ -20,7 +20,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.sqrt
 
-/** Recognition and capture remain on one worker; stop invalidates all queued UI events. */
+/** Capture never waits for decoding. Overflow is reported rather than silently losing speech. */
 class OfflineSpeech(context: Context) {
     private val messages=context.resources
     private val app=context.applicationContext
@@ -98,7 +98,7 @@ class OfflineSpeech(context: Context) {
         stop();val token=generation.get();val target=modelPath;flushRequested=false
         worker.execute {
             if(generation.get()!=token||closed)return@execute
-            var model: Model?=null;var recognizer: Recognizer?=null;var input: AudioRecord?=null
+            var model: Model?=null;var recognizer: Recognizer?=null;var input: AudioRecord?=null;var captureThread: Thread?=null
             try {
                 check(ContextCompat.checkSelfPermission(app,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)
                 check(ready())
@@ -116,15 +116,31 @@ class OfflineSpeech(context: Context) {
                 }
                 check(mic.recordingState==AudioRecord.RECORDSTATE_RECORDING)
                 deliver(token,onReady)
-                val buffer=ShortArray(800);var previous="";var lastLevel=0L;var lastPartial=0L
+                val audio=java.util.concurrent.ArrayBlockingQueue<ShortArray>(40)
+                val captureFailure=java.util.concurrent.atomic.AtomicReference<Exception?>()
+                val capture=Thread({
+                    try {
+                        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO)
+                        val readBuffer=ShortArray(800)
+                        while(generation.get()==token&&!closed) {
+                            val n=mic.read(readBuffer,0,readBuffer.size,AudioRecord.READ_BLOCKING)
+                            if(generation.get()!=token||closed)break
+                            check(n>0) { "Microphone read failed" }
+                            check(audio.offer(readBuffer.copyOf(n))) { "Recognition cannot keep up with audio" }
+                        }
+                    } catch(error: Exception) { captureFailure.set(error) }
+                },"translator-audio-capture").apply { isDaemon=true }
+                captureThread=capture;capture.start()
+                var previous="";var lastLevel=0L;var lastPartial=0L
                 while(generation.get()==token&&!closed) {
-                    val count=mic.read(buffer,0,buffer.size,AudioRecord.READ_BLOCKING)
-                    if(generation.get()!=token||closed)break
-                    check(count>0) { "Microphone read failed" }
+                    captureFailure.get()?.let { throw it }
+                    val buffer=audio.poll(100,java.util.concurrent.TimeUnit.MILLISECONDS)
+                    if(buffer==null) { check(capture.isAlive) { "Audio capture stopped" };continue }
+                    val count=buffer.size
                     val now=android.os.SystemClock.elapsedRealtime()
                     if(now-lastLevel>=150) {
                         lastLevel=now
-                        var sum=0.0;for(i in 0 until count)sum+=buffer[i].toDouble()*buffer[i]
+                        var sum=0.0;for(i in buffer.indices)sum+=buffer[i].toDouble()*buffer[i]
                         val level=(sqrt(sum/count)/32768.0*600).toInt().coerceIn(0,100)
                         deliver(token) { onLevel(level) }
                     }
@@ -141,7 +157,7 @@ class OfflineSpeech(context: Context) {
                     }
                 }
             } catch (_: Exception) {
-                deliver(token) { onError(messages.getString(R.string.ui_226)) }
+                deliver(token) { onError(messages.getString(R.string.audio_capture_failure)) }
             } catch (_: OutOfMemoryError) {
                 deliver(token) { onError(messages.getString(R.string.speech_memory_error)) }
             } catch (_: LinkageError) {
@@ -150,6 +166,7 @@ class OfflineSpeech(context: Context) {
                 synchronized(lock) {
                     if(recorder===input)recorder=null
                     try { input?.stop() } catch (_: Exception) { }
+                    captureThread?.join(1000)
                     input?.release()
                 }
                 recognizer?.close();model?.close()

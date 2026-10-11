@@ -267,4 +267,22 @@
  <string name="listen_version" formatted="false">"Listening fix · 0.16.2"</string>
  <string name="speech_model_choice">"Speech model: %1$s"</string>
  <string name="complete_speech_help" formatted="false">"Written preview updates while speaking. Audio reads a complete short utterance at its endpoint without cutting words. Use the buttons above to select the model and listening speed."</string>
+ <string name="audio_capture_failure">Audio recognition stopped or fell behind. Try the fast model and close other heavy apps.</string>
+ <string name="professional_title">Natural online voice · Pilot connection</string>
+ <string name="professional_description">Requires a configured HTTPS service. Final translation text is sent to the service and may incur charges. With Gemini-TTS configured, offers natural stock voices and expressive profiles. Cloud streaming recognition is not included yet. Access token is kept only for this app session.</string>
+ <string name="professional_token">Pilot access token</string>
+ <string name="professional_female">Natural female voice</string>
+ <string name="professional_male">Natural male voice</string>
+ <string name="professional_disable">Disable connection</string>
+ <string name="professional_fallback">Online service unavailable; trying the on-device engine.</string>
+ <string name="professional_enabled">Pilot connection set. Service will be checked on the first request.</string>
+ <string name="professional_invalid">Valid HTTPS URL and access token of at least 16 characters required.</string>
+ <string name="tempo_title">Narration tempo</string>
+ <string name="tempo_auto">Automatic · duration and delay</string>
+ <string name="tempo_slow">Slow</string>
+ <string name="tempo_normal">Normal</string>
+ <string name="tempo_fast">Fast</string>
+ <string name="tempo_very_fast">Very fast</string>
+ <string-array name="expressive_moods"><item>Natural · text cues</item><item>Calm</item><item>Energetic</item><item>Tense</item><item>Curious</item></string-array>
+ <string name="tempo_status">Voice: %1$s× · estimated waiting audio: %2$s s</string>
 </resources>

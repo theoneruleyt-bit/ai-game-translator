@@ -11,8 +11,19 @@ import java.util.Locale
 class VoicePlayer(context: Context, private val onChange: () -> Unit,
                   private val beforeSpeak: () -> Unit, private val onError: (String) -> Unit) {
     private val messages=context.resources
+    private val cache=context.cacheDir
+    var professional: ProfessionalGateway?=null
+    private val networkWorker=java.util.concurrent.Executors.newSingleThreadExecutor()
+    private var cloudPlayer: android.media.MediaPlayer?=null
+    private var cloudFile: java.io.File?=null
     private val handler = Handler(Looper.getMainLooper())
-    private data class Job(val text: String,val voiceName: String?,val rate: Float,val pitch: Float)
+    private data class Job(val text: String,val voiceName: String?,val rate: Float,val pitch: Float,val createdAt: Long,val sourceMillis: Long)
+    private val tempo=AdaptiveTempo()
+    private var startedAt=0L
+    private var playingJob: Job?=null
+    private var playingRate=1f
+    val currentRate: Float get()=playingRate
+    val estimatedWaitingMillis: Long get()=pending.sumOf { tempo.estimateMillis(it.text) }
     private val pending = java.util.ArrayDeque<Job>()
     private var defaultVoiceName: String?=null
     private var targetLanguage="tr"
@@ -28,9 +39,9 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     var ready = false
         private set
     var rate = 1.1f
-        set(value) { field=value;engine?.setSpeechRate(value) }
+        set(value) { field=value.coerceIn(.7f,1.5f) }
     var pitch=1f
-        set(value) { field=value;engine?.setPitch(value) }
+        set(value) { field=value.coerceIn(.85f,1.15f) }
     fun availableVoices(includeNetwork: Boolean): List<android.speech.tts.Voice> = engine?.voices
         ?.filter { it.locale.language==targetLanguage && (includeNetwork || !it.isNetworkConnectionRequired) && !it.features.contains("notInstalled") }
         ?.sortedWith(compareBy<android.speech.tts.Voice> { it.isNetworkConnectionRequired }
@@ -69,21 +80,21 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
             }
         }
         engine?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(id: String?) { }
+            override fun onStart(id: String?) { handler.post { if(currentId==id)startedAt=android.os.SystemClock.elapsedRealtime() } }
             override fun onDone(id: String?) { finish(id,false) }
             @Deprecated("Android TTS callback")
             override fun onError(id: String?) { finish(id,true) }
             override fun onError(id: String?, errorCode: Int) { finish(id,true) }
         })
     }
-    fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch,selectedRate: Float=rate): Boolean {
+    fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch,selectedRate: Float=rate,sourceMillis: Long=0): Boolean {
         lastFailure=null
-        if(!ready || closed || text.isBlank()) { lastFailure=messages.getString(R.string.ui_228);return false }
+        if((!ready&&professional?.configured!=true) || closed || text.isBlank()) { lastFailure=messages.getString(R.string.ui_228);return false }
         val selected=voiceName ?: defaultVoiceName
         val requestedVoice=engine?.voices?.firstOrNull { it.name==selected }
         if(requestedVoice!=null&&requestedVoice.locale.language!=targetLanguage) { lastFailure=messages.getString(R.string.ui_228);return false }
         if(requestedVoice?.isNetworkConnectionRequired==true&&!networkAllowed) { lastFailure=messages.getString(R.string.ui_229);return false }
-        val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100)
+        val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100).let { if(professional?.configured==true) minOf(it,900) else it }
         val chunks = mutableListOf<String>()
         var rest=text.trim()
         while(rest.length>limit) {
@@ -95,32 +106,73 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         // speech with the latest translation so it cannot lag dozens of lines.
         if(latestPending) pending.clear()
         if(count+chunks.size>64) { lastFailure=messages.getString(R.string.ui_186);return false }
-        chunks.forEach { pending.addLast(Job(it,selected,selectedRate,selectedPitch)) };pump();onChange();return true
+        chunks.forEach { pending.addLast(Job(it,selected,selectedRate,selectedPitch,android.os.SystemClock.elapsedRealtime(),sourceMillis/chunks.size)) };pump();onChange();return true
     }
     private fun pump() {
         if(currentId!=null || pending.isEmpty() || closed) return
         val job=pending.removeFirst();val id="voice-${++sequence}";currentId=id
+        playingJob=job;startedAt=0
+        playingRate=tempo.choose(job.text,job.rate,estimatedWaitingMillis,
+            android.os.SystemClock.elapsedRealtime()-job.createdAt,job.sourceMillis,adaptiveSpeed)
+        val service=professional
+        if(service?.configured==true) {
+            val language=targetLanguage;val rateNow=playingRate
+            networkWorker.execute {
+                var file: java.io.File?=null
+                try {
+                    val audio=service.synthesize(job.text,language,rateNow)
+                    file=java.io.File.createTempFile("speech-",".mp3",cache).apply { writeBytes(audio) }
+                    val output=requireNotNull(file)
+                    handler.post {
+                        if(closed||currentId!=id) { output.delete();return@post }
+                        try {
+                            val player=android.media.MediaPlayer();cloudPlayer=player;cloudFile=output
+                            player.setAudioAttributes(android.media.AudioAttributes.Builder()
+                                .setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+                                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH).build())
+                            player.setDataSource(output.absolutePath)
+                            player.setOnCompletionListener { if(currentId==id&&!closed) { releaseCloud();finish(id,false) } else { player.release();output.delete() } }
+                            player.setOnErrorListener { _,_,_ -> if(currentId==id&&!closed) { releaseCloud();finish(id,true) } else { player.release();output.delete() };true }
+                            player.setOnPreparedListener { if(currentId==id&&!closed) { beforeSpeak();startedAt=android.os.SystemClock.elapsedRealtime();it.start() } else { player.release();output.delete() } }
+                            player.prepareAsync()
+                        } catch(_: Exception) { releaseCloud();onError(messages.getString(R.string.professional_fallback));speakLocal(job,id) }
+                    }
+                } catch(_: Exception) {
+                    file?.delete()
+                    handler.post { if(!closed&&currentId==id) { onError(messages.getString(R.string.professional_fallback));speakLocal(job,id) } }
+                }
+            }
+            return
+        }
+        speakLocal(job,id)
+    }
+    private fun speakLocal(job: Job,id: String) {
+        if(!ready) { finish(id,true);return }
         val selected=engine?.voices?.firstOrNull { it.name==job.voiceName }
         if(selected!=null) {
             if(selected.isNetworkConnectionRequired&&!networkAllowed) { finish(id,true);return }
             if(engine?.setVoice(selected)!=TextToSpeech.SUCCESS) { finish(id,true);return }
         } else if(job.voiceName!=null) { finish(id,true);return }
-        engine?.setSpeechRate(SpeakerStyle.catchUpRate(job.rate,pending.size,adaptiveSpeed));engine?.setPitch(job.pitch)
+        engine?.setSpeechRate(playingRate);engine?.setPitch(job.pitch.coerceIn(.85f,1.15f))
         beforeSpeak()
         if(engine?.speak(job.text,TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS) finish(id,true)
     }
     private fun finish(id: String?, failed: Boolean) {
         handler.post {
             if(!closed && currentId==id && id!=null) {
-                currentId=null
+                if(!failed&&startedAt>0) playingJob?.let { tempo.completed(it.text,playingRate,android.os.SystemClock.elapsedRealtime()-startedAt) }
+                playingJob=null;startedAt=0;currentId=null
                 if(failed) onError(messages.getString(R.string.ui_230))
                 pump();onChange()
             }
         }
     }
+    private fun releaseCloud() {
+        cloudPlayer?.release();cloudPlayer=null;cloudFile?.delete();cloudFile=null
+    }
     fun clearWaiting() { pending.clear();onChange() }
     fun stop() {
-        currentId=null;pending.clear();sequence++;engine?.stop();onChange()
+        releaseCloud();currentId=null;playingJob=null;startedAt=0;tempo.reset();pending.clear();sequence++;engine?.stop();onChange()
     }
-    fun close() { closed=true;pending.clear();currentId=null;engine?.stop();engine?.shutdown();engine=null }
+    fun close() { closed=true;releaseCloud();networkWorker.shutdown();pending.clear();currentId=null;engine?.stop();engine?.shutdown();engine=null }
 }

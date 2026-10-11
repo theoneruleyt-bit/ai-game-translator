@@ -1,3 +1,7 @@
+# Güncel aşama: 0.17
+
+Ses yakalama, otomatik tempo ve isteğe bağlı doğal/duygulu ses pilotu için [STAGE_0_17.md](STAGE_0_17.md). Kurulum: [server/PROFESSIONAL_PILOT.md](server/PROFESSIONAL_PILOT.md).
+
 # 0.16.3 — Kamera 3 dk + Dinle 3 dk + Görsel 10 adet
 
 Güncel deneme hakları ve kurulum: [TRIAL_0_16_3.md](TRIAL_0_16_3.md). Önceki belgelerdeki ortak 3 dakika ve sınırsız ücretsiz galeri ifadeleri artık geçerli değildir.

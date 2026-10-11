@@ -16,3 +16,7 @@ server/__pycache__/
 *.sqlite3-*
 server/.env
 **/google-service-account.json
+
+*.sqlite
+*.sqlite-*
+__pycache__/
