@@ -1,3 +1,7 @@
+# Güncel düzeltme: 0.17.1
+
+[FIX_0_17_1.md](FIX_0_17_1.md)
+
 # Güncel aşama: 0.17
 
 Ses yakalama, otomatik tempo ve isteğe bağlı doğal/duygulu ses pilotu için [STAGE_0_17.md](STAGE_0_17.md). Kurulum: [server/PROFESSIONAL_PILOT.md](server/PROFESSIONAL_PILOT.md).

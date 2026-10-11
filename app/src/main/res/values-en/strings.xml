@@ -285,4 +285,6 @@
  <string name="tempo_very_fast">Very fast</string>
  <string-array name="expressive_moods"><item>Natural · text cues</item><item>Calm</item><item>Energetic</item><item>Tense</item><item>Curious</item></string-array>
  <string name="tempo_status">Voice: %1$s× · estimated waiting audio: %2$s s</string>
+ <string name="speech_recovering">Audio capture interrupted. Listening will restart automatically; audio may be missed during recovery.</string>
+ <string name="speech_translation_retry">Retrying this dialogue translation…</string>
 </resources>

@@ -63,6 +63,8 @@ class MainActivity : ComponentActivity() {
     private val liveCaption=java.util.ArrayDeque<String>()
     private data class DeferredVoice(val text: String,val slot: Int,val sourceMillis: Long)
     private val deferredSystemVoice=java.util.ArrayDeque<DeferredVoice>()
+    private var offlineFailures=0
+    private var retryLine: LineQueue.Entry?=null
     private var sourceBeganAt=0L
     private var sourceWindowMillis=0L
     private val liveSegments=LiveSpeechSegments()
@@ -888,7 +890,7 @@ class MainActivity : ComponentActivity() {
     }
     private fun pumpTranslation() {
         if(translating||partialBusy||!alive)return
-        val line=waiting.take()?:return
+        val line=retryLine?.also { retryLine=null }?:waiting.take()?:return
         val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;val cameraToken=cameraRevision;translating=true
         val translationTask=if(!professional.configured&&mode==Mode.MIC&&offlineMode&&line.text==cachedSource&&cachedTranslation.isNotBlank())
             com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translateSmart(line.text)
@@ -914,7 +916,10 @@ class MainActivity : ComponentActivity() {
                 else if(!active) message(getString(R.string.ui_183))
             }
         }.addOnFailureListener {
-            if(valid(token)) { gate.release(line.text);recent.forget(line.text);rejected++;message(getString(R.string.ui_184)) }
+            if(valid(token)) {
+                if(active&&mode==Mode.MIC&&line.attempts<2) { retryLine=line.copy(attempts=line.attempts+1);message(getString(R.string.speech_translation_retry)) }
+                else { gate.release(line.text);recent.forget(line.text);rejected++;message(getString(R.string.ui_184)) }
+            }
         }.addOnCompleteListener { if(valid(token)) { translating=false;refreshMetrics();pumpTranslation();if(mode==Mode.MIC) { scheduleListening();if(pendingPartial.isNotBlank()) schedulePartial(0) } } }
     }
     private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker,sourceMillis: Long=0) {
@@ -982,14 +987,30 @@ class MainActivity : ComponentActivity() {
         signal.isIndeterminate=false;signal.progress=0;signalLabel.text=getString(R.string.ui_193)
         source.text=getString(R.string.ui_194);result.text=getString(R.string.ui_195)
         message(getString(R.string.ui_196))
+        offlineFailures=0;runOfflineCapture(token)
+    }
+    private fun runOfflineCapture(token: Long) {
+        if(!valid(token)||!active||mode!=Mode.MIC||!offlineMode)return
         offline.start(speedMode,{
-            if(valid(token)&&active) { countLiveUse();signalLabel.text=packChoice.text;message(getString(R.string.ui_198));handler.post(speechPulse) }
+            if(valid(token)&&active) { countLiveUse();signalLabel.text=packChoice.text;message(getString(R.string.ui_198));handler.removeCallbacks(speechPulse);handler.post(speechPulse) }
         },{ english,final ->
             if(valid(token)&&active&&mode==Mode.MIC) {
+                if(english.isNotBlank())offlineFailures=0
                 processLiveSpeech(english,final)
             }
         },{ level -> if(valid(token)&&active) { signal.progress=level;meter.level=level } },{ error ->
-            if(valid(token)&&active) { stopSession();message(error) }
+            if(valid(token)&&active&&mode==Mode.MIC) {
+                if(!has(Manifest.permission.RECORD_AUDIO)||!offline.ready()||error==getString(R.string.speech_memory_error)||error==getString(R.string.ui_225)) {
+                    stopSession();message(error)
+                } else {
+                    offline.stop();offlineFailures++
+                    microphoneTrial.stop(SystemClock.elapsedRealtime());saveTrialUsage(true)
+                    handler.removeCallbacks(speechPulse);latestRecognized="";sourceBeganAt=0;sourceWindowMillis=0
+                    liveSegments.reset();pendingPartial="";partialUtterance++
+                    message(getString(R.string.speech_recovering))
+                    handler.postDelayed({ if(valid(token)&&active&&mode==Mode.MIC)runOfflineCapture(token) },minOf(10000L,1000L*offlineFailures))
+                }
+            }
         })
     }
     private fun processLiveSpeech(text: String,final: Boolean) {
@@ -1091,10 +1112,10 @@ class MainActivity : ComponentActivity() {
                     if(partialText.isNotBlank() && (error==SpeechRecognizer.ERROR_NO_MATCH||error==SpeechRecognizer.ERROR_SPEECH_TIMEOUT)) {
                         finishSpeechChunk(partialText,token,round,true);return
                     }
+                    micRound++ // Ignore late callbacks from the failed recognition round.
                     if(error==SpeechRecognizer.ERROR_NO_MATCH||error==SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
                         emptySpeechRounds++
-                        if(emptySpeechRounds>=3) { stopSession();message(getString(R.string.ui_209)) }
-                        else { message(getString(R.string.ui_210));scheduleListening(900) }
+                        message(getString(R.string.ui_210));scheduleListening(250)
                     }
                     else {
                         val languageError=Build.VERSION.SDK_INT>=31 && (error==SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED||error==SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE)
@@ -1104,9 +1125,9 @@ class MainActivity : ComponentActivity() {
                             scheduleListening(1000);return
                         }
                         errors++
-                        if(error==SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS||languageError||errors>=3) {
+                        if(error==SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS||languageError) {
                             stopSession();message(getString(R.string.ui_212, (error).toString()))
-                        } else { message("Dinleme yeniden deneniyor (kod ${error})…");scheduleListening(1500) }
+                        } else { message("Dinleme yeniden deneniyor (kod ${error})…");scheduleListening(minOf(10000L,500L*errors)) }
                     }
                 }
                 override fun onEvent(eventType: Int,params: Bundle?) { }
@@ -1160,9 +1181,6 @@ class MainActivity : ComponentActivity() {
         } else {
             latestRecognized="";liveSegments.reset();pendingPartial="";partialUtterance++
             emptySpeechRounds++
-            if(emptySpeechRounds>=2) {
-                stopSession();message(getString(R.string.ui_217));return
-            }
             message(getString(R.string.ui_218))
         }
         if(text.isNotBlank())emptySpeechRounds=0
@@ -1182,7 +1200,7 @@ class MainActivity : ComponentActivity() {
         captureClockStarted=false;pendingTrialImage=null
         saveTrialUsage(true);handler.removeCallbacks(trialTick)
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        epoch++;active=false;busy=false;accessChecking=false;frozen=false;translating=false;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
+        epoch++;active=false;busy=false;accessChecking=false;frozen=false;translating=false;retryLine=null;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
         professional.cancelRequests();provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();sourceBeganAt=0;sourceWindowMillis=0;liveCaption.clear();speechDisplayRevision=0;lastSpeechDisplayRevision=-1;deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
         if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }
