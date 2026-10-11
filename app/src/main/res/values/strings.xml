@@ -306,4 +306,9 @@
  <string name="free_active">Sherpa-ONNX cihaz içi dinleme aktif. Seslendirme için kulaklık kullanın.</string>
  <string name="free_download_failed">Model indirilemedi veya bütünlük denetimi başarısız. Bağlantıyı kontrol edip yeniden indirin.</string>
  <string name="free_capture_failed">Ücretsiz ses motoru durdu veya sese yetişemedi. Bu telefon için model hızı ölçülmeli.</string>
+    <string name="test_turkish_voice">Türkçe sesi dene</string>
+    <string name="install_turkish_voice">Cihazın metinden konuşma motorunda Türkçe ses hazır değil. Ses verilerini yükleyip Türkçe paketini seçin; sonra bu düğmeyle yeniden deneyin.</string>
+    <string name="listening_voice_choice">Dinlerken Türkçe okumayı açmak için kulaklık kullanın. Telefon hoparlörünün sesi mikrofona geri girerse yanlış tanıma oluşabilir.</string>
+    <string name="listening_with_headphones">Kulaklıkla sesli çeviri</string>
+    <string name="listening_text_only">Yalnızca yazılı çeviri</string>
 </resources>

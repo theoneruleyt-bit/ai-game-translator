@@ -1,3 +1,7 @@
+# Güncel düzeltme: 0.19.1
+
+[FIX_0_19_1.md](FIX_0_19_1.md) — Türkçe ses testi ve görünür dinleme/seslendirme seçimi.
+
 # Güncel sürüm: 0.19 — Ücretsiz cihaz içi dinleme
 
 [FREE_0_19.md](FREE_0_19.md) — Varsayılan İngilizce Sherpa akışı; sunucu/API anahtarı gerekmez. Telefon performansı henüz doğrulanmadı. Aşağıdaki belgeler önceki aşamaların kayıtlarıdır.

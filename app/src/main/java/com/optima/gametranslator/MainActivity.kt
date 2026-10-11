@@ -452,7 +452,8 @@ class MainActivity : ComponentActivity() {
             text=getString(R.string.ui_045);setTextColor(textInk);isChecked=settings.getBoolean("auto_voice",true)
             setOnCheckedChangeListener { _,checked ->
                 if(!checked) { deferredSystemVoice.clear();if(::voice.isInitialized)voice.stop() }
-                if(checked&&active&&mode==Mode.MIC&&offlineMode) message(getString(R.string.ui_046))
+                if(checked&&active&&mode==Mode.MIC&&(freeListening||cloudListening)&&!headphones.isChecked) confirmListeningVoice {}
+                else if(checked&&active&&mode==Mode.MIC&&offlineMode) message(getString(R.string.ui_046))
             }
         };controls.addView(autoVoice)
         region=CheckBox(this).apply {
@@ -471,6 +472,17 @@ class MainActivity : ComponentActivity() {
                 }
             }
         };controls.addView(headphones)
+        controls.addView(button(getString(R.string.test_turkish_voice)) {
+            if(active)stopSession()
+            voice.professional=null;voice.setTargetLanguage("tr")
+            if(!voice.ready) {
+                AlertDialog.Builder(this).setMessage(getString(R.string.install_turkish_voice))
+                    .setPositiveButton(getString(R.string.ui_058)) { _,_ ->
+                        try { startActivity(Intent(android.speech.tts.TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)) }
+                        catch(_: Exception) { message(getString(R.string.install_turkish_voice)) }
+                    }.setNegativeButton(getString(R.string.ui_039),null).show()
+            } else if(!voice.add("Merhaba. Türkçe çeviriler bu sesle okunacak."))message(voice.lastFailure ?: getString(R.string.ui_230))
+        })
         val advanced=vertical().apply { visibility=View.GONE }
         controls.addView(button(getString(R.string.ui_052)) { advanced.visibility=if(advanced.visibility==View.VISIBLE)View.GONE else View.VISIBLE })
         controls.addView(advanced)
@@ -950,7 +962,7 @@ class MainActivity : ComponentActivity() {
             else { rejected++;message(getString(R.string.ui_186)) }
             return
         }
-        if(!voice.ready&&!professional.configured) { message(getString(R.string.ui_185));return }
+        if(!voice.ready&&voice.professional?.configured!=true) { message(getString(R.string.ui_185));return }
         val style=if(speakerSlot==0) 0 else profilePrefs.getInt("style_${speakerSlot}",(speakerSlot-1)%resources.getStringArray(R.array.speaker_styles).size)
         if(!voice.add(text, active&&mode==Mode.CAMERA,if(translatingTurkish()) null else speakerVoiceName(speakerSlot),voice.pitch*SpeakerStyle.pitch(style),voice.rate*SpeakerStyle.rate(style),sourceMillis)) { rejected++;message(voice.lastFailure ?: getString(R.string.ui_186)) }
         refreshMetrics()
@@ -1075,6 +1087,15 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun confirmListeningVoice(continueListening: ()->Unit) {
+        AlertDialog.Builder(this).setTitle(getString(R.string.test_turkish_voice))
+            .setMessage(getString(R.string.listening_voice_choice))
+            .setPositiveButton(getString(R.string.listening_with_headphones)) { _,_ ->
+                headphones.isChecked=true;autoVoice.isChecked=true;continueListening()
+            }.setNegativeButton(getString(R.string.listening_text_only)) { _,_ ->
+                autoVoice.isChecked=false;continueListening()
+            }.show()
+    }
     private fun prepareFreeSpeech() {
         stopSession();message(getString(R.string.free_downloading,"0"))
         freeSpeech.prepare({ percent -> message(getString(R.string.free_downloading,percent.toString())) },
@@ -1084,7 +1105,7 @@ class MainActivity : ComponentActivity() {
         stopSession()
         if(!freeSpeech.ready()) { prepareFreeSpeech();return }
         if(offline.pack.language!="en") { offline.selectPack(SpeechPack.FAST);packChoice.text=getString(R.string.speech_model_choice,resources.getStringArray(R.array.speech_packs)[0]);updateSpeechDirection() }
-        if(autoVoice.isChecked&&!headphones.isChecked)autoVoice.isChecked=false
+        if(autoVoice.isChecked&&!headphones.isChecked) { confirmListeningVoice { startFreeMicrophone() };return }
         voice.professional=null
         active=true;beginSession();start.text=getString(R.string.ui_172);runFreeCapture(epoch)
     }

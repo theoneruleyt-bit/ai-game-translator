@@ -47,7 +47,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         ?.sortedWith(compareBy<android.speech.tts.Voice> { it.isNetworkConnectionRequired }
             .thenByDescending { it.quality }.thenBy { it.name }).orEmpty()
     fun setTargetLanguage(language: String) {
-        if(targetLanguage==language)return
+        if(targetLanguage==language&&ready)return
         stop();targetLanguage=language;defaultVoiceName=null
         val code=engine?.setLanguage(Locale.forLanguageTag(if(language=="tr") "tr-TR" else "en-US"))
         ready=code!=null&&code>=TextToSpeech.LANG_AVAILABLE
@@ -90,10 +90,12 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch,selectedRate: Float=rate,sourceMillis: Long=0): Boolean {
         lastFailure=null
         if((!ready&&professional?.configured!=true) || closed || text.isBlank()) { lastFailure=messages.getString(R.string.ui_228);return false }
-        val selected=voiceName ?: defaultVoiceName
-        val requestedVoice=engine?.voices?.firstOrNull { it.name==selected }
-        if(requestedVoice!=null&&requestedVoice.locale.language!=targetLanguage) { lastFailure=messages.getString(R.string.ui_228);return false }
-        if(requestedVoice?.isNetworkConnectionRequired==true&&!networkAllowed) { lastFailure=messages.getString(R.string.ui_229);return false }
+        val usable=availableVoices(networkAllowed)
+        val selected=usable.firstOrNull { it.name==(voiceName ?: defaultVoiceName) }?.name
+            ?: usable.firstOrNull()?.name
+        if(selected==null&&engine?.voice?.isNetworkConnectionRequired==true&&!networkAllowed) {
+            lastFailure=messages.getString(R.string.ui_229);return false
+        }
         val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100).let { if(professional?.configured==true) minOf(it,900) else it }
         val chunks = mutableListOf<String>()
         var rest=text.trim()

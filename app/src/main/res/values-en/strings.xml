@@ -303,4 +303,9 @@
  <string name="free_active">Sherpa-ONNX on-device recognition active. Use headphones for narration.</string>
  <string name="free_download_failed">Model download or integrity check failed. Check connection and retry.</string>
  <string name="free_capture_failed">Free speech engine stopped or could not keep up. Model speed must be measured on this phone.</string>
+    <string name="test_turkish_voice">Test Turkish voice</string>
+    <string name="install_turkish_voice">Turkish speech is not ready in the device text-to-speech engine. Install voice data and select the Turkish pack, then retry this button.</string>
+    <string name="listening_voice_choice">Use headphones to hear Turkish translations while listening. Speaker audio feeding back into the microphone can cause false recognition.</string>
+    <string name="listening_with_headphones">Read with headphones</string>
+    <string name="listening_text_only">Text translation only</string>
 </resources>
