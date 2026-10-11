@@ -1,3 +1,7 @@
+# 0.15.1 indirme düzeltmesi
+
+Yeni indirme adımları için [CI_DOWNLOAD_FIX.md](CI_DOWNLOAD_FIX.md) dosyasını okuyun. Önceki 0.15 artifact indirme yönergeleri bu pakette geçersizdir.
+
 # AI Game Translator 0.15 — Son kontroller / Sunucusuz
 
 Kamera ve mikrofon ile İngilizce → Türkçe yerel çeviri ve Türkçe seslendirme. Ortak 3 dakikalık aktif demo. Aylık $4.99 / yıllık $49.99 / ömür boyu $199 Pro modeli korunur.
