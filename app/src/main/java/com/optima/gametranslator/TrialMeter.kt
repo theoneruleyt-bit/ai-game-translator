@@ -1,6 +1,6 @@
 package com.optima.gametranslator
 
-/** Counts active capture only, with a monotonic clock. Shared by camera and microphone. */
+/** Counts active capture only, with a monotonic clock. Each capture mode has an independent instance. */
 class TrialMeter(used: Long=0) {
     companion object { const val LIMIT=180000L }
     var usedMillis=used.coerceIn(0,LIMIT)

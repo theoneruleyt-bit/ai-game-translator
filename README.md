@@ -1,3 +1,11 @@
+# 0.16.3 — Kamera 3 dk + Dinle 3 dk + Görsel 10 adet
+
+Güncel deneme hakları ve kurulum: [TRIAL_0_16_3.md](TRIAL_0_16_3.md). Önceki belgelerdeki ortak 3 dakika ve sınırsız ücretsiz galeri ifadeleri artık geçerli değildir.
+
+# 0.16.2 — Eksiksiz konuşma ve görünür dinleme seçimleri
+
+Güncel kurulum ve davranış: [FIX_0_16_2.md](FIX_0_16_2.md). Önceki 0.16 belgesindeki konuşma bitmeden kısa sözcük parçalarının seslendirilmesi bu sürümde kaldırılmıştır; yazılı ara çeviri canlıdır, ses tamamlanmış bölümü okur.
+
 # 0.16.1 — Test düzeltmesi
 
 Güncel düzeltme ve commit adımları: [FIX_0_16_1.md](FIX_0_16_1.md).

@@ -9,9 +9,9 @@ object RecognitionTuning {
         val original=File(model,"conf/model.conf.original")
         if(!original.exists()) config.copyTo(original)
         val values=when(mode) {
-            0 -> floatArrayOf(.20f,.40f,.65f,3f)
-            1 -> floatArrayOf(.30f,.60f,.90f,5f)
-            else -> floatArrayOf(.45f,.80f,1.20f,8f)
+            0 -> floatArrayOf(.35f,.70f,1f,12f)
+            1 -> floatArrayOf(.45f,.80f,1.20f,20f)
+            else -> floatArrayOf(.60f,1f,1.60f,30f)
         }
         var text=original.readText()
         val options=linkedMapOf("endpoint.rule2.min-trailing-silence" to values[0],

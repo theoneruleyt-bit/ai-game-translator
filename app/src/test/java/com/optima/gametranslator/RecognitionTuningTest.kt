@@ -13,16 +13,16 @@ class RecognitionTuningTest {
             val original="--beam=10\n--endpoint.rule2.min-trailing-silence=0.5\n"
             val conf=File(root,"conf/model.conf");conf.writeText(original)
             RecognitionTuning.configure(root,0)
-            assertTrue(conf.readText().contains("--endpoint.rule2.min-trailing-silence=0.2"))
+            assertTrue(conf.readText().contains("--endpoint.rule2.min-trailing-silence=0.35"))
             assertEquals(1,conf.readLines().count { it.startsWith("--endpoint.rule2.min-trailing-silence=") })
             RecognitionTuning.configure(root,1)
-            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=5.0"))
+            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=20.0"))
             assertTrue(conf.readText().contains("--beam=10"))
             RecognitionTuning.configure(root,2)
-            assertTrue(conf.readText().contains("--endpoint.rule2.min-trailing-silence=0.45"))
-            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=8.0"))
+            assertTrue(conf.readText().contains("--endpoint.rule2.min-trailing-silence=0.6"))
+            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=30.0"))
             RecognitionTuning.configure(root,0)
-            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=3.0"))
+            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=12.0"))
             for(rule in 2..5) {
                 assertEquals(1,conf.readLines().count { it.startsWith("--endpoint.rule$rule.") })
             }

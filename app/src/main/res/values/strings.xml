@@ -20,7 +20,7 @@
  <string name="ui_018" formatted="false">"Altyazı alanını sıfırla"</string>
  <string name="ui_019" formatted="false">"CANLI KAMERA"</string>
  <string name="ui_020" formatted="false">"Oyunu veya videoyu Türkçe takip et"</string>
- <string name="ui_021" formatted="false">"Cihaz içi sürekli dinleme • İngilizce ↔ Türkçe. Kararlı konuşma parçaları konuşma bitmeden çevrilir."</string>
+ <string name="ui_021" formatted="false">"Sürekli cihaz içi dinleme • İngilizce ↔ Türkçe. Canlı yazılı önizleme ve tamamlanmış konuşma bölümleri için seslendirme."</string>
  <string name="ui_022" formatted="false">"Mikrofon bekliyor"</string>
  <string name="ui_023" formatted="false">"Seçilen konuşma paketini indir / kontrol et"</string>
  <string name="ui_024" formatted="false">"Anahtarsız sürekli dinleme (Vosk)"</string>
@@ -132,9 +132,9 @@
  <string name="ui_130" formatted="false">"Kompakt"</string>
  <string name="ui_131" formatted="false">"Normal"</string>
  <string name="ui_132" formatted="false">"Büyük"</string>
- <string name="ui_133" formatted="false">"Hızlı • kısa parçalar"</string>
- <string name="ui_134" formatted="false">"Dengeli • daha fazla bağlam"</string>
- <string name="ui_135" formatted="false">"Tam cümle • daha uzun bekleme"</string>
+ <string name="ui_133" formatted="false">"Hızlı • kısa duraklama"</string>
+ <string name="ui_134" formatted="false">"Dengeli • doğal duraklama"</string>
+ <string name="ui_135" formatted="false">"Uzun konuşma • daha uzun duraklama"</string>
  <string name="ui_136">"Dinleme: %1$s"</string>
  <string name="ui_137" formatted="false">"Dinleme hızı"</string>
  <string name="ui_138">"%1$s seçildi. Dinlemeyi yeniden başlat."</string>
@@ -238,13 +238,13 @@
 
     <string name="pro_title">Pro • Canlı çeviri</string>
     <string name="pro_plans">Aylık $4.99 • Yıllık $49.99 • Ömür boyu $199</string>
-    <string name="pro_detail">Kamera ve mikrofon için ortak 3 dakika Pro denemesi. Yalnızca aktif kullanım sayılır. Deneme otomatik ücretlendirilmez. Pro: sınırsız canlı çeviri, sesli okuma ve konuşmacı profilleri.</string>
+    <string name="pro_detail">"Kamera için 3 dakika, dinleme için ayrı 3 dakika ve 10 görsel çeviri hakkı. Süreler yalnızca aktif dinleme/kamera kullanımında ilerler. Deneme otomatik ücretlendirilmez. Pro ile kamera, dinleme ve görsel çeviri sınırsızdır."</string>
     <string name="pro_open">Pro seçenekleri</string>
     <string name="pro_restore">Satın alımları geri yükle</string>
-    <string name="pro_start">3 dakikalık denemeyi başlat</string>
+    <string name="pro_start">"Deneme haklarını kullan"</string>
     <string name="pro_unavailable">Satın alma henüz hazır değil. Google Play ürünleri ve lisans anahtarı yapılandırılmalı.</string>
-    <string name="pro_remaining">Deneme: %s saniye kaldı</string>
-    <string name="pro_active">Pro etkin • Sınırsız canlı çeviri</string>
+    <string name="pro_remaining">"Kamera: %1$s sn • Dinle: %2$s sn • Görsel: %3$s/10 kaldı"</string>
+    <string name="pro_active">"Pro etkin • Kamera, dinleme ve görsel sınırsız"</string>
     <string name="pro_expired">Deneme tamamlandı</string>
     <string name="pro_monthly">Aylık</string>
     <string name="pro_yearly">Yıllık</string>
@@ -267,4 +267,7 @@
  <string name="slang_support" formatted="false">"Günlük konuşma, argo ve oyun ifadeleri"</string>
  <string-array name="speech_packs"><item>"İngilizce → Türkçe · Hızlı · 40 MB"</item><item>"İngilizce → Türkçe · Kapsamlı · 128 MB"</item><item>"Türkçe → İngilizce · 35 MB"</item></string-array>
  <string name="speech_memory_error" formatted="false">"Bu telefon seçilen modeli açamadı. Hızlı İngilizce paketini seçip tekrar dene."</string>
+ <string name="listen_version" formatted="false">"Dinleme düzeltmesi · 0.16.2"</string>
+ <string name="speech_model_choice">"Konuşma modeli: %1$s"</string>
+ <string name="complete_speech_help" formatted="false">"Yazılı ara çeviri konuşurken güncellenir. Ses, cümlenin sözcüklerini kesmeden kısa konuşma bölümünün sonunda okunur. Model ve dinleme hızı yukarıdaki düğmelerden seçilir."</string>
 </resources>

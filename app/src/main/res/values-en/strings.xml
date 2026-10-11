@@ -20,7 +20,7 @@
  <string name="ui_018" formatted="false">"Reset subtitle area"</string>
  <string name="ui_019" formatted="false">"LIVE CAMERA"</string>
  <string name="ui_020" formatted="false">"Follow the action in Turkish"</string>
- <string name="ui_021" formatted="false">"Continuous on-device listening • English ↔ Turkish. Stable speech segments are translated before the utterance ends."</string>
+ <string name="ui_021" formatted="false">"Continuous on-device listening • English ↔ Turkish. Live written preview and speech for complete utterances."</string>
  <string name="ui_022" formatted="false">"Microphone idle"</string>
  <string name="ui_023" formatted="false">"Download / check selected speech pack"</string>
  <string name="ui_024" formatted="false">"Continuous offline listening (Vosk)"</string>
@@ -132,9 +132,9 @@
  <string name="ui_130" formatted="false">"Compact"</string>
  <string name="ui_131" formatted="false">"Standard"</string>
  <string name="ui_132" formatted="false">"Large"</string>
- <string name="ui_133" formatted="false">"Fast • short segments"</string>
- <string name="ui_134" formatted="false">"Balanced • more context"</string>
- <string name="ui_135" formatted="false">"Full sentence • longer wait"</string>
+ <string name="ui_133" formatted="false">"Fast • brief pause"</string>
+ <string name="ui_134" formatted="false">"Balanced • natural pause"</string>
+ <string name="ui_135" formatted="false">"Long speech • longer pause"</string>
  <string name="ui_136">"Listening: %1$s"</string>
  <string name="ui_137" formatted="false">"Listening speed"</string>
  <string name="ui_138">"%1$s selected. Restart listening."</string>
@@ -238,13 +238,13 @@
 
     <string name="pro_title">Pro • Live translation</string>
     <string name="pro_plans">Monthly $4.99 • Yearly $49.99 • Lifetime $199</string>
-    <string name="pro_detail">One shared 3-minute Pro demo for camera and microphone. Only active use counts. The demo never charges automatically. Pro includes unlimited live translation, spoken output and speaker profiles.</string>
+    <string name="pro_detail">"Try 3 minutes of camera translation, a separate 3 minutes of listening, and 10 image translations. Timers run only during active capture. No automatic trial charge. Pro includes unlimited camera, listening and image translation."</string>
     <string name="pro_open">Pro options</string>
     <string name="pro_restore">Restore purchases</string>
-    <string name="pro_start">Start 3-minute demo</string>
+    <string name="pro_start">"Use trial allowances"</string>
     <string name="pro_unavailable">Purchases are not ready. Configure Google Play products and license key.</string>
-    <string name="pro_remaining">Demo: %s seconds remaining</string>
-    <string name="pro_active">Pro active • Unlimited live translation</string>
+    <string name="pro_remaining">"Camera: %1$s s • Listen: %2$s s • Images: %3$s/10 left"</string>
+    <string name="pro_active">"Pro active • Unlimited camera, listening and images"</string>
     <string name="pro_expired">Demo complete</string>
     <string name="pro_monthly">Monthly</string>
     <string name="pro_yearly">Yearly</string>
@@ -264,4 +264,7 @@
  <string name="slang_support" formatted="false">"Everyday speech, slang and gaming phrases"</string>
  <string-array name="speech_packs"><item>"English → Turkish · Fast · 40 MB"</item><item>"English → Turkish · Extended · 128 MB"</item><item>"Turkish → English · 35 MB"</item></string-array>
  <string name="speech_memory_error" formatted="false">"This phone could not load the selected model. Select the fast English pack and retry."</string>
+ <string name="listen_version" formatted="false">"Listening fix · 0.16.2"</string>
+ <string name="speech_model_choice">"Speech model: %1$s"</string>
+ <string name="complete_speech_help" formatted="false">"Written preview updates while speaking. Audio reads a complete short utterance at its endpoint without cutting words. Use the buttons above to select the model and listening speed."</string>
 </resources>

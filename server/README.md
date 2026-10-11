@@ -1,3 +1,5 @@
+> 0.16.3 Android istemcisindeki deneme hakları cihazda bağımsız tutulur. Aşağıdaki eski ortak kullanım uç noktası yeni istemciden çağrılmaz; yeni haklar hesaplar arasında eşitlenmez. Pro doğrulama entegrasyonu korunur.
+
 # Hesap denemesi ve Play doğrulama servisi
 
 Bu kod APK içine gömülen bir sunucu değildir; ayrı HTTPS sunucusuna kurulmalıdır. Varsayılan ZIP'te URL/OAuth alanları boş, dolayısıyla uygulamanın yerel test akışı değişmez. Hesap girişini ve bu servisi etkinleştirmeden yerel veri silme denemeyi sıfırlayabilir.
