@@ -13,10 +13,19 @@ class RecognitionTuningTest {
             val original="--beam=10\n--endpoint.rule2.min-trailing-silence=0.5\n"
             val conf=File(root,"conf/model.conf");conf.writeText(original)
             RecognitionTuning.configure(root,0)
-            assertTrue(conf.readText().contains("--endpoint.rule2.min-trailing-silence=0.25"))
+            assertTrue(conf.readText().contains("--endpoint.rule2.min-trailing-silence=0.2"))
             assertEquals(1,conf.readLines().count { it.startsWith("--endpoint.rule2.min-trailing-silence=") })
             RecognitionTuning.configure(root,1)
+            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=5.0"))
+            assertTrue(conf.readText().contains("--beam=10"))
+            RecognitionTuning.configure(root,2)
+            assertTrue(conf.readText().contains("--endpoint.rule2.min-trailing-silence=0.45"))
             assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=8.0"))
+            RecognitionTuning.configure(root,0)
+            assertTrue(conf.readText().contains("--endpoint.rule5.min-utterance-length=3.0"))
+            for(rule in 2..5) {
+                assertEquals(1,conf.readLines().count { it.startsWith("--endpoint.rule$rule.") })
+            }
             assertTrue(conf.readText().contains("--beam=10"))
             assertEquals(original,File(root,"conf/model.conf.original").readText())
         } finally { root.deleteRecursively() }

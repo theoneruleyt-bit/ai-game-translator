@@ -1,3 +1,7 @@
+# 0.16.1 — Test düzeltmesi
+
+Güncel düzeltme ve commit adımları: [FIX_0_16_1.md](FIX_0_16_1.md).
+
 # 0.16 — Canlı konuşma çevirisi
 
 Güncel kurulum, dil paketleri ve telefon testi: [LIVE_SPEECH_0_16.md](LIVE_SPEECH_0_16.md). APK indirmesi Releases taslağından yapılır.
