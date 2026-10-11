@@ -287,4 +287,20 @@
  <string name="tempo_status">Voice: %1$s× · estimated waiting audio: %2$s s</string>
  <string name="speech_recovering">Audio capture interrupted. Listening will restart automatically; audio may be missed during recovery.</string>
  <string name="speech_translation_retry">Retrying this dialogue translation…</string>
+ <string name="cloud_listening">Google streaming recognition · Requires internet</string>
+ <string name="cloud_setup">Connect streaming recognition service</string>
+ <string name="cloud_connecting">Connecting to streaming speech service…</string>
+ <string name="cloud_ready">Microphone stream started. Enable the headphones option for narration.</string>
+ <string name="cloud_error">Streaming service error: %1$s. Check configuration.</string>
+ <string name="cloud_reconnecting">Reconnecting audio; a brief gap may occur.</string>
+ <string name="cloud_headphones">Narration during streaming recognition requires the headphones option to prevent feedback.</string>
+ <string name="cloud_final">Streaming recognition finalizes segments automatically.</string>
+ <string name="free_listening">Free streaming recognition · Sherpa-ONNX · English</string>
+ <string name="free_prepare">Download free English model · 73 MB</string>
+ <string name="free_downloading">Downloading English streaming model: %1$s%%</string>
+ <string name="free_model_ready">Free model ready. Press Listen.</string>
+ <string name="free_starting">Starting on-device streaming engine…</string>
+ <string name="free_active">Sherpa-ONNX on-device recognition active. Use headphones for narration.</string>
+ <string name="free_download_failed">Model download or integrity check failed. Check connection and retry.</string>
+ <string name="free_capture_failed">Free speech engine stopped or could not keep up. Model speed must be measured on this phone.</string>
 </resources>

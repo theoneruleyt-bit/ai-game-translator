@@ -290,4 +290,20 @@
  <string name="tempo_status">Ses: %1$s× · tahmini bekleyen ses: %2$s sn</string>
  <string name="speech_recovering">Ses yakalama kesildi. Dinleme yeniden başlatılıyor; toparlanma sırasında ses kaçabilir.</string>
  <string name="speech_translation_retry">Bu repliğin çevirisi yeniden deneniyor…</string>
+ <string name="cloud_listening">Google canlı dinleme · İnternet gerektirir</string>
+ <string name="cloud_setup">Canlı dinleme hizmetini bağla</string>
+ <string name="cloud_connecting">Canlı ses hizmetine bağlanıyor…</string>
+ <string name="cloud_ready">Mikrofon akışı başladı. Sesli okuma için kulaklık seçeneğini açın.</string>
+ <string name="cloud_error">Canlı ses hizmeti hatası: %1$s. Yapılandırmayı kontrol edin.</string>
+ <string name="cloud_reconnecting">Ses bağlantısı yeniden kuruluyor; kısa süre ses kaçabilir.</string>
+ <string name="cloud_headphones">Kendi sesini yeniden algılamaması için canlı dinlemede sesli okuma kulaklık seçeneği gerektirir.</string>
+ <string name="cloud_final">Akış motoru replikleri otomatik kesinleştirir.</string>
+ <string name="free_listening">Ücretsiz canlı dinleme · Sherpa-ONNX · İngilizce</string>
+ <string name="free_prepare">Ücretsiz İngilizce modelini indir · 73 MB</string>
+ <string name="free_downloading">İngilizce akış modeli indiriliyor: %1$s%%</string>
+ <string name="free_model_ready">Ücretsiz model hazır. Dinle düğmesine basın.</string>
+ <string name="free_starting">Cihaz içi akış motoru başlatılıyor…</string>
+ <string name="free_active">Sherpa-ONNX cihaz içi dinleme aktif. Seslendirme için kulaklık kullanın.</string>
+ <string name="free_download_failed">Model indirilemedi veya bütünlük denetimi başarısız. Bağlantıyı kontrol edip yeniden indirin.</string>
+ <string name="free_capture_failed">Ücretsiz ses motoru durdu veya sese yetişemedi. Bu telefon için model hızı ölçülmeli.</string>
 </resources>

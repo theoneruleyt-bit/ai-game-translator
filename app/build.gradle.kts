@@ -2,7 +2,7 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
  namespace = "com.optima.gametranslator"
  compileSdk = 36
- defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 36; versionCode = 25; versionName = "0.17.1-listening-recovery" }
+ defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 36; versionCode = 27; versionName = "0.19-free-streaming" }
  signingConfigs { getByName("debug") { storeFile = rootProject.file("signing/optima-test.jks"); storePassword = "android"; keyAlias = "optima-test"; keyPassword = "android" } }
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
  kotlinOptions { jvmTarget = "17" }
@@ -10,6 +10,8 @@ android {
 }
 
 dependencies {
+ implementation(files("libs/sherpa-onnx-static-1.13.8.aar"))
+ implementation("com.squareup.okhttp3:okhttp:4.12.0")
  implementation("androidx.credentials:credentials:1.3.0")
  implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
  implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")

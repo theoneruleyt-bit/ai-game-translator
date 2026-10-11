@@ -52,6 +52,12 @@ class MainActivity : ComponentActivity() {
     private lateinit var previewBox: LinearLayout
     private lateinit var micHero: LinearLayout
     private val offline by lazy { OfflineSpeech(this) }
+    private val cloudSpeech=CloudSpeech()
+    private val freeSpeech by lazy { FreeStreamingSpeech(this) }
+    private lateinit var freeChoice: CheckBox
+    private lateinit var cloudChoice: CheckBox
+    private var freeListening=true
+    private var cloudListening=false
     private var offlineMode=true
     private var partialRevision=0L
     private var partialBusy=false
@@ -111,7 +117,7 @@ class MainActivity : ComponentActivity() {
     private fun translatingTurkish()=mode==Mode.MIC&&offline.pack.language=="tr"
     private fun translateSmart(text: String,allowProfessional: Boolean=true): com.google.android.gms.tasks.Task<String> {
         val reverse=translatingTurkish()
-        if(allowProfessional&&professional.configured) {
+        if(allowProfessional&&professional.configured&&!(mode==Mode.MIC&&freeListening)) {
             val translationEpoch=epoch
             val sourceLanguage=if(reverse) "tr" else "en";val targetLanguage=if(reverse) "en" else "tr"
             return com.google.android.gms.tasks.Tasks.call(professionalWorker) { professional.translate(text,sourceLanguage,targetLanguage) }
@@ -126,7 +132,7 @@ class MainActivity : ComponentActivity() {
         return (if(reverse) reverseTranslator else translator).translate(prepared)
     }
     private fun updateSpeechDirection() {
-        if(::voice.isInitialized) voice.setTargetLanguage(if(translatingTurkish()) "en" else "tr")
+        if(::voice.isInitialized) { voice.professional=if(mode==Mode.MIC&&freeListening)null else professional;voice.setTargetLanguage(if(translatingTurkish()) "en" else "tr") }
     }
     private val gate=StabilityGate()
     private val speakers=SpeakerRouter()
@@ -312,7 +318,7 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightStatusBars=!dark;isAppearanceLightNavigationBars=!dark
         }
         offline.selectPack(SpeechPack.ALL[settings.getInt("speech_pack",0).coerceIn(0,2)]);slangEnabled=settings.getBoolean("slang",true)
-        speedMode=settings.getInt("speed_mode",0).coerceIn(0,2);adaptiveReading=settings.getBoolean("adaptive",true);keepScreen=settings.getBoolean("screen",true)
+        freeListening=settings.getBoolean("free_listening",true);cloudListening=if(freeListening) false else settings.getBoolean("cloud_listening",false);speedMode=settings.getInt("speed_mode",0).coerceIn(0,2);adaptiveReading=settings.getBoolean("adaptive",true);keepScreen=settings.getBoolean("screen",true)
         selectedSpeaker=settings.getInt("speaker",0).coerceIn(0,16)
         automaticSubtitleNames=settings.getBoolean("names",true)
         speakers.restore((1..16).mapNotNull { slot -> profilePrefs.getString("speaker_${slot}",null)?.let { it to slot } }.toMap())
@@ -389,6 +395,16 @@ class MainActivity : ComponentActivity() {
                 stopSession();slangEnabled=checked;settings.edit().putBoolean("slang",checked).apply()
             }
         })
+        freeChoice=CheckBox(this).apply {
+            text=getString(R.string.free_listening);setTextColor(mint);isChecked=freeListening
+            setOnCheckedChangeListener { _,checked -> stopSession();freeListening=checked;if(checked) { cloudListening=false;if(::cloudChoice.isInitialized)cloudChoice.isChecked=false };settings.edit().putBoolean("free_listening",checked).putBoolean("cloud_listening",cloudListening).apply() }
+        };micHero.addView(freeChoice)
+        micHero.addView(button(getString(R.string.free_prepare)) { prepareFreeSpeech() })
+        cloudChoice=CheckBox(this).apply {
+            text=getString(R.string.cloud_listening);setTextColor(mint);isChecked=cloudListening
+            setOnCheckedChangeListener { _,checked -> stopSession();cloudListening=checked;if(checked) { freeListening=false;if(::freeChoice.isInitialized)freeChoice.isChecked=false };settings.edit().putBoolean("cloud_listening",checked).putBoolean("free_listening",freeListening).apply() }
+        };micHero.addView(cloudChoice)
+        micHero.addView(button(getString(R.string.cloud_setup)) { configureProfessional() })
         micHero.addView(button(getString(R.string.ui_023)) { prepareSpeechModel() })
         micHero.addView(CheckBox(this).apply {
             text=getString(R.string.ui_024);setTextColor(mint);isChecked=true
@@ -403,7 +419,9 @@ class MainActivity : ComponentActivity() {
             setOnCheckedChangeListener { _,_ -> if(active&&mode==Mode.MIC) { stopSession();message(getString(R.string.ui_028)) } }
         };micHero.addView(localSpeech)
         micHero.addView(button(getString(R.string.ui_029)) {
-            if(active&&mode==Mode.MIC&&offlineMode) { offline.finishUtterance();message(getString(R.string.ui_030)) }
+            if(active&&mode==Mode.MIC&&freeListening) { freeSpeech.finishUtterance();message(getString(R.string.ui_030)) }
+            else if(active&&mode==Mode.MIC&&cloudListening)message(getString(R.string.cloud_final))
+            else if(active&&mode==Mode.MIC&&offlineMode) { offline.finishUtterance();message(getString(R.string.ui_030)) }
             else if(active&&mode==Mode.MIC&&listening) requestSpeechFinal(epoch,micRound)
             else message(getString(R.string.ui_031))
         })
@@ -550,7 +568,7 @@ class MainActivity : ComponentActivity() {
                 settings.getString("default_voice",null)?.let { name -> voice.availableVoices(false).firstOrNull { it.name==name }?.let { voice.selectVoice(it) } }
             }
             refreshMetrics();if(active&&mode==Mode.MIC) scheduleListening() },
-            { if(active&&mode==Mode.MIC&&!offlineMode&&!headphones.isChecked) pauseMicrophone() },{ message(it) })
+            { if(active&&mode==Mode.MIC&&!freeListening&&!cloudListening&&!offlineMode&&!headphones.isChecked) pauseMicrophone() },{ message(it) })
         voice.rate=settings.getFloat("tempo_rate",.9f+settings.getInt("rate_step",2)*.1f);voice.pitch=.85f+settings.getInt("pitch_step",3)*.05f
         voice.adaptiveSpeed=adaptiveReading;voice.professional=professional
         selectMode(Mode.CAMERA)
@@ -768,8 +786,10 @@ class MainActivity : ComponentActivity() {
     private fun primaryAction(serverChecked: Boolean=false) {
         if(!visible||!alive)return
         if(active) { stopSession();message(getString(R.string.ui_044));return }
+        if(mode==Mode.MIC&&freeListening&&!freeSpeech.ready()) { prepareFreeSpeech();return }
+        if(mode==Mode.MIC&&!freeListening&&cloudListening&&!professional.configured) { configureProfessional();return }
         if(!modelReady) { prepareModel();return }
-        if(mode==Mode.MIC&&offlineMode&&!offline.ready()) { prepareSpeechModel();return }
+        if(mode==Mode.MIC&&!freeListening&&!cloudListening&&offlineMode&&!offline.ready()) { prepareSpeechModel();return }
         if(proService.enabled&&!serverChecked) {
             if(!proService.signedIn) { message(getString(R.string.account_required));return }
             if(accessChecking)return
@@ -924,7 +944,8 @@ class MainActivity : ComponentActivity() {
     }
     private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker,sourceMillis: Long=0) {
         if(text.isBlank())return
-        if(active&&mode==Mode.MIC&&!offlineMode&&!headphones.isChecked&&listening) {
+        if(active&&mode==Mode.MIC&&(freeListening||cloudListening)&&!headphones.isChecked) { autoVoice.isChecked=false;message(getString(R.string.cloud_headphones));return }
+        if(active&&mode==Mode.MIC&&!freeListening&&!cloudListening&&!offlineMode&&!headphones.isChecked&&listening) {
             if(deferredSystemVoice.size<16)deferredSystemVoice.addLast(DeferredVoice(text,speakerSlot,sourceMillis))
             else { rejected++;message(getString(R.string.ui_186)) }
             return
@@ -1054,16 +1075,73 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun prepareFreeSpeech() {
+        stopSession();message(getString(R.string.free_downloading,"0"))
+        freeSpeech.prepare({ percent -> message(getString(R.string.free_downloading,percent.toString())) },
+            { message(getString(R.string.free_model_ready));refreshReadiness() },{ message(it) })
+    }
+    private fun startFreeMicrophone() {
+        stopSession()
+        if(!freeSpeech.ready()) { prepareFreeSpeech();return }
+        if(offline.pack.language!="en") { offline.selectPack(SpeechPack.FAST);packChoice.text=getString(R.string.speech_model_choice,resources.getStringArray(R.array.speech_packs)[0]);updateSpeechDirection() }
+        if(autoVoice.isChecked&&!headphones.isChecked)autoVoice.isChecked=false
+        voice.professional=null
+        active=true;beginSession();start.text=getString(R.string.ui_172);runFreeCapture(epoch)
+    }
+    private fun runFreeCapture(token: Long) {
+        if(!valid(token)||!active||!freeListening||mode!=Mode.MIC)return
+        message(getString(R.string.free_starting))
+        freeSpeech.start(speedMode,{
+            if(valid(token)&&active) { countLiveUse();message(getString(R.string.free_active));handler.removeCallbacks(speechPulse);handler.post(speechPulse) }
+        },{ text,final -> if(valid(token)&&active)processLiveSpeech(text,final) },
+            { level -> if(valid(token)&&active) { signal.progress=level;meter.level=level } },{ error ->
+            if(valid(token)&&active) {
+                if(error==getString(R.string.free_capture_failed)&&freeSpeech.ready()&&has(Manifest.permission.RECORD_AUDIO)) {
+                    freeSpeech.stop();microphoneTrial.stop(SystemClock.elapsedRealtime());saveTrialUsage(true)
+                    handler.removeCallbacks(speechPulse);latestRecognized="";sourceBeganAt=0;pendingPartial="";partialUtterance++
+                    message(getString(R.string.speech_recovering))
+                    handler.postDelayed({ if(valid(token)&&active)runFreeCapture(token) },2500)
+                } else { stopSession();message(error) }
+            }
+        })
+    }
+    private fun startCloudMicrophone() {
+        stopSession()
+        if(!professional.configured) { configureProfessional();return }
+        if(autoVoice.isChecked&&!headphones.isChecked)autoVoice.isChecked=false
+        voice.professional=professional
+        active=true;beginSession();start.text=getString(R.string.ui_172);runCloudCapture(epoch)
+    }
+    private fun runCloudCapture(token: Long) {
+        if(!valid(token)||!active||!cloudListening||mode!=Mode.MIC)return
+        message(getString(R.string.cloud_connecting))
+        cloudSpeech.start(professional,if(translatingTurkish()) "tr-TR" else "en-US",{
+            if(valid(token)&&active) { countLiveUse();message(getString(R.string.cloud_ready));handler.removeCallbacks(speechPulse);handler.post(speechPulse) }
+        },{ text,final -> if(valid(token)&&active)processLiveSpeech(text,final) },{ reason ->
+            if(valid(token)&&active) {
+                microphoneTrial.stop(SystemClock.elapsedRealtime());saveTrialUsage(true)
+                handler.removeCallbacks(speechPulse);latestRecognized="";sourceBeganAt=0;pendingPartial="";partialUtterance++
+                if(reason in setOf("unauthorized","quota","configuration","service","protocol")) {
+                    stopSession();message(getString(R.string.cloud_error,reason))
+                } else {
+                    message(getString(R.string.cloud_reconnecting))
+                    handler.postDelayed({ if(valid(token)&&active)runCloudCapture(token) },if(reason=="rotate") 100L else 2500L)
+                }
+            }
+        })
+    }
     private fun startMicrophone() {
         if(!visible||!alive||mode!=Mode.MIC)return
         if(mode!=Mode.MIC)return
+        if(freeListening) { startFreeMicrophone();return }
+        if(cloudListening) { startCloudMicrophone();return }
         if(offlineMode) { startOfflineMicrophone();return }
         stopSession()
         if(!SpeechRecognizer.isRecognitionAvailable(this)) { message(getString(R.string.ui_202));return }
         active=true;beginSession();start.text=getString(R.string.ui_172);errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
         message(getString(R.string.ui_203));handler.post(speechPulse);listenOnce()
     }
-    private fun canListen()=alive&&active&&mode==Mode.MIC&&!offlineMode&&has(Manifest.permission.RECORD_AUDIO)&&
+    private fun canListen()=!freeListening&&!cloudListening&&alive&&active&&mode==Mode.MIC&&!offlineMode&&has(Manifest.permission.RECORD_AUDIO)&&
         (headphones.isChecked||voice.count==0)
     private fun scheduleListening(delay: Long=120) {
         handler.removeCallbacks(restart)
@@ -1201,7 +1279,7 @@ class MainActivity : ComponentActivity() {
         saveTrialUsage(true);handler.removeCallbacks(trialTick)
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         epoch++;active=false;busy=false;accessChecking=false;frozen=false;translating=false;retryLine=null;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
-        professional.cancelRequests();provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();sourceBeganAt=0;sourceWindowMillis=0;liveCaption.clear();speechDisplayRevision=0;lastSpeechDisplayRevision=-1;deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
+        freeSpeech.stop();cloudSpeech.stop();professional.cancelRequests();provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();sourceBeganAt=0;sourceWindowMillis=0;liveCaption.clear();speechDisplayRevision=0;lastSpeechDisplayRevision=-1;deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
         if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->getString(R.string.ui_042);Mode.MIC->getString(R.string.ui_160);Mode.IMAGE->getString(R.string.ui_161) }
@@ -1212,6 +1290,6 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         if(::billing.isInitialized)billing.close();if(::proService.isInitialized)proService.close();alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
         speech?.destroy();if(::voice.isInitialized)voice.close()
-        professional.clear();professionalWorker.shutdown();offline.close();recognizer.close();translator.close();reverseTranslator.close();super.onDestroy()
+        freeSpeech.close();cloudSpeech.close();professional.clear();professionalWorker.shutdown();offline.close();recognizer.close();translator.close();reverseTranslator.close();super.onDestroy()
     }
 }

@@ -1,0 +1,11 @@
+Sherpa-ONNX 1.13.8, k2-fsa contributors, Apache-2.0.
+Upstream: https://github.com/k2-fsa/sherpa-onnx/tree/v1.13.8
+Binary: sherpa-onnx-static-link-onnxruntime-1.13.8.aar
+SHA256: b22c3fc1b6a45666d28892bb2f7694beeb77a8362d7ebd77c1a5431ec9435471
+Bundled native binary uses ONNX Runtime; retain upstream third-party notices.
+
+English model: csukuangfj/sherpa-onnx-streaming-zipformer-en-2023-06-26
+Model card license: Apache-2.0. Revision 672fbf1b30579d6585301139bb363f42a0ad4a24.
+Original TorchScript model: Zengwei/icefall-asr-librispeech-streaming-zipformer-2023-05-17.
+Model files are downloaded unchanged; only int8 left-context-64 ONNX files and tokens.txt are used.
+The engine license text is supplied here. Per-component license metadata must also be reviewed before store distribution.

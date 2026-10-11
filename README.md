@@ -1,3 +1,11 @@
+# Güncel sürüm: 0.19 — Ücretsiz cihaz içi dinleme
+
+[FREE_0_19.md](FREE_0_19.md) — Varsayılan İngilizce Sherpa akışı; sunucu/API anahtarı gerekmez. Telefon performansı henüz doğrulanmadı. Aşağıdaki belgeler önceki aşamaların kayıtlarıdır.
+
+# Önceki aşama: 0.18
+
+[CLOUD_0_18.md](CLOUD_0_18.md) — Kurulum olmadan canlı bulut motoru çalışmaz.
+
 # Güncel düzeltme: 0.17.1
 
 [FIX_0_17_1.md](FIX_0_17_1.md)
