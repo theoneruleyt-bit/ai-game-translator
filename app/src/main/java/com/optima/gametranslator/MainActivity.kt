@@ -100,6 +100,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var hint: TextView
     private lateinit var start: Button
     private lateinit var prepare: Button
+    private lateinit var voiceStatus: TextView
     private lateinit var autoVoice: CheckBox
     private lateinit var region: CheckBox
     private lateinit var headphones: CheckBox
@@ -308,6 +309,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        volumeControlStream=android.media.AudioManager.STREAM_MUSIC
         dark=resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK==android.content.res.Configuration.UI_MODE_NIGHT_YES
         ink=if(dark)Color.rgb(10,17,29) else Color.rgb(243,247,251)
         panel=if(dark)Color.rgb(20,31,48) else Color.WHITE
@@ -456,6 +458,7 @@ class MainActivity : ComponentActivity() {
                 else if(checked&&active&&mode==Mode.MIC&&offlineMode) message(getString(R.string.ui_046))
             }
         };controls.addView(autoVoice)
+        voiceStatus=label("",13f,mint);controls.addView(voiceStatus)
         region=CheckBox(this).apply {
             text=getString(R.string.ui_047);setTextColor(muted);isChecked=settings.getBoolean("region",true)
             setOnCheckedChangeListener { _,checked ->
@@ -575,7 +578,7 @@ class MainActivity : ComponentActivity() {
         }
         setContentView(scroll)
         voice=VoicePlayer(this,{
-            if(::voice.isInitialized&&voice.ready&&!restoredVoice) {
+            if(::voice.isInitialized&&voice.ready&&voice.count==0&&!restoredVoice) {
                 restoredVoice=true
                 settings.getString("default_voice",null)?.let { name -> voice.availableVoices(false).firstOrNull { it.name==name }?.let { voice.selectVoice(it) } }
             }
@@ -642,7 +645,7 @@ class MainActivity : ComponentActivity() {
     private fun showModelStatus() {
         val voices=if(::voice.isInitialized)voice.availableVoices(false).size else 0
         AlertDialog.Builder(this).setTitle(getString(R.string.ui_112))
-            .setMessage(getString(R.string.ui_113, (if(offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115)).toString(), (if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116)).toString(), (voices).toString()))
+            .setMessage(getString(R.string.ui_113, (if(if(freeListening)freeSpeech.ready() else offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115)).toString(), (if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116)).toString(), (voices).toString()))
             .setPositiveButton(getString(R.string.ui_106),null).show()
     }
     private fun beginSession() {
@@ -995,12 +998,22 @@ class MainActivity : ComponentActivity() {
     }
     private fun refreshReadiness() {
         if(!::readiness.isInitialized)return
-        readiness.text=getString(R.string.model_readiness, (if(offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115)).toString(), (if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116)).toString())
+        readiness.text=getString(R.string.model_readiness, (if(if(freeListening)freeSpeech.ready() else offline.ready()) getString(R.string.ui_114) else getString(R.string.ui_115)).toString(), (if(modelReady) getString(R.string.ui_114) else getString(R.string.ui_116)).toString())
     }
     private fun refreshMetrics() {
         refreshReadiness()
         if(!::metrics.isInitialized)return
         val sounds=if(::voice.isInitialized) voice.count else 0
+        if(::voiceStatus.isInitialized&&::voice.isInitialized) {
+            voiceStatus.text=when {
+                voice.lastFailure!=null -> voice.lastFailure
+                !voice.ready&&voice.professional?.configured!=true -> getString(R.string.install_turkish_voice)
+                !autoVoice.isChecked -> getString(R.string.voice_disabled)
+                (getSystemService(AUDIO_SERVICE) as android.media.AudioManager).getStreamVolume(android.media.AudioManager.STREAM_MUSIC)==0 -> getString(R.string.voice_volume_zero)
+                sounds>0 -> getString(R.string.voice_pending,sounds.toString())
+                else -> getString(R.string.voice_ready)
+            }
+        }
         metrics.text=getString(R.string.ui_187, (if(active) getString(R.string.ui_188, ((SystemClock.elapsedRealtime()-sessionStarted)/1000).toString()) else "").toString(), (completed).toString(), (waiting.size + if(translating) 1 else 0).toString(), (sounds).toString(), (lastLag/1000.0).toString(), (rejected).toString())+if(::voice.isInitialized) "\n"+getString(R.string.tempo_status,java.lang.String.format(java.util.Locale.ROOT,"%.2f",voice.currentRate),(voice.estimatedWaitingMillis/1000).toString()) else ""
     }
     private fun prepareSpeechModel() {
@@ -1106,7 +1119,8 @@ class MainActivity : ComponentActivity() {
         if(!freeSpeech.ready()) { prepareFreeSpeech();return }
         if(offline.pack.language!="en") { offline.selectPack(SpeechPack.FAST);packChoice.text=getString(R.string.speech_model_choice,resources.getStringArray(R.array.speech_packs)[0]);updateSpeechDirection() }
         if(autoVoice.isChecked&&!headphones.isChecked) { confirmListeningVoice { startFreeMicrophone() };return }
-        voice.professional=null
+        updateSpeechDirection();voice.refreshLanguage();voice.professional=null
+        if(autoVoice.isChecked&&!voice.ready) { message(getString(R.string.install_turkish_voice));refreshMetrics();return }
         active=true;beginSession();start.text=getString(R.string.ui_172);runFreeCapture(epoch)
     }
     private fun runFreeCapture(token: Long) {
@@ -1306,7 +1320,7 @@ class MainActivity : ComponentActivity() {
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->getString(R.string.ui_042);Mode.MIC->getString(R.string.ui_160);Mode.IMAGE->getString(R.string.ui_161) }
         refreshMetrics()
     }
-    override fun onResume() { super.onResume();visible=true;if(::billing.isInitialized)billing.refresh() }
+    override fun onResume() { super.onResume();visible=true;if(::billing.isInitialized)billing.refresh();if(::voice.isInitialized)voice.refreshLanguage() }
     override fun onStop() { visible=false;proDialog?.dismiss();stopSession();super.onStop() }
     override fun onDestroy() {
         if(::billing.isInitialized)billing.close();if(::proService.isInitialized)proService.close();alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()

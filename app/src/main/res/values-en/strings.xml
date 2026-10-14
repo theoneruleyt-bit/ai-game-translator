@@ -308,4 +308,10 @@
     <string name="listening_voice_choice">Use headphones to hear Turkish translations while listening. Speaker audio feeding back into the microphone can cause false recognition.</string>
     <string name="listening_with_headphones">Read with headphones</string>
     <string name="listening_text_only">Text translation only</string>
+    <string name="voice_timeout">The speech engine did not respond. This utterance was stopped; later lines can continue. Check the engine with Test Turkish voice.</string>
+    <string name="voice_disabled">Speech is disabled. Enable automatic reading.</string>
+    <string name="voice_pending">Speech queue: %1$s</string>
+    <string name="voice_ready">Speech engine ready. Completed translation segments will be read.</string>
+<string name="voice_error_code">Speech engine failed (code %1$s). Check the voice pack and speech engine settings.</string>
+<string name="voice_volume_zero">Media volume is zero. Increase media volume to hear speech.</string>
 </resources>

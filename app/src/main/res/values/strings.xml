@@ -311,4 +311,10 @@
     <string name="listening_voice_choice">Dinlerken Türkçe okumayı açmak için kulaklık kullanın. Telefon hoparlörünün sesi mikrofona geri girerse yanlış tanıma oluşabilir.</string>
     <string name="listening_with_headphones">Kulaklıkla sesli çeviri</string>
     <string name="listening_text_only">Yalnızca yazılı çeviri</string>
+    <string name="voice_timeout">Ses motoru yanıt vermedi. Bu okuma sonlandırıldı; sonraki repliklere devam ediliyor. Türkçe sesi dene düğmesiyle motoru kontrol edin.</string>
+    <string name="voice_disabled">Sesli okuma kapalı. Otomatik okuma seçeneğini açın.</string>
+    <string name="voice_pending">Türkçe ses kuyruğu: %1$s</string>
+    <string name="voice_ready">Ses motoru hazır. Tamamlanan çeviri bölümleri okunacak.</string>
+<string name="voice_error_code">Ses motoru hata verdi (kod %1$s). Türkçe ses paketini ve motor ayarlarını kontrol edin.</string>
+<string name="voice_volume_zero">Medya sesi sıfır. Türkçe okumayı duymak için medya sesini artırın.</string>
 </resources>

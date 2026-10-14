@@ -1,3 +1,7 @@
+# Güncel düzeltme: 0.19.2
+
+[FIX_0_19_2.md](FIX_0_19_2.md) — Türkçe TTS, kuyruk kurtarma ve ayrı ses durumu.
+
 # Güncel düzeltme: 0.19.1
 
 [FIX_0_19_1.md](FIX_0_19_1.md) — Türkçe ses testi ve görünür dinleme/seslendirme seçimi.

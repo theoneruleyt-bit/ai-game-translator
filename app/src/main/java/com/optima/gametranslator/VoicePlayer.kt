@@ -19,6 +19,8 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     private val handler = Handler(Looper.getMainLooper())
     private data class Job(val text: String,val voiceName: String?,val rate: Float,val pitch: Float,val createdAt: Long,val sourceMillis: Long)
     private val tempo=AdaptiveTempo()
+    private val playbackDeadline=PlaybackDeadline()
+    private var watchdog: Runnable?=null
     private var startedAt=0L
     private var playingJob: Job?=null
     private var playingRate=1f
@@ -57,6 +59,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         }
         onChange()
     }
+    fun refreshLanguage() { if(!ready&&!closed)setTargetLanguage(targetLanguage) }
     fun selectVoice(selected: android.speech.tts.Voice): Boolean {
         if(selected.locale.language!=targetLanguage)return false
         stop()
@@ -67,7 +70,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     val count: Int get() = pending.size + if(currentId==null) 0 else 1
     init {
         engine = TextToSpeech(context) { code ->
-            if(!closed) {
+            handler.post { if(!closed) {
                 val language = if(code==TextToSpeech.SUCCESS) engine?.setLanguage(Locale.forLanguageTag(if(targetLanguage=="tr") "tr-TR" else "en-US")) else null
                 ready = language != null && language>=TextToSpeech.LANG_AVAILABLE
                 if(ready) {
@@ -76,15 +79,21 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
                     defaultVoiceName=engine?.voice?.name
                     engine?.setSpeechRate(rate);engine?.setPitch(pitch)
                 } else onError(messages.getString(R.string.ui_227))
+                if(ready)engine?.setAudioAttributes(android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH).build())
                 onChange()
-            }
+            } }
         }
         engine?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(id: String?) { handler.post { if(currentId==id)startedAt=android.os.SystemClock.elapsedRealtime() } }
+            override fun onStart(id: String?) { handler.post { if(currentId==id&&id!=null) {
+                startedAt=android.os.SystemClock.elapsedRealtime();playbackDeadline.started(id,startedAt);onChange()
+            } } }
             override fun onDone(id: String?) { finish(id,false) }
+            override fun onStop(id: String?, interrupted: Boolean) { finish(id,true) }
             @Deprecated("Android TTS callback")
             override fun onError(id: String?) { finish(id,true) }
-            override fun onError(id: String?, errorCode: Int) { finish(id,true) }
+            override fun onError(id: String?, errorCode: Int) { finish(id,true,messages.getString(R.string.voice_error_code,errorCode.toString())) }
         })
     }
     fun add(text: String, latestPending: Boolean = false, voiceName: String?=null, selectedPitch: Float=pitch,selectedRate: Float=rate,sourceMillis: Long=0): Boolean {
@@ -96,7 +105,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         if(selected==null&&engine?.voice?.isNetworkConnectionRequired==true&&!networkAllowed) {
             lastFailure=messages.getString(R.string.ui_229);return false
         }
-        val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100).let { if(professional?.configured==true) minOf(it,900) else it }
+        val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(100).let { if(professional?.configured==true) minOf(it,900) else minOf(it,260) }
         val chunks = mutableListOf<String>()
         var rest=text.trim()
         while(rest.length>limit) {
@@ -148,6 +157,24 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         }
         speakLocal(job,id)
     }
+    private fun cancelWatchdog() {
+        watchdog?.let { handler.removeCallbacks(it) };watchdog=null;playbackDeadline.clear()
+    }
+    private fun watchPlayback(job: Job,id: String) {
+        cancelWatchdog()
+        playbackDeadline.begin(id,android.os.SystemClock.elapsedRealtime(),tempo.estimateMillis(job.text))
+        val check=object : Runnable {
+            override fun run() {
+                if(closed||currentId!=id)return
+                if(playbackDeadline.expired(id,android.os.SystemClock.elapsedRealtime())) {
+                    lastFailure=messages.getString(R.string.voice_timeout)
+                    // Invalidating the job happens before stop callbacks are dispatched.
+                    finish(id,true);engine?.stop()
+                } else handler.postDelayed(this,1000)
+            }
+        }
+        watchdog=check;handler.postDelayed(check,1000)
+    }
     private fun speakLocal(job: Job,id: String) {
         if(!ready) { finish(id,true);return }
         val selected=engine?.voices?.firstOrNull { it.name==job.voiceName }
@@ -157,14 +184,19 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
         } else if(job.voiceName!=null) { finish(id,true);return }
         engine?.setSpeechRate(playingRate);engine?.setPitch(job.pitch.coerceIn(.85f,1.15f))
         beforeSpeak()
-        if(engine?.speak(job.text,TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS) finish(id,true)
+        watchPlayback(job,id)
+        val params=android.os.Bundle().apply { putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME,1f) }
+        if(engine?.speak(job.text,TextToSpeech.QUEUE_ADD,params,id)!=TextToSpeech.SUCCESS) finish(id,true)
     }
-    private fun finish(id: String?, failed: Boolean) {
+    private fun finish(id: String?, failed: Boolean,reason: String?=null) {
         handler.post {
             if(!closed && currentId==id && id!=null) {
                 if(!failed&&startedAt>0) playingJob?.let { tempo.completed(it.text,playingRate,android.os.SystemClock.elapsedRealtime()-startedAt) }
-                playingJob=null;startedAt=0;currentId=null
-                if(failed) onError(messages.getString(R.string.ui_230))
+                cancelWatchdog();playingJob=null;startedAt=0;currentId=null
+                if(failed) {
+                    lastFailure=reason ?: lastFailure ?: messages.getString(R.string.ui_230)
+                    onError(requireNotNull(lastFailure))
+                }
                 pump();onChange()
             }
         }
@@ -174,7 +206,7 @@ class VoicePlayer(context: Context, private val onChange: () -> Unit,
     }
     fun clearWaiting() { pending.clear();onChange() }
     fun stop() {
-        releaseCloud();currentId=null;playingJob=null;startedAt=0;tempo.reset();pending.clear();sequence++;engine?.stop();onChange()
+        cancelWatchdog();releaseCloud();currentId=null;playingJob=null;startedAt=0;tempo.reset();pending.clear();sequence++;engine?.stop();onChange()
     }
-    fun close() { closed=true;releaseCloud();networkWorker.shutdown();pending.clear();currentId=null;engine?.stop();engine?.shutdown();engine=null }
+    fun close() { closed=true;cancelWatchdog();releaseCloud();networkWorker.shutdown();pending.clear();currentId=null;engine?.stop();engine?.shutdown();engine=null }
 }
