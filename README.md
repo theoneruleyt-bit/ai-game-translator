@@ -1,3 +1,7 @@
+# Güncel düzeltme: 0.19.3
+
+[FIX_0_19_3.md](FIX_0_19_3.md) — Süreye bağlı sözcük kesmesi kaldırıldı; sürekli kaynak metin ve kararlı çeviri önizlemesi. Gerçek örnek karşılaştırması: [ASR_BENCHMARK_0_19_3.md](ASR_BENCHMARK_0_19_3.md).
+
 # Güncel düzeltme: 0.19.2
 
 [FIX_0_19_2.md](FIX_0_19_2.md) — Türkçe TTS, kuyruk kurtarma ve ayrı ses durumu.

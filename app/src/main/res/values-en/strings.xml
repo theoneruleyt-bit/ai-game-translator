@@ -314,4 +314,5 @@
     <string name="voice_ready">Speech engine ready. Completed translation segments will be read.</string>
 <string name="voice_error_code">Speech engine failed (code %1$s). Check the voice pack and speech engine settings.</string>
 <string name="voice_volume_zero">Media volume is zero. Increase media volume to hear speech.</string>
+<string name="free_capture_overrun">This device could not process live audio at this setting. Listening stopped instead of accumulating stale audio. Select Fast mode and try again.</string>
 </resources>

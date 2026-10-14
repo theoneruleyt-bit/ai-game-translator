@@ -28,6 +28,7 @@ class FreeStreamingSpeech(context: Context) {
     @Volatile private var download: HttpURLConnection?=null
     @Volatile private var closed=false
     @Volatile private var flush=false
+    private class AudioQueueOverrun: Exception()
     private data class Part(val file: String,val size: Long,val sha: String)
     private val parts=listOf(
         Part("encoder-epoch-99-avg-1-chunk-16-left-64.int8.onnx",71082637,"0d072fd4ef956294ba9db9e9a71a541ac70659095ec4934c8453d8b2fe740187"),
@@ -83,13 +84,15 @@ class FreeStreamingSpeech(context: Context) {
             var input: AudioRecord?=null;var capture: Thread?=null
             try {
                 check(generation.get()==token&&!closed);check(ready())
+                val policy=SpeechEndpointPolicy.forMode(mode)
                 val endpoint=EndpointConfig(EndpointRule(false,2.4f,0f),
-                    EndpointRule(true,if(mode==0) .45f else .7f,0f),EndpointRule(false,0f,if(mode==0) 6f else 10f))
+                    EndpointRule(true,policy.trailingSilence,0f),
+                    EndpointRule(true,policy.longTurnSilence,policy.longTurnSeconds))
                 val config=OnlineRecognizerConfig(modelConfig=OnlineModelConfig(
                     transducer=OnlineTransducerModelConfig(File(root,parts[0].file).absolutePath,
                         File(root,parts[1].file).absolutePath,File(root,parts[2].file).absolutePath),
                     tokens=File(root,"tokens.txt").absolutePath,numThreads=2,provider="cpu"),
-                    enableEndpoint=true,endpointConfig=endpoint,decodingMethod="greedy_search")
+                    enableEndpoint=true,endpointConfig=endpoint,decodingMethod="modified_beam_search",maxActivePaths=policy.paths)
                 val engine=try { OnlineRecognizer(config=config) } catch(error: Exception) { File(root,"ready-v1").delete();throw error };decoder=engine
                 val session=engine.createStream();stream=session
                 val min=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT);check(min>0)
@@ -106,16 +109,18 @@ class FreeStreamingSpeech(context: Context) {
                         while(generation.get()==token&&!closed) {
                             val n=mic.read(samples,0,samples.size,AudioRecord.READ_BLOCKING)
                             if(generation.get()!=token||closed)break
-                            check(n>0);check(frames.offer(FloatArray(n) { samples[it]/32768f }))
+                            check(n>0);if(!frames.offer(FloatArray(n) { samples[it]/32768f }))throw AudioQueueOverrun()
                         }
                     } catch(error: Exception) { failure.set(error) }
                 },"zipformer-microphone").apply { isDaemon=true }
                 capture=producer;producer.start();deliver(token,onReady)
+                val turns=StreamingTurns()
+                fun publish(outputs: List<StreamingTurns.Output>) { outputs.forEach { output -> deliver(token) { onText(output.text,output.final) } } }
                 var previous="";var lastPartial=0L;var lastLevel=0L
                 while(generation.get()==token&&!closed) {
                     failure.get()?.let { throw it }
                     val frame=frames.poll(100,java.util.concurrent.TimeUnit.MILLISECONDS)
-                    if(frame==null) { check(producer.isAlive);continue }
+                    if(frame==null) { check(producer.isAlive);publish(turns.tick(android.os.SystemClock.elapsedRealtime()));continue }
                     val now=android.os.SystemClock.elapsedRealtime()
                     if(now-lastLevel>150) {
                         lastLevel=now
@@ -127,13 +132,15 @@ class FreeStreamingSpeech(context: Context) {
                     val text=engine.getResult(session).text.trim()
                     if(engine.isEndpoint(session)||flush) {
                         flush=false;previous=""
-                        if(text.isNotBlank())deliver(token) { onText(text,true) }
+                        publish(turns.update(text,true,now))
                         engine.reset(session)
                     } else if(text.isNotBlank()&&text!=previous&&now-lastPartial>=120) {
-                        previous=text;lastPartial=now;deliver(token) { onText(text,false) }
+                        previous=text;lastPartial=now;publish(turns.update(text,false,now))
                     }
+                    publish(turns.tick(now))
                 }
-            } catch(_: OutOfMemoryError) { deliver(token) { onError(messages.getString(R.string.speech_memory_error)) } }
+            } catch(_: AudioQueueOverrun) { deliver(token) { onError(messages.getString(R.string.free_capture_overrun)) } }
+            catch(_: OutOfMemoryError) { deliver(token) { onError(messages.getString(R.string.speech_memory_error)) } }
             catch(_: LinkageError) { deliver(token) { onError(messages.getString(R.string.ui_225)) } }
             catch(_: Exception) { deliver(token) { onError(messages.getString(R.string.free_capture_failed)) } }
             finally {

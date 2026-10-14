@@ -317,4 +317,5 @@
     <string name="voice_ready">Ses motoru hazır. Tamamlanan çeviri bölümleri okunacak.</string>
 <string name="voice_error_code">Ses motoru hata verdi (kod %1$s). Türkçe ses paketini ve motor ayarlarını kontrol edin.</string>
 <string name="voice_volume_zero">Medya sesi sıfır. Türkçe okumayı duymak için medya sesini artırın.</string>
+<string name="free_capture_overrun">Telefon bu tanıma ayarında canlı sesi işleyemedi. Ses biriktirilmeden dinleme durduruldu. Hızlı modu seçip yeniden deneyin.</string>
 </resources>

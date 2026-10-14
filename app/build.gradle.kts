@@ -2,7 +2,7 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
  namespace = "com.optima.gametranslator"
  compileSdk = 36
- defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 36; versionCode = 29; versionName = "0.19.2-speech-recovery" }
+ defaultConfig { applicationId = "com.optima.gametranslator"; minSdk = 29; targetSdk = 36; versionCode = 30; versionName = "0.19.3-continuous-turns" }
  signingConfigs { getByName("debug") { storeFile = rootProject.file("signing/optima-test.jks"); storePassword = "android"; keyAlias = "optima-test"; keyPassword = "android" } }
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
  kotlinOptions { jvmTarget = "17" }

@@ -212,7 +212,8 @@ class MainActivity : ComponentActivity() {
         dialog.show();billing.refresh()
     }
     private val settings by lazy { getSharedPreferences("app_settings",MODE_PRIVATE) }
-    private var speedMode=0
+    private val partialStability=PartialStability()
+    private var speedMode=1
     private var adaptiveReading=true
     private var keepScreen=true
     private var sessionStarted=0L
@@ -320,7 +321,7 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightStatusBars=!dark;isAppearanceLightNavigationBars=!dark
         }
         offline.selectPack(SpeechPack.ALL[settings.getInt("speech_pack",0).coerceIn(0,2)]);slangEnabled=settings.getBoolean("slang",true)
-        freeListening=settings.getBoolean("free_listening",true);cloudListening=if(freeListening) false else settings.getBoolean("cloud_listening",false);speedMode=settings.getInt("speed_mode",0).coerceIn(0,2);adaptiveReading=settings.getBoolean("adaptive",true);keepScreen=settings.getBoolean("screen",true)
+        freeListening=settings.getBoolean("free_listening",true);cloudListening=if(freeListening) false else settings.getBoolean("cloud_listening",false);speedMode=settings.getInt("speed_mode",1).coerceIn(0,2);adaptiveReading=settings.getBoolean("adaptive",true);keepScreen=settings.getBoolean("screen",true)
         selectedSpeaker=settings.getInt("speaker",0).coerceIn(0,16)
         automaticSubtitleNames=settings.getBoolean("names",true)
         speakers.restore((1..16).mapNotNull { slot -> profilePrefs.getString("speaker_${slot}",null)?.let { it to slot } }.toMap())
@@ -1074,6 +1075,7 @@ class MainActivity : ComponentActivity() {
         val preview=text
         if(preview!=pendingPartial||pendingPartialFinal!=final)partialRevision++
         pendingPartial=preview;pendingPartialFinal=final
+        partialStability.observe(preview,now)
         if(final) { handler.removeCallbacks(partialTask);partialScheduled=false }
         update.chunks.forEach { accept(it,SystemClock.elapsedRealtime()) }
         if(preview.isNotBlank()&&(preview!=cachedSource||final)) schedulePartial(80)
@@ -1083,8 +1085,10 @@ class MainActivity : ComponentActivity() {
     }
     private fun translatePartial() {
         if(!alive||!active||mode!=Mode.MIC||pendingPartial.isBlank()||partialBusy||translating||waiting.size>0||!modelReady)return
+        if(freeListening&&!pendingPartialFinal&&!partialStability.ready(pendingPartial,SystemClock.elapsedRealtime())) { schedulePartial(100);return }
         val token=epoch;val revision=partialRevision;val utterance=partialUtterance;val text=pendingPartial;val finalPreview=pendingPartialFinal;val previewStarted=SystemClock.elapsedRealtime();val displayRevision=speechDisplayRevision
         partialBusy=true
+        if(freeListening&&!finalPreview)partialStability.submitted(SystemClock.elapsedRealtime())
         val task=if(text==cachedSource&&cachedTranslation.isNotBlank()) com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translateSmart(text,false)
         task.addOnSuccessListener { translated ->
             if(valid(token)) { cachedSource=text;cachedTranslation=translated }
@@ -1292,7 +1296,7 @@ class MainActivity : ComponentActivity() {
             message(if(interim) getString(R.string.ui_215) else getString(R.string.ui_216))
             processLiveSpeech(text,true)
         } else {
-            latestRecognized="";liveSegments.reset();pendingPartial="";partialUtterance++
+            latestRecognized="";liveSegments.reset();partialStability.reset();pendingPartial="";partialUtterance++
             emptySpeechRounds++
             message(getString(R.string.ui_218))
         }
@@ -1303,7 +1307,7 @@ class MainActivity : ComponentActivity() {
         scheduleListening(120)
     }
     private fun pauseMicrophone() {
-        if(latestRecognized.isNotBlank()) { latestRecognized="";liveSegments.reset();pendingPartial="";partialUtterance++ }
+        if(latestRecognized.isNotBlank()) { latestRecognized="";liveSegments.reset();partialStability.reset();pendingPartial="";partialUtterance++ }
         handler.removeCallbacks(restart);clearSpeechDeadline();micRound++;listening=false;partialText=""
         speech?.cancel();speech?.destroy();speech=null
         if(active&&mode==Mode.MIC) message(getString(R.string.ui_219))
@@ -1314,7 +1318,7 @@ class MainActivity : ComponentActivity() {
         saveTrialUsage(true);handler.removeCallbacks(trialTick)
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         epoch++;active=false;busy=false;accessChecking=false;frozen=false;translating=false;retryLine=null;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
-        freeSpeech.stop();cloudSpeech.stop();professional.cancelRequests();provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();sourceBeganAt=0;sourceWindowMillis=0;liveCaption.clear();speechDisplayRevision=0;lastSpeechDisplayRevision=-1;deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
+        freeSpeech.stop();cloudSpeech.stop();professional.cancelRequests();provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();partialStability.reset();sourceBeganAt=0;sourceWindowMillis=0;liveCaption.clear();speechDisplayRevision=0;lastSpeechDisplayRevision=-1;deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
         if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->getString(R.string.ui_042);Mode.MIC->getString(R.string.ui_160);Mode.IMAGE->getString(R.string.ui_161) }
