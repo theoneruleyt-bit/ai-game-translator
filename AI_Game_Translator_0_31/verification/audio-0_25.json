@@ -1,0 +1,200 @@
+[
+  {
+    "case": "quiet_speech",
+    "frame_ms": 50.0,
+    "seconds": 6.625,
+    "word_errors": 0,
+    "reference_words": 18,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.776
+  },
+  {
+    "case": "quiet_speech",
+    "frame_ms": 120.0,
+    "seconds": 6.625,
+    "word_errors": 0,
+    "reference_words": 18,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.641
+  },
+  {
+    "case": "noise_only",
+    "frame_ms": 50.0,
+    "seconds": 5.0,
+    "word_errors": 0,
+    "reference_words": 0,
+    "parts": 0,
+    "text": "",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.095
+  },
+  {
+    "case": "noise_only",
+    "frame_ms": 120.0,
+    "seconds": 5.0,
+    "word_errors": 0,
+    "reference_words": 0,
+    "parts": 0,
+    "text": "",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.101
+  },
+  {
+    "case": "silence",
+    "frame_ms": 50.0,
+    "seconds": 10.0,
+    "word_errors": 0,
+    "reference_words": 0,
+    "parts": 0,
+    "text": "",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.158
+  },
+  {
+    "case": "silence",
+    "frame_ms": 120.0,
+    "seconds": 10.0,
+    "word_errors": 0,
+    "reference_words": 0,
+    "parts": 0,
+    "text": "",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.137
+  },
+  {
+    "case": "sample0",
+    "frame_ms": 50.0,
+    "seconds": 6.625,
+    "word_errors": 0,
+    "reference_words": 18,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.514
+  },
+  {
+    "case": "sample0",
+    "frame_ms": 120.0,
+    "seconds": 6.625,
+    "word_errors": 0,
+    "reference_words": 18,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.436
+  },
+  {
+    "case": "sample1",
+    "frame_ms": 50.0,
+    "seconds": 16.715,
+    "word_errors": 0,
+    "reference_words": 48,
+    "parts": 1,
+    "text": "GOD AS A DIRECT CONSEQUENCE OF THE SIN WHICH MAN THUS PUNISHED HAD GIVEN HER A LOVELY CHILD WHOSE PLACE WAS ON THAT SAME DISHONOURED BOSOM TO CONNECT HER PARENT FOR EVER WITH THE RACE AND DESCENT OF MORTALS AND TO BE FINALLY A BLESSED SOUL IN HEAVEN",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 3.605
+  },
+  {
+    "case": "sample1",
+    "frame_ms": 120.0,
+    "seconds": 16.715,
+    "word_errors": 0,
+    "reference_words": 48,
+    "parts": 1,
+    "text": "GOD AS A DIRECT CONSEQUENCE OF THE SIN WHICH MAN THUS PUNISHED HAD GIVEN HER A LOVELY CHILD WHOSE PLACE WAS ON THAT SAME DISHONOURED BOSOM TO CONNECT HER PARENT FOR EVER WITH THE RACE AND DESCENT OF MORTALS AND TO BE FINALLY A BLESSED SOUL IN HEAVEN",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.956
+  },
+  {
+    "case": "repeated_with_pause",
+    "frame_ms": 50.0,
+    "seconds": 13.55,
+    "word_errors": 0,
+    "reference_words": 36,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.617
+  },
+  {
+    "case": "repeated_with_pause",
+    "frame_ms": 120.0,
+    "seconds": 13.55,
+    "word_errors": 0,
+    "reference_words": 36,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.571
+  },
+  {
+    "case": "speech_after_long_silence",
+    "frame_ms": 50.0,
+    "seconds": 11.625,
+    "word_errors": 0,
+    "reference_words": 18,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.074
+  },
+  {
+    "case": "speech_after_long_silence",
+    "frame_ms": 120.0,
+    "seconds": 11.625,
+    "word_errors": 0,
+    "reference_words": 18,
+    "parts": 1,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.963
+  },
+  {
+    "case": "repeat_after_endpoint",
+    "frame_ms": 50.0,
+    "seconds": 18.25,
+    "word_errors": 0,
+    "reference_words": 36,
+    "parts": 2,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.732
+  },
+  {
+    "case": "repeat_after_endpoint",
+    "frame_ms": 120.0,
+    "seconds": 18.25,
+    "word_errors": 0,
+    "reference_words": 36,
+    "parts": 2,
+    "text": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 1.814
+  },
+  {
+    "case": "impulse_noise",
+    "frame_ms": 50.0,
+    "seconds": 10.0,
+    "word_errors": 0,
+    "reference_words": 0,
+    "parts": 0,
+    "text": "",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.125
+  },
+  {
+    "case": "impulse_noise",
+    "frame_ms": 120.0,
+    "seconds": 10.0,
+    "word_errors": 0,
+    "reference_words": 0,
+    "parts": 0,
+    "text": "",
+    "silence_hypotheses_rejected": 0,
+    "decode_seconds": 0.116
+  }
+]

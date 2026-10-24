@@ -1,0 +1,69 @@
+# Güncel düzeltme: 0.19.3
+
+[FIX_0_19_3.md](FIX_0_19_3.md) — Süreye bağlı sözcük kesmesi kaldırıldı; sürekli kaynak metin ve kararlı çeviri önizlemesi. Gerçek örnek karşılaştırması: [ASR_BENCHMARK_0_19_3.md](ASR_BENCHMARK_0_19_3.md).
+
+# Güncel düzeltme: 0.19.2
+
+[FIX_0_19_2.md](FIX_0_19_2.md) — Türkçe TTS, kuyruk kurtarma ve ayrı ses durumu.
+
+# Güncel düzeltme: 0.19.1
+
+[FIX_0_19_1.md](FIX_0_19_1.md) — Türkçe ses testi ve görünür dinleme/seslendirme seçimi.
+
+# Güncel sürüm: 0.19 — Ücretsiz cihaz içi dinleme
+
+[FREE_0_19.md](FREE_0_19.md) — Varsayılan İngilizce Sherpa akışı; sunucu/API anahtarı gerekmez. Telefon performansı henüz doğrulanmadı. Aşağıdaki belgeler önceki aşamaların kayıtlarıdır.
+
+# Önceki aşama: 0.18
+
+[CLOUD_0_18.md](CLOUD_0_18.md) — Kurulum olmadan canlı bulut motoru çalışmaz.
+
+# Güncel düzeltme: 0.17.1
+
+[FIX_0_17_1.md](FIX_0_17_1.md)
+
+# Güncel aşama: 0.17
+
+Ses yakalama, otomatik tempo ve isteğe bağlı doğal/duygulu ses pilotu için [STAGE_0_17.md](STAGE_0_17.md). Kurulum: [server/PROFESSIONAL_PILOT.md](server/PROFESSIONAL_PILOT.md).
+
+# 0.16.3 — Kamera 3 dk + Dinle 3 dk + Görsel 10 adet
+
+Güncel deneme hakları ve kurulum: [TRIAL_0_16_3.md](TRIAL_0_16_3.md). Önceki belgelerdeki ortak 3 dakika ve sınırsız ücretsiz galeri ifadeleri artık geçerli değildir.
+
+# 0.16.2 — Eksiksiz konuşma ve görünür dinleme seçimleri
+
+Güncel kurulum ve davranış: [FIX_0_16_2.md](FIX_0_16_2.md). Önceki 0.16 belgesindeki konuşma bitmeden kısa sözcük parçalarının seslendirilmesi bu sürümde kaldırılmıştır; yazılı ara çeviri canlıdır, ses tamamlanmış bölümü okur.
+
+# 0.16.1 — Test düzeltmesi
+
+Güncel düzeltme ve commit adımları: [FIX_0_16_1.md](FIX_0_16_1.md).
+
+# 0.16 — Canlı konuşma çevirisi
+
+Güncel kurulum, dil paketleri ve telefon testi: [LIVE_SPEECH_0_16.md](LIVE_SPEECH_0_16.md). APK indirmesi Releases taslağından yapılır.
+
+# 0.15.1 indirme düzeltmesi
+
+Yeni indirme adımları için [CI_DOWNLOAD_FIX.md](CI_DOWNLOAD_FIX.md) dosyasını okuyun. Önceki 0.15 artifact indirme yönergeleri bu pakette geçersizdir.
+
+# AI Game Translator 0.15 — Son kontroller / Sunucusuz
+
+Kamera ve mikrofon ile İngilizce → Türkçe yerel çeviri ve Türkçe seslendirme. Ortak 3 dakikalık aktif demo. Aylık $4.99 / yıllık $49.99 / ömür boyu $199 Pro modeli korunur.
+
+Bu paket hedef Android API seviyesini 36'ya ve AGP'yi 8.10.1'e taşır. İlk sürüm sunucusuzdur: pro_server_url/google_web_client_id boştur. Yerel demo veri silmeyle sıfırlanabilir. Gerçek ödeme Play Console ürünü/lisans anahtarı ve satın alma testleri tamamlanınca etkinleşir.
+
+## GitHub'a aktar
+ZIP içindeki Android_Game_Translator_0_15 klasörünün içeriğini mevcut repo köküne aktar. `scripts`, `.github`, `app`, `server`, `signing`, `.gitignore`, Gradle dosyaları ve belgeleri birlikte üzerine yaz. İkinci iç içe proje klasörü oluşturma.
+
+```bash
+git add .
+git commit -m "v0.15: API 36 and final release/native compatibility checks"
+git push
+```
+
+Actions yeşil olduktan sonra AI-Game-Translator-0.15-final-checks-debug artifact içindeki APK'yı mevcut uygulamanın üzerine kur. Final-checks-and-unsigned-AAB-0.15 artifact içinde lint, native raporları ve imzasız release bundle bulunur. İmzasız AAB yayımlanacak dosya değildir; üretim imzası daha sonra hazırlanır. Artifact retention 3 gündür.
+
+## Kontroller
+Bu ortamda 23 Python testi ve kaynak kontrolleri geçti. Android SDK yok; APK/JUnit/lint/AAB ve gerçek native .so uyumluluğu GitHub'da doğrulanmalı. CI 16 KB ELF/ZIP kontrolü eklendi; başarısızsa rapordaki kütüphane düzeltilmeden mağazaya gidilmez. Kontrol baskılanmaz.
+
+Önceki 0.14'ün yeşil olması yeni 0.15 veya mağaza uygunluğu için onay sayılmaz. Tam inceleme FINAL_REVIEW.md, telefon listesi RELEASE_CHECKS.md, ödeme ayarları PRO_SETUP.md içinde.

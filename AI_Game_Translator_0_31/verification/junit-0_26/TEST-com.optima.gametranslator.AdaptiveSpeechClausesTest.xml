@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.AdaptiveSpeechClausesTest" tests="23" skipped="0" failures="0" errors="0" timestamp="2026-10-22T13:39:23" hostname="16fea8bccd03" time="0.192">
+  <properties/>
+  <testcase name="newWordsSurviveAnUnanchoredPrefixRewrite" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.08"/>
+  <testcase name="uniqueSpokenSuffixPreservesNewContinuationAfterDeletion" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.005"/>
+  <testcase name="resetCannotCarryAPreviousSpokenCursorIntoNewAudio" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.019"/>
+  <testcase name="commaBetweenMeaningGroupsCanCommitWithLookAhead" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.007"/>
+  <testcase name="shortPauseCanCommitAStablePredicateWithoutEngineEndpoint" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.012"/>
+  <testcase name="rapidlyGrowingAsrTextDoesNotStarveAStableInternalBoundary" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.008"/>
+  <testcase name="unanchoredRewriteDoesNotReplayAnAlreadySpokenTail" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.007"/>
+  <testcase name="incompleteDependentClauseWaitsForItsMainClause" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.002"/>
+  <testcase name="nativeFinalNeverReplaysAnAlreadySpokenPrefix" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.003"/>
+  <testcase name="prefixInsertionAlignsToTheStillUnspokenRightContext" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.002"/>
+  <testcase name="silentStableTextWithNoPredicateDoesNotBecomeAnEarlyClause" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <testcase name="disabledModeWaitsForTheNativeEndpointAndDoesNotLoadModel" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.0"/>
+  <testcase name="revisedWordsBeforeCommitRestartTheCandidateWindow" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <testcase name="decimalDotIsNotAWordBoundary" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.003"/>
+  <testcase name="prefixDeletionAlsoKeepsTheUnspokenContinuation" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.002"/>
+  <testcase name="inventedPunctuationModelWordsAreRejected" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.004"/>
+  <testcase name="noBoundaryMeansNoWordCountCutEvenForALongMonologue" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.018"/>
+  <testcase name="oneLookAheadWordIsNotEnoughToSpeakAnInternalBoundary" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <testcase name="danglingFunctionWordCannotBecomeASoftFinal" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <testcase name="trailingModelPeriodAloneCannotCommitWhileSpeakerContinues" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <testcase name="titleAbbreviationDoesNotCutThePersonName" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <testcase name="realRepeatedDialogueInNewNativeTurnIsPreserved" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <testcase name="continuousSpeakerCanBeTranslatedBeforeAnyNativeEndpoint" classname="com.optima.gametranslator.AdaptiveSpeechClausesTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,38 @@
+{
+  "SubtitleAreaView.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "301de9df2990e13df1fa37e266ccf0175e424daf62f402b36a91ab33dd591805"
+  },
+  "SubtitleFilter.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "775a834105291ea3b3f18447ea60b07da77b85d22dfed93401e7143fa95d5f11"
+  },
+  "StabilityGate.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "14cfdfa68c936d8af3ff994a4927a67310a16962bf7fffbc9a3da9d8c105b0b0"
+  },
+  "RecentLines.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "922adc0b8a94af2d42ff352f081d5ef1f93bc0750d6b6f8838493b692272cb28"
+  },
+  "LatestLine.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "c3274a5ab8e3b1ec56f2ca50eaea543624281ff00bdc4aa045193bd29751322a"
+  },
+  "VoicePlayer.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "d3de543fc9d3c6bc1d7770823031c6d7176428cb997fcf4ea4d98af817bc68fa"
+  },
+  "EchoReference.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "131093ef4babfe481492b47a18d01d7ee81622b92fa2798ba74db145b3088938"
+  },
+  "FreeStreamingSpeech.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "27a79d3b1ceb39e8d5abaa49284c82b836b5507ee6b42a5f09fd513ac2f356f3"
+  },
+  "AdaptiveSpeechClauses.kt": {
+    "unchanged_from_0_23": true,
+    "sha256": "b054b590f4aefb37b5a0bf93accd7cd901396a1bbf5e9d28929f262c8e2d4915"
+  }
+}

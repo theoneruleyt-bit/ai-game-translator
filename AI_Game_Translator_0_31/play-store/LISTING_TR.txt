@@ -1,0 +1,26 @@
+AI Game Translator
+
+Kamera, mikrofon ve görsellerle İngilizce Türkçe çeviri ve sesli okuma
+
+AI Game Translator, oyun ve video içeriklerini anlamanıza yardımcı olmak için kamera, mikrofon ve görsel çeviri araçlarını bir araya getirir.
+
+KAMERA
+Telefonunuzu ekrandaki altyazıya yöneltin, metin alanını seçin ve çeviriyi görün. Türkçe sesli okuma ile çevrilen metni dinleyin.
+
+DİNLE
+Mikrofondan İngilizce konuşmayı tanıyın, Türkçe çeviriyi görün ve sesli dinleyin. Varsayılan ücretsiz Dinle motoru cihazda çalışır. İlk kullanımda tanıma ve çeviri modellerini indirmeniz gerekir.
+
+GELİŞMİŞ ÇEVİRİ
+İsteğe bağlı cihaz içi gelişmiş İngilizce → Türkçe motorunu deneyin. Ayrı 1,83 GB model indirme, 64 bit çalışma desteği ve yeterli boş bellek/depolama gerekir. Yaklaşık 6 GB RAM sınıfı cihazlar için bellek kontrolü uygulanır. Sonuçlar cihaza ve konuşmaya bağlıdır; desteklenmediğinde veya geciktiğinde hızlı motora dönülür.
+
+GÖRSELLER VE KAYITLAR
+Galeriden seçtiğiniz görseldeki yazıları çevirin. Yakın çevirileri inceleyin, paylaşın veya silin.
+
+KİŞİSELLEŞTİRME
+Açık/koyu tema, Türkçe/İngilizce arayüz, yazı boyutu ve konuşma hızı seçenekleri. Ses çeşitleri telefonunuzdaki TTS motoruna ve yüklü dillere bağlıdır.
+
+DENEME VE PRO
+Kamera için 3 dakika, Dinle için ayrı 3 dakika ve 10 görsel çeviri deneyin. Haklar uygulama içinde ölçülür; deneme kendiliğinden abonelik başlatmaz. Pro için aylık, yıllık veya ömür boyu satın alma seçenekleri bulunur. Abonelikler iptal edilene kadar yenilenir; güncel yerel fiyat ve koşullar Google Play ödeme ekranında gösterilir.
+
+BİLMENİZ GEREKENLER
+Bu uygulama konsoldan doğrudan oyun sesi almaz; kamera ve telefon mikrofonunu kullanır. Çeviri doğruluğu ses kalitesi, aksan, müzik, efektler ve metin bağlamına göre değişir. Anlık, kusursuz veya bütün argo ifadeleri kapsayan çeviri garantisi yoktur. Duygulu ses veya otomatik konuşmacı kimliği garantisi verilmez. İsteğe bağlı bulut özellikleri ayrıca yapılandırılmış hizmet ve internet gerektirir; ek hizmet ücretleri olabilir. Uygulama herhangi bir oyun veya konsol üreticisinin resmî ürünü değildir.

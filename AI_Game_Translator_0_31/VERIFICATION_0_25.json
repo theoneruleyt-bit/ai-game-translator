@@ -1,0 +1,58 @@
+{
+  "version": "0.25-speech-boundary",
+  "versionCode": 36,
+  "checked_at": "2026-10-19T13:25:32.517829+00:00",
+  "base": "Android_Game_Translator_0_24.zip",
+  "tasks": {
+    ":app:assembleDebug": "PASS",
+    ":app:testDebugUnitTest": "PASS",
+    ":app:lintDebug": "PASS",
+    ":app:bundleRelease": "PASS",
+    ":app:lintRelease": "PASS"
+  },
+  "android_junit": {
+    "tests": 164,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_tests": 33,
+  "native_audio_regression": {
+    "cases": 18,
+    "word_errors_on_these_fixtures": 0,
+    "trailing_silence_seconds": 10,
+    "recordings": 2,
+    "noise": "synthetic white noise",
+    "implementation": "Host Sherpa 1.13.8 ASR/VAD plus Python mirror of audio gate; Kotlin policy and integration separately unit tested",
+    "limits": "Not game/slang accuracy benchmark; no Android microphone capture tested"
+  },
+  "changes": [
+    "Bound silent ASR turns; freeze unsupported late decoder hypotheses",
+    "Exclude digital silence from VAD evidence",
+    "Do not replay spoken words after ambiguous ASR prefix rewrite; preserve unique suffix/right-context continuation",
+    "Normalize colloquial reductions and unambiguous negation spellings in MIC; cache full-phrase alias lookup"
+  ],
+  "boundary_millis": {
+    "decoder_settle_after_vad": 700,
+    "forced_end_after_vad": 1100
+  },
+  "accuracy_limitations": [
+    "Not a new ASR or translation model",
+    "Noise/music/echo can still cause VAD false positives",
+    "Ambiguous shortened late rewrites withheld to avoid replay may omit uncertain words",
+    "No claim of exhaustive slang coverage or perfect real-time translation"
+  ],
+  "camera_and_voice_policy": "Byte comparison PASS against 0.24; MainActivity only changes MIC translation preprocessing",
+  "physical_device_test": "NOT RUN",
+  "tv_game_audio_and_bluetooth": "NOT RUN",
+  "native_16kb_alignment": "PASS: universal APK, ARM64 APK, release AAB",
+  "same_test_signing_key_as_0_24": true,
+  "delivered_apk": {
+    "apk": "/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_25_ARM64_Test.apk",
+    "bytes": 107612151,
+    "sha256": "bc533eccc1615acc3d58b0ead0dde5f2d6e4897018d905f1d73e24c2e9709c31",
+    "certificate_sha256": "ad6cf7228e75cb0a702f03aca74fa825a79a8a447ce8f3118a064b46364f6f1d",
+    "payload_entries_verified": 567
+  },
+  "release_bundle": "Validation bundle; public test key APK is for testing, not Play production signing"
+}

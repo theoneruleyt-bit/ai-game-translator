@@ -1,0 +1,18 @@
+[Unit]
+Description=Optima Translator account and Play verification service
+After=network-online.target
+Wants=network-online.target
+[Service]
+User=translator
+Group=translator
+WorkingDirectory=/opt/translator/server
+EnvironmentFile=/etc/translator/server.env
+ExecStart=/opt/translator/server/.venv/bin/python app.py
+Restart=on-failure
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/translator
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,230 @@
+{
+  "scope": "Linux CPU inference on typed English examples. Not a phone benchmark, not ASR, not a measured comparison with ML Kit. These are recorded translations, not an automatic quality score.",
+  "tiny": [
+    {
+      "source": "What the hell are you doing?",
+      "onnx_beam4": "Ne halt ediyorsun sen?",
+      "onnx_ms": 324,
+      "tflite_greedy": "Ne halt ediyorsun sen?",
+      "tflite_ms": 131
+    },
+    {
+      "source": "I'm not buying that bullshit.",
+      "onnx_beam4": "O saçmalığı da almıyorum.",
+      "onnx_ms": 395,
+      "tflite_greedy": "O saçmalığı da almıyorum.",
+      "tflite_ms": 51
+    },
+    {
+      "source": "You're pulling my leg.",
+      "onnx_beam4": "Bacağımı sen çekiyorsun.",
+      "onnx_ms": 426,
+      "tflite_greedy": "Bacağımı sen çekiyorsun.",
+      "tflite_ms": 44
+    },
+    {
+      "source": "This place is crawling with cops.",
+      "onnx_beam4": "Burası polislerle birlikte sürünüyor.",
+      "onnx_ms": 528,
+      "tflite_greedy": "Burası polislerle birlikte sürünüyor.",
+      "tflite_ms": 24
+    },
+    {
+      "source": "He's got your back.",
+      "onnx_beam4": "Senin arkanı kolladı.",
+      "onnx_ms": 353,
+      "tflite_greedy": "Senin arkanı kolladı.",
+      "tflite_ms": 23
+    },
+    {
+      "source": "We got screwed.",
+      "onnx_beam4": "Biz de mahvolduk.",
+      "onnx_ms": 315,
+      "tflite_greedy": "Biz de mahvolduk.",
+      "tflite_ms": 23
+    },
+    {
+      "source": "Don't mess with me.",
+      "onnx_beam4": "Benimle uğraşma.",
+      "onnx_ms": 261,
+      "tflite_greedy": "Benimle uğraşma.",
+      "tflite_ms": 28
+    },
+    {
+      "source": "I ain't got no money.",
+      "onnx_beam4": "Benim hiç param yok.",
+      "onnx_ms": 319,
+      "tflite_greedy": "Benim param yok.",
+      "tflite_ms": 31
+    },
+    {
+      "source": "You gotta be kidding me.",
+      "onnx_beam4": "Benimle dalga geçiyor olmalısın.",
+      "onnx_ms": 305,
+      "tflite_greedy": "Benimle dalga geçiyor olmalısın.",
+      "tflite_ms": 19
+    },
+    {
+      "source": "Shut the fuck up.",
+      "onnx_beam4": "Kapa çeneni de.",
+      "onnx_ms": 525,
+      "tflite_greedy": "Kapa çeneni de.",
+      "tflite_ms": 25
+    },
+    {
+      "source": "That's sick, man!",
+      "onnx_beam4": "Bu çok hasta, dostum!",
+      "onnx_ms": 457,
+      "tflite_greedy": "Bu çok hasta, dostum!",
+      "tflite_ms": 24
+    },
+    {
+      "source": "He ratted us out.",
+      "onnx_beam4": "Bizi ispiyonladı.",
+      "onnx_ms": 475,
+      "tflite_greedy": "Bizi ispiyonladı.",
+      "tflite_ms": 21
+    },
+    {
+      "source": "I'm gonna bounce.",
+      "onnx_beam4": "Ben zıplayacağım.",
+      "onnx_ms": 361,
+      "tflite_greedy": "Ben zıplayacağım.",
+      "tflite_ms": 23
+    },
+    {
+      "source": "Watch out! There is a cop behind you.",
+      "onnx_beam4": "Dikkat et, arkanda bir polis var.",
+      "onnx_ms": 401,
+      "tflite_greedy": "Dikkat et, arkanda bir polis var.",
+      "tflite_ms": 34
+    },
+    {
+      "source": "We need to lay low until the heat dies down.",
+      "onnx_beam4": "Isı düşene kadar az uzanmalıyız.",
+      "onnx_ms": 468,
+      "tflite_greedy": "Isı düşene kadar az uzanmalıyız.",
+      "tflite_ms": 43
+    },
+    {
+      "source": "I didn't say he stole the money.",
+      "onnx_beam4": "Parayı çaldığını söylemedim.",
+      "onnx_ms": 416,
+      "tflite_greedy": "Parayı çaldığını söylemedim.",
+      "tflite_ms": 33
+    },
+    {
+      "source": "He did not kill the guard, he only took his keys.",
+      "onnx_beam4": "Gardiyanı öldürmedi, sadece anahtarlarını aldı.",
+      "onnx_ms": 584,
+      "tflite_greedy": "Gardiyanı öldürmedi, sadece anahtarlarını aldı.",
+      "tflite_ms": 44
+    },
+    {
+      "source": "The deal fell through, so we need a new plan.",
+      "onnx_beam4": "Anlaşma düştü, bu yüzden yeni bir plana ihtiyacımız var.",
+      "onnx_ms": 618,
+      "tflite_greedy": "Anlaşma düştü, bu yüzden yeni bir plana ihtiyacımız var.",
+      "tflite_ms": 49
+    }
+  ],
+  "large_candidate_not_shipped": [
+    {
+      "source": "What the hell are you doing?",
+      "big_greedy": "Ne halt ediyorsun sen?",
+      "ms": 446
+    },
+    {
+      "source": "I'm not buying that bullshit.",
+      "big_greedy": "Bu saçmalığı yutmam.",
+      "ms": 283
+    },
+    {
+      "source": "You're pulling my leg.",
+      "big_greedy": "Bacağımı çekiyorsun.",
+      "ms": 189
+    },
+    {
+      "source": "This place is crawling with cops.",
+      "big_greedy": "Burası polislerle dolu.",
+      "ms": 153
+    },
+    {
+      "source": "He's got your back.",
+      "big_greedy": "Arkanı kolladı.",
+      "ms": 147
+    },
+    {
+      "source": "We got screwed.",
+      "big_greedy": "- Mahvolduk.",
+      "ms": 166
+    },
+    {
+      "source": "Don't mess with me.",
+      "big_greedy": "Benimle uğraşma.",
+      "ms": 100
+    },
+    {
+      "source": "I ain't got no money.",
+      "big_greedy": "Param yok.",
+      "ms": 136
+    },
+    {
+      "source": "You gotta be kidding me.",
+      "big_greedy": "Şaka yapıyor olmalısın.",
+      "ms": 131
+    },
+    {
+      "source": "Shut the fuck up.",
+      "big_greedy": "Kapa çeneni.",
+      "ms": 103
+    },
+    {
+      "source": "That's sick, man!",
+      "big_greedy": "Bu çok iğrenç, dostum!",
+      "ms": 193
+    },
+    {
+      "source": "He ratted us out.",
+      "big_greedy": "Bizi gammazladı.",
+      "ms": 153
+    },
+    {
+      "source": "I'm gonna bounce.",
+      "big_greedy": "Ben zıplayacağım.",
+      "ms": 129
+    },
+    {
+      "source": "Watch out! There is a cop behind you.",
+      "big_greedy": "Dikkat et, arkanda bir polis var.",
+      "ms": 245
+    },
+    {
+      "source": "We need to lay low until the heat dies down.",
+      "big_greedy": "Sıcaklık düşene kadar dikkat çekmemiz gerekiyor.",
+      "ms": 242
+    },
+    {
+      "source": "I didn't say he stole the money.",
+      "big_greedy": "Parayı çaldığını söylemedim.",
+      "ms": 149
+    },
+    {
+      "source": "He did not kill the guard, he only took his keys.",
+      "big_greedy": "Gardiyanı öldürmedi, sadece anahtarlarını aldı.",
+      "ms": 302
+    },
+    {
+      "source": "The deal fell through, so we need a new plan.",
+      "big_greedy": "Anlaşma suya düştü, bu yüzden yeni bir plana ihtiyacımız var.",
+      "ms": 435
+    }
+  ],
+  "decision": "Keep fast ML Kit as default; bundle tiny OPUS-MT as an explicitly optional alternative. Large candidate still mistranslated slang and was not shipped. Enable the authored whole-phrase dialogue pack in microphone mode by default.",
+  "known_limit_examples": [
+    "pulling my leg was literal in both tested neural models",
+    "gonna bounce was literal in both tested models",
+    "large greedy lay-low result reversed the intended avoidance meaning",
+    "sick is context-ambiguous and deliberately has no bare-phrase override"
+  ]
+}

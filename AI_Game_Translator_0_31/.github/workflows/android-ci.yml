@@ -1,0 +1,70 @@
+name: Android final checks and draft download
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: 'false'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+      - name: Python policy and native-check tests
+        run: |
+          python3 -m unittest discover -s server -p "test_*.py" -v
+          python3 -m unittest discover -s scripts -p "test_*.py" -v
+      - name: Verify pinned Sherpa native dependency
+        run: python3 scripts/check_sherpa_dependency.py
+      - name: Verify bundled sentence-boundary model
+        run: python3 scripts/check_punctuation_model.py
+      - name: Verify local translation pack
+        run: python3 scripts/check_translation_pack.py
+      - name: Build APK, unsigned release bundle, tests and lint
+        run: gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease :app:lintRelease --no-daemon --continue
+      - name: Check packaged native ELF alignment
+        if: always()
+        run: |
+          if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
+            python3 scripts/check_native_pages.py app/build/outputs/apk/debug/app-debug.apk --report app/build/reports/native-pages-debug.json
+          else
+            echo "APK not built; native check unavailable"
+            exit 1
+          fi
+      - name: Check APK ZIP alignment
+        if: always()
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 -v 4 app/build/outputs/apk/debug/app-debug.apk
+      - name: Check release bundle native alignment
+        if: always()
+        run: |
+          python3 scripts/check_native_pages.py app/build/outputs/bundle/release/app-release.aab --report app/build/reports/native-pages-release.json
+      - name: Prepare download and job summary
+        if: always()
+        env:
+          CHECK_STATUS: ${{ job.status }}
+        run: python3 scripts/package_ci_download.py
+      - name: Upload download to a private draft release
+        if: always() && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHECK_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="ci-download-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          printf 'Android CI download. Check status: %s\nCommit: %s\nRun: %s/%s/actions/runs/%s\n\nDraft for developer testing. Unsigned AAB cannot be submitted to Google Play.\n' "$CHECK_STATUS" "$GITHUB_SHA" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > /tmp/ci-release-notes.txt
+          url=$(gh release create "$tag" ci-download.zip --draft --target "$GITHUB_SHA" --title "Translator CI $GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT ($CHECK_STATUS)" --notes-file /tmp/ci-release-notes.txt)
+          printf '\nDownload: %s\nOpen repository Releases and select the draft above.\n' "$url" >> "$GITHUB_STEP_SUMMARY"

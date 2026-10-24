@@ -1,0 +1,42 @@
+{
+  "version": "0.21-live-audio-sync",
+  "versionCode": 32,
+  "checked_at": "2026-10-19T08:51:24.192278+00:00",
+  "base": "Android_Game_Translator_0_20",
+  "tasks": {
+    ":app:assembleDebug": "PASS",
+    ":app:testDebugUnitTest": "PASS",
+    ":app:lintDebug": "PASS",
+    ":app:bundleRelease": "PASS",
+    ":app:lintRelease": "PASS"
+  },
+  "android_junit": {
+    "tests": 111,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_tests": 33,
+  "synthetic_echo_scope": "Aligned PCM echo subtraction, independent source preservation, reference expiry, streamed resampling and unsupported encoding. No acoustic device benchmark.",
+  "audio_regression_0_20": "Historical 12-check report retained; unchanged models, not rerun in 0.21.",
+  "native_16kb_alignment": "PASS: universal APK (32 libraries), ARM64 APK (7), release AAB (32)",
+  "packaging": {
+    "zipalign": "PASS",
+    "signature": "PASS",
+    "same_test_signing_key_as_0_20": true,
+    "payload_entries_verified": 561
+  },
+  "delivered_apk": {
+    "apk": "/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_21_ARM64_Test.apk",
+    "bytes": 80463383,
+    "sha256": "f6bb4a10100db3939be3cd94d8bb80cf5b5964a46bf8d948208b2e453fc3bcb3",
+    "certificate_sha256": "ad6cf7228e75cb0a702f03aca74fa825a79a8a447ce8f3118a064b46364f6f1d",
+    "payload_entries_verified": 561
+  },
+  "universal_apk_sha256": "753fb5beb77f511f8de108f1a625bdd7a44559874146da1dc7df56413c285f81",
+  "physical_device_test": "NOT RUN",
+  "turkish_mlkit_accuracy_device_test": "NOT RUN",
+  "headset_bluetooth_acoustic_test": "NOT RUN",
+  "release_bundle": "Built for validation; test APK is not a store release.",
+  "build_environment_note": "Build outputs isolated in a temporary directory via external Gradle init script after shared workspace generated orphan temporary files. Application Gradle configuration unchanged by this environment workaround."
+}

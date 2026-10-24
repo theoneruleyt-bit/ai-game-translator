@@ -1,0 +1,872 @@
+{
+  "archive": "/tmp/listen027/build/_app/outputs/bundle/release/app-release.aab",
+  "check": "ELF PT_LOAD alignment for 64-bit libraries",
+  "passed": true,
+  "failures": [],
+  "libraries": [
+    {
+      "library": "base/lib/arm64-v8a/libimage_processing_util_jni.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 26048,
+          "virtualAddress": 42432,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 26984,
+          "virtualAddress": 59752,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/arm64-v8a/libjnidispatch.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 162712,
+          "virtualAddress": 179096,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/arm64-v8a/libmlkit_google_ocr_pipeline.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 10272768,
+          "virtualAddress": 10272768,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 10840608,
+          "virtualAddress": 10856992,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/arm64-v8a/libsherpa-onnx-jni.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 23767520,
+          "virtualAddress": 23783904,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 24162608,
+          "virtualAddress": 24195376,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/arm64-v8a/libsurface_util_jni.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 2448,
+          "virtualAddress": 18832,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/arm64-v8a/libtensorflowlite_jni.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 4259840,
+          "virtualAddress": 4259840,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 4297096,
+          "virtualAddress": 4313480,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/arm64-v8a/libtranslate_jni.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 14450688,
+          "virtualAddress": 14450688,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 15157744,
+          "virtualAddress": 15174128,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/arm64-v8a/libvosk.so",
+      "abi": "arm64-v8a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 4223296,
+          "virtualAddress": 4239680,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 9881040,
+          "virtualAddress": 9913808,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 10037352,
+          "virtualAddress": 10086504,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libimage_processing_util_jni.so",
+      "abi": "armeabi-v7a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 18352,
+          "virtualAddress": 34736,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 18848,
+          "virtualAddress": 51616,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libjnidispatch.so",
+      "abi": "armeabi-v7a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 114072,
+          "virtualAddress": 130456,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libmlkit_google_ocr_pipeline.so",
+      "abi": "armeabi-v7a",
+      "compatible": false,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 6303744,
+          "virtualAddress": 6303744,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 6600960,
+          "virtualAddress": 6605056,
+          "alignment": 4096,
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libsherpa-onnx-jni.so",
+      "abi": "armeabi-v7a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 16235008,
+          "virtualAddress": 16251392,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 16433544,
+          "virtualAddress": 16466312,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libsurface_util_jni.so",
+      "abi": "armeabi-v7a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 1760,
+          "virtualAddress": 18144,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libtensorflowlite_jni.so",
+      "abi": "armeabi-v7a",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 2539520,
+          "virtualAddress": 2539520,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 2559192,
+          "virtualAddress": 2575576,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libtranslate_jni.so",
+      "abi": "armeabi-v7a",
+      "compatible": false,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 10067968,
+          "virtualAddress": 10067968,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 10433136,
+          "virtualAddress": 10437232,
+          "alignment": 4096,
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi-v7a/libvosk.so",
+      "abi": "armeabi-v7a",
+      "compatible": false,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 3113920,
+          "virtualAddress": 3118016,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 8904128,
+          "virtualAddress": 8912320,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 8981632,
+          "virtualAddress": 8993920,
+          "alignment": 4096,
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "library": "base/lib/armeabi/libjnidispatch.so",
+      "abi": "armeabi",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 114064,
+          "virtualAddress": 130448,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/mips/libjnidispatch.so",
+      "abi": "mips",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 114336,
+          "virtualAddress": 130720,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/mips64/libjnidispatch.so",
+      "abi": "mips64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 115880,
+          "virtualAddress": 115880,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libimage_processing_util_jni.so",
+      "abi": "x86",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 36352,
+          "virtualAddress": 52736,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 36876,
+          "virtualAddress": 69644,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libjnidispatch.so",
+      "abi": "x86",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 114144,
+          "virtualAddress": 130528,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libmlkit_google_ocr_pipeline.so",
+      "abi": "x86",
+      "compatible": false,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 11104256,
+          "virtualAddress": 11104256,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 11395584,
+          "virtualAddress": 11399680,
+          "alignment": 4096,
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libonnxruntime.so",
+      "abi": "x86",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 5920640,
+          "virtualAddress": 5937024,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 26255024,
+          "virtualAddress": 26287792,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 26487584,
+          "virtualAddress": 26536736,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libsherpa-onnx-jni.so",
+      "abi": "x86",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 5501968,
+          "virtualAddress": 5518352,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 5538848,
+          "virtualAddress": 5571616,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libsurface_util_jni.so",
+      "abi": "x86",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 2144,
+          "virtualAddress": 18528,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libtensorflowlite_jni.so",
+      "abi": "x86",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 6291456,
+          "virtualAddress": 6291456,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 6310836,
+          "virtualAddress": 6327220,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libtranslate_jni.so",
+      "abi": "x86",
+      "compatible": false,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 15728640,
+          "virtualAddress": 15728640,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 16087872,
+          "virtualAddress": 16091968,
+          "alignment": 4096,
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86/libvosk.so",
+      "abi": "x86",
+      "compatible": false,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 3714512,
+          "virtualAddress": 3718608,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 10315968,
+          "virtualAddress": 10324160,
+          "alignment": 4096,
+          "compatible": false
+        },
+        {
+          "offset": 10393544,
+          "virtualAddress": 10405832,
+          "alignment": 4096,
+          "compatible": false
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libimage_processing_util_jni.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 45392,
+          "virtualAddress": 61776,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 46080,
+          "virtualAddress": 78848,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libjnidispatch.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 113408,
+          "virtualAddress": 129792,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libmlkit_google_ocr_pipeline.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 10878976,
+          "virtualAddress": 10878976,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 11408448,
+          "virtualAddress": 11424832,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libsherpa-onnx-jni.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 26984928,
+          "virtualAddress": 27001312,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 27352976,
+          "virtualAddress": 27385744,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libsurface_util_jni.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 2544,
+          "virtualAddress": 18928,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libtensorflowlite_jni.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 5996544,
+          "virtualAddress": 5996544,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 6030160,
+          "virtualAddress": 6046544,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libtranslate_jni.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 15499264,
+          "virtualAddress": 15499264,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 16168512,
+          "virtualAddress": 16184896,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    },
+    {
+      "library": "base/lib/x86_64/libvosk.so",
+      "abi": "x86_64",
+      "compatible": true,
+      "segments": [
+        {
+          "offset": 0,
+          "virtualAddress": 0,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 4045312,
+          "virtualAddress": 4061696,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 10172944,
+          "virtualAddress": 10205712,
+          "alignment": 16384,
+          "compatible": true
+        },
+        {
+          "offset": 10329568,
+          "virtualAddress": 10378720,
+          "alignment": 16384,
+          "compatible": true
+        }
+      ]
+    }
+  ]
+}
