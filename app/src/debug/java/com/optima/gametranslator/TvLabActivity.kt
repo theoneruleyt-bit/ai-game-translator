@@ -30,6 +30,9 @@ class TvLabActivity: Activity() {
  private var running=false
  private var generation=0L
  private var index=0
+ private val prefs by lazy { getSharedPreferences("tv_lab_ui",MODE_PRIVATE) }
+ private var shade=190
+ private var centered=true
  private var size=26f
  private var top=false
  private lateinit var caption: TextView
@@ -37,38 +40,54 @@ class TvLabActivity: Activity() {
  private lateinit var status: TextView
  private lateinit var stage: LinearLayout
  private lateinit var start: Button
+ private fun dp(v: Int)=(v*resources.displayMetrics.density).toInt()
+ private fun surface(color: Int)=GradientDrawable().apply { setColor(color);cornerRadius=dp(16).toFloat();setStroke(dp(1),Color.rgb(44,65,85)) }
  private fun text(value: String,sp: Float=16f)=TextView(this).apply {
-  text=value;textSize=sp;setTextColor(Color.WHITE);setPadding(10,8,10,8)
+  text=value;textSize=sp;setTextColor(Color.rgb(234,242,250));setPadding(dp(12),dp(10),dp(12),dp(10))
  }
  private fun button(value: String,action: ()->Unit)=Button(this).apply {
-  text=value;isFocusable=true;minHeight=64
-  setOnFocusChangeListener { _,focused ->
-   background=GradientDrawable().apply { setColor(if(focused)Color.rgb(45,111,106) else Color.rgb(27,43,63));cornerRadius=12f;setStroke(if(focused)4 else 1,Color.rgb(100,235,204)) }
-   setTextColor(Color.WHITE)
-  }
+  text=value;isAllCaps=false;textSize=16f;isFocusable=true;minimumHeight=dp(58)
+  setPadding(dp(14),dp(10),dp(14),dp(10));setTextColor(Color.WHITE)
+  backgroundTintList=null
+  fun paint(focused: Boolean) { background=surface(if(focused)Color.rgb(20,111,99) else Color.rgb(25,43,63)).apply { setStroke(dp(if(focused)3 else 1),if(focused)Color.rgb(100,235,204) else Color.rgb(56,80,104)) } }
+  paint(false);setOnFocusChangeListener { _,focused -> paint(focused) }
   setOnClickListener { action() }
+ }
+ private fun saveAppearance() { prefs.edit().putFloat("size",size).putBoolean("top",top).putInt("shade",shade).putBoolean("centered",centered).apply() }
+ private fun appearance() {
+  caption.textSize=size;caption.gravity=if(centered)Gravity.CENTER else Gravity.START
+  caption.background=surface(Color.argb(shade,3,9,18));saveAppearance()
  }
  override fun onCreate(state: Bundle?) {
   super.onCreate(state)
   WindowCompat.setDecorFitsSystemWindows(window,false)
-  size=state?.getFloat("captionSize",26f)?:26f;top=state?.getBoolean("captionTop",false)?:false
-  val root=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(32,20,32,24);setBackgroundColor(Color.rgb(11,17,29)) }
-  root.addView(text("AI Game Translator · TV LAB",25f).apply { setTypeface(null,Typeface.BOLD) })
+  size=state?.getFloat("captionSize")?:prefs.getFloat("size",26f);top=state?.getBoolean("captionTop")?:prefs.getBoolean("top",false)
+  shade=prefs.getInt("shade",190);centered=prefs.getBoolean("centered",true)
+  val root=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(24),dp(20),dp(24),dp(24));background=GradientDrawable(GradientDrawable.Orientation.TL_BR,intArrayOf(Color.rgb(8,16,29),Color.rgb(18,37,54))) }
+  root.addView(text("TV LAB  /  AI Game Translator",28f).apply { setTypeface(null,Typeface.BOLD) })
   root.addView(text(tr("DENEYSEL • Yalnız örnek metin. HDMI ve arka plan çevirisi etkin değil.","EXPERIMENTAL • Sample text only. HDMI and background translation are not enabled.")))
   status=text(tr("Kumanda: yön tuşları ve OK. İlk model hazırlığı internet gerektirebilir.","Remote: arrows and OK. Initial model preparation may require internet."));root.addView(status)
-  stage=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;minimumHeight=210;setBackgroundColor(Color.rgb(18,32,49)) }
-  source=text("",20f);caption=text(tr("Türkçe örnek altyazı burada görünecek.","Turkish sample subtitles will appear here."),size)
+  stage=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;minimumHeight=dp(230);setPadding(dp(12),dp(12),dp(12),dp(12));background=surface(Color.rgb(18,32,49)) }
+  source=text(tr("ÖRNEK ALTYAZI • İNGİLİZCE → TÜRKÇE","SAMPLE SUBTITLES • ENGLISH → TURKISH"),18f);caption=text(tr("Türkçe örnek altyazı burada görünecek.","Turkish sample subtitles will appear here."),size)
   caption.gravity=Gravity.CENTER;stage.addView(source);stage.addView(caption);root.addView(stage)
   fun row(vararg buttons: Button) {
-   val line=LinearLayout(this)
-   buttons.forEach { line.addView(it,LinearLayout.LayoutParams(0,-2,1f).apply { setMargins(4,8,4,8) }) }
-   root.addView(line)
+   val count=if(resources.configuration.screenWidthDp<600)1 else 3
+   buttons.toList().chunked(count).forEach { group ->
+    val line=LinearLayout(this)
+    group.forEach { line.addView(it,LinearLayout.LayoutParams(0,-2,1f).apply { setMargins(dp(4),dp(6),dp(4),dp(6)) }) }
+    root.addView(line)
+   }
   }
+  root.addView(text(tr("ÖNİZLEME","PREVIEW"),12f).apply { setTextColor(Color.rgb(100,235,204)) })
   start=button(tr("Örnek çeviriyi başlat","Start sample translation")) { if(running)stop() else begin() }
   row(start,button(tr("Uyumluluk bilgisi","Compatibility information")) { compatibility() })
-  row(button(tr("Yazıyı büyüt","Larger subtitles")) { size=(size+2).coerceAtMost(40f);caption.textSize=size },
-      button(tr("Yazıyı küçült","Smaller subtitles")) { size=(size-2).coerceAtLeast(18f);caption.textSize=size },
-      button(tr("Üst / alt konum","Top / bottom")) { top=!top;placeCaption() })
+  row(button(tr("Yazıyı büyüt","Larger subtitles")) { size=(size+2).coerceAtMost(40f);appearance() },
+      button(tr("Yazıyı küçült","Smaller subtitles")) { size=(size-2).coerceAtLeast(18f);appearance() },
+      button(tr("Üst / alt konum","Top / bottom")) { top=!top;placeCaption();saveAppearance() })
+  root.addView(text(tr("ALTYAZI GÖRÜNÜMÜ","SUBTITLE APPEARANCE"),12f).apply { setTextColor(Color.rgb(100,235,204)) })
+  row(button(tr("Arka planı değiştir","Change background")) { shade=if(shade==190)240 else if(shade==240)110 else 190;appearance() },
+      button(tr("Hizalamayı değiştir","Change alignment")) { centered=!centered;appearance() },
+      button(tr("Görünümü sıfırla","Reset appearance")) { size=26f;shade=190;centered=true;top=false;appearance();placeCaption() })
   row(button(tr("Durdur","Stop")) { stop() },button(tr("Çıkış","Exit")) { finish() })
   root.addView(text(tr("Yakalama API’sinin bulunması HDMI görüntüsüne veya başka uygulamanın üstüne yazı çizimine erişimi kanıtlamaz. Gerçek TV testi gereklidir.","A capture API does not prove HDMI access or permission to draw above another app. Physical TV testing is required.")))
   val scroll=ScrollView(this).apply { addView(root);isFillViewport=true;clipToPadding=true;setBackgroundColor(Color.rgb(11,17,29)) }
@@ -76,10 +95,11 @@ class TvLabActivity: Activity() {
    val bars=insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
    view.setPadding(bars.left,bars.top,bars.right,bars.bottom);WindowInsetsCompat.CONSUMED
   }
-  setContentView(scroll);ViewCompat.requestApplyInsets(scroll);placeCaption();start.requestFocus()
+  setContentView(scroll);ViewCompat.requestApplyInsets(scroll);placeCaption();appearance();start.requestFocus()
  }
  private fun placeCaption() {
   stage.removeView(caption)
+  stage.gravity=if(top)Gravity.TOP else Gravity.BOTTOM
   stage.addView(caption,if(top)0 else stage.childCount)
  }
  private fun begin() {
@@ -122,3 +142,4 @@ class TvLabActivity: Activity() {
  override fun onSaveInstanceState(state: Bundle) { state.putFloat("captionSize",size);state.putBoolean("captionTop",top);super.onSaveInstanceState(state) }
  override fun onDestroy() { stop();client?.close();client=null;super.onDestroy() }
 }
+
