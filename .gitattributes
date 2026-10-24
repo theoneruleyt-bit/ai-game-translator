@@ -1,0 +1,8 @@
+# Preserve verified asset bytes on Windows and Linux.
+app/src/main/assets/** -text
+app/libs/** -text
+app/src/test/resources/** -text
+*.onnx -text
+*.tflite -text
+*.aar -text
+*.vocab -text
