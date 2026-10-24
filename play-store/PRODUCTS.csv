@@ -1,4 +1,4 @@
 product_id,type,base_plan,billing_period,usd_price,configuration
-translator_pro,SUBS,monthly,P1M,5.99,Auto-renewing; no Play free trial offer
-translator_pro,SUBS,yearly,P1Y,69.99,Auto-renewing; no Play free trial offer
-translator_pro_lifetime,INAPP,,,99.99,Non-consumable BUY option; mark legacy-compatible; no rent or preorder
+translator_pro,SUBS,monthly,P1M,4.99,Auto-renewing; no Play free trial offer
+translator_pro,SUBS,yearly-auto,P1Y,49.99,Auto-renewing; replaces inactive prepaid yearly
+translator_pro_lifetime,INAPP,,,99.99,Non-consumable BUY option; no rent or preorder

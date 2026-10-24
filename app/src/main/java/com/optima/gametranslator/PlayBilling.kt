@@ -55,6 +55,63 @@ class PlayBilling(
 
     private var closed = false
     private var refreshId = 0
+    private val catalogReports = linkedMapOf<String, String>()
+    private val purchaseReports = linkedMapOf<String, String>()
+    private var entitlementDecision = "No completed ownership check yet."
+
+    @Suppress("DEPRECATION")
+    fun diagnostics(): String {
+        val installed = runCatching {
+            val info = activity.packageManager.getPackageInfo(activity.packageName, 0)
+            "${info.versionName} (${info.longVersionCode})"
+        }.getOrDefault("unavailable")
+        return buildString {
+            appendLine("AI Game Translator - purchase support")
+            appendLine("Installed version: $installed")
+            appendLine("Billing connected: ${client.isReady}")
+            appendLine("Server authority enabled: ${authority.enabled}")
+            appendLine("Pro displayed: $pro; locally verified Pro: $localPro")
+            appendLine("Last decision: $entitlementDecision")
+            appendLine("Query generation: $refreshId")
+            appendLine("Expected plans: monthly, yearly-auto")
+            appendLine("--- Catalog ---")
+            if (catalogReports.isEmpty()) appendLine("No response recorded.")
+            catalogReports.forEach { (type, report) -> appendLine("[$type] $report") }
+            appendLine("Visible plans: ${plans.joinToString { it.name }}")
+            appendLine("--- Ownership ---")
+            if (purchaseReports.isEmpty()) appendLine("No response recorded.")
+            purchaseReports.forEach { (type, report) -> appendLine("[$type] $report") }
+            appendLine("No tokens, order numbers, license keys or account/payment details included.")
+        }
+    }
+
+    private fun catalogReport(result: BillingResult, products: List<ProductDetails>): String =
+        buildString {
+            appendLine("Response=${result.responseCode}; products=${products.size}")
+            products.forEach { product ->
+                appendLine("Product=${product.productId}")
+                product.subscriptionOfferDetails.orEmpty().forEach { offer ->
+                    appendLine("Base=${offer.basePlanId}; plainBase=${offer.offerId == null}")
+                    offer.pricingPhases.pricingPhaseList.forEach { phase ->
+                        appendLine("Period=${phase.billingPeriod}; recurrence=${phase.recurrenceMode}; price=${phase.formattedPrice}")
+                    }
+                }
+            }
+        }
+
+    private fun ownershipReport(result: BillingResult, purchases: List<Purchase>): String =
+        buildString {
+            appendLine("Response=${result.responseCode}; returned=${purchases.size}")
+            purchases.forEach { purchase ->
+                val products = purchase.products.filter {
+                    it == "translator_pro" || it == "translator_pro_lifetime"
+                }
+                if (products.isNotEmpty()) {
+                    appendLine("Products=${products.joinToString()}; state=${purchase.purchaseState}; acknowledged=${purchase.isAcknowledged}; autoRenewing=${purchase.isAutoRenewing}")
+                }
+            }
+        }
+
 
     private val client = BillingClient.newBuilder(activity)
         .setListener(this)
@@ -97,6 +154,12 @@ class PlayBilling(
 
         val request = ++refreshId
         plans.clear()
+        catalogReports.clear()
+        purchaseReports.clear()
+        listOf(BillingClient.ProductType.SUBS, BillingClient.ProductType.INAPP).forEach {
+            catalogReports[it] = "Loading..."
+            purchaseReports[it] = "Loading..."
+        }
 
         listOf(
             BillingClient.ProductType.SUBS,
@@ -121,6 +184,9 @@ class PlayBilling(
 
             client.queryProductDetailsAsync(params) { result, data ->
                 activity.runOnUiThread {
+                    if (!closed && request == refreshId) {
+                        catalogReports[type] = catalogReport(result, data.productDetailsList)
+                    }
                     if (
                         !closed &&
                         request == refreshId &&
@@ -171,6 +237,8 @@ class PlayBilling(
                             }
                         }
                         changed()
+                    } else if (!closed && request == refreshId) {
+                        changed()
                     }
                 }
             }
@@ -192,6 +260,11 @@ class PlayBilling(
                 activity.runOnUiThread {
                     if (!closed && request == refreshId) {
                         responses++
+                        purchaseReports[type] = ownershipReport(result, purchases)
+                        if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                            entitlementDecision = "Ownership query failed; existing in-memory state retained."
+                            changed()
+                        }
 
                         if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                             owned.addAll(purchases)
@@ -201,8 +274,10 @@ class PlayBilling(
 
                         if (responses == 2 && !failed) {
                             if (authority.enabled) {
+                                entitlementDecision = "Using configured server authority."
                                 verifyOnServer(owned)
                             } else {
+                                entitlementDecision = "Ownership queries completed; no verified entitlement yet."
                                 localPro = false
                                 owned.forEach { verify(it, request) }
                                 changed()
@@ -319,12 +394,16 @@ class PlayBilling(
             false
         }
 
-        if (!valid) return
+        if (!valid) {
+            entitlementDecision = "Purchase signature could not be verified."
+            return
+        }
 
         if (purchase.isAcknowledged) {
             activity.runOnUiThread {
                 if (!closed && request == refreshId) {
                     localPro = true
+                    entitlementDecision = "Verified acknowledged purchase: ${purchase.products.filter { it == "translator_pro" || it == "translator_pro_lifetime" }.joinToString()}"
                     changed()
                 }
             }
@@ -343,6 +422,7 @@ class PlayBilling(
                     result.responseCode == BillingClient.BillingResponseCode.OK
                 ) {
                     localPro = true
+                    entitlementDecision = "Signature verified and acknowledgement completed: ${purchase.products.filter { it == "translator_pro" || it == "translator_pro_lifetime" }.joinToString()}"
                     changed()
                 }
             }
@@ -354,3 +434,4 @@ class PlayBilling(
         client.endConnection()
     }
 }
+

@@ -304,6 +304,20 @@ class MainActivity : ComponentActivity() {
             try { startActivity(Intent(Intent.ACTION_VIEW,uri)) }
             catch(_: android.content.ActivityNotFoundException) { message(getString(R.string.privacy_no_browser)) }
         })
+        val supportTr=resources.configuration.locales[0].language=="tr"
+        content.addView(button(if(supportTr) "Satın alma desteği" else "Purchase support") {
+            val report=billing.diagnostics()
+            AlertDialog.Builder(this)
+                .setTitle(if(supportTr) "Satın alma kontrolü" else "Purchase diagnostics")
+                .setMessage(report)
+                .setPositiveButton(if(supportTr) "Yenile" else "Refresh") { _,_ -> billing.refresh() }
+                .setNeutralButton(if(supportTr) "Kopyala" else "Copy") { _,_ ->
+                    val clipboard=getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Play Billing",report))
+                }
+                .setNegativeButton(if(supportTr) "Kapat" else "Close",null)
+                .show()
+        })
         dialog.show();billing.refresh()
     }
     private val settings by lazy { getSharedPreferences("app_settings",MODE_PRIVATE) }
@@ -1640,3 +1654,4 @@ class MainActivity : ComponentActivity() {
         freeSpeech.close();cloudSpeech.close();professional.clear();professionalWorker.shutdown();offline.close();recognizer.close();translationRuntime.close();localTranslator.close();super.onDestroy()
     }
 }
+
