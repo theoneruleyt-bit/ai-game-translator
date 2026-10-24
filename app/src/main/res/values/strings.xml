@@ -237,7 +237,7 @@
  <string name="audio_level">"Mikrofon ses seviyesi"</string>
 
     <string name="pro_title">Pro • Canlı çeviri</string>
-    <string name="pro_plans">Aylık $4.99 • Yıllık $49.99 • Ömür boyu $199</string>
+    <string name="pro_plans">Yerel fiyat ve ödeme koşulları Google Play ekranında gösterilir.</string>
     <string name="pro_detail">"Kamera için 3 dakika, dinleme için ayrı 3 dakika ve 10 görsel çeviri hakkı. Süreler yalnızca aktif dinleme/kamera kullanımında ilerler. Deneme otomatik ücretlendirilmez. Pro ile kamera, dinleme ve görsel çeviri sınırsızdır."</string>
     <string name="pro_open">Pro seçenekleri</string>
     <string name="pro_restore">Satın alımları geri yükle</string>
@@ -251,7 +251,7 @@
     <string name="pro_lifetime">Ömür boyu</string>
     <string name="pro_terms">Abonelikler iptal edilene kadar yenilenir. Ömür boyu tek seferliktir. Ödeme öncesi Google Play ekranındaki yerel fiyatı ve koşulları kontrol edin.</string>
     <string name="pro_close">Kapat</string>
-    <string name="play_license_key" translatable="false"></string>
+
 
  <string name="account_sign_in">Google hesabıyla giriş</string>
  <string name="account_required">Canlı kullanım için Pro kartından Google hesabınla giriş yap.</string>
@@ -266,10 +266,10 @@
  <string name="speech_pack_help" formatted="false">"Hızlı paket düşük gecikme için önerilir. Kapsamlı İngilizce paketi daha fazla bellek kullanır ve bazı telefonlarda daha yavaş olabilir. Türkçe paketi Türkçe → İngilizce dinleme içindir. İlk indirme internet gerektirir."</string>
  <string name="slang_support" formatted="false">"Günlük konuşma, argo ve oyun ifadeleri"</string>
  <string-array name="speech_packs"><item>"İngilizce → Türkçe · Hızlı · 40 MB"</item><item>"İngilizce → Türkçe · Kapsamlı · 128 MB"</item><item>"Türkçe → İngilizce · 35 MB"</item></string-array>
- <string name="speech_memory_error" formatted="false">"Bu telefon seçilen modeli açamadı. Hızlı İngilizce paketini seçip tekrar dene."</string>
- <string name="listen_version" formatted="false">"Dinleme düzeltmesi · 0.16.2"</string>
+ <string name="speech_memory_error" formatted="false">"Bu telefon seçilen modeli açamadı. Ayarlar → Ücretsiz dinleme motoru → Hafif İngilizce seçip tekrar deneyin."</string>
+ <string name="listen_version">Konuşma ve deyim paketi · 0.24</string>
  <string name="speech_model_choice">"Konuşma modeli: %1$s"</string>
- <string name="complete_speech_help" formatted="false">"Yazılı ara çeviri konuşurken güncellenir. Ses, cümlenin sözcüklerini kesmeden kısa konuşma bölümünün sonunda okunur. Model ve dinleme hızı yukarıdaki düğmelerden seçilir."</string>
+ <string name="complete_speech_help">Bölümlendirme açıkken model cümle ve anlam grubu bitişlerini tahmin eder; kısa duraklama veya kararlı devam bağlamıyla tamamlanan bölümü okumaya gönderir. Konuşmanın tamamının bitmesi her zaman gerekmez.</string>
  <string name="audio_capture_failure">Ses tanıma durdu veya sese yetişemedi. Hızlı modeli deneyin ve ağır uygulamaları kapatın.</string>
  <string name="professional_title">Doğal internet sesi · Pilot bağlantı</string>
  <string name="professional_description">Bu seçenek yapılandırılmış HTTPS hizmeti gerektirir. Kesinleşen çeviri metni hizmete gönderilir; ücretli kullanım oluşabilir. Gemini-TTS yapılandırıldığında doğal kadın/erkek ses ve duygu profilleri sunar; canlı bulut ses tanıma henüz eklenmedi. Erişim kodu yalnız bu uygulama oturumunda tutulur.</string>
@@ -299,11 +299,11 @@
  <string name="cloud_headphones">Kendi sesini yeniden algılamaması için canlı dinlemede sesli okuma kulaklık seçeneği gerektirir.</string>
  <string name="cloud_final">Akış motoru replikleri otomatik kesinleştirir.</string>
  <string name="free_listening">Ücretsiz canlı dinleme · Sherpa-ONNX · İngilizce</string>
- <string name="free_prepare">Ücretsiz İngilizce modelini indir · 73 MB</string>
+ <string name="free_prepare">Ücretsiz İngilizce modelini indir · %1$d MB</string>
  <string name="free_downloading">İngilizce akış modeli indiriliyor: %1$s%%</string>
  <string name="free_model_ready">Ücretsiz model hazır. Dinle düğmesine basın.</string>
  <string name="free_starting">Cihaz içi akış motoru başlatılıyor…</string>
- <string name="free_active">Sherpa-ONNX cihaz içi dinleme aktif. Seslendirme için kulaklık kullanın.</string>
+ <string name="free_active">Cihaz içi İngilizce dinleme aktif. Kulaklık isteğe bağlıdır.</string>
  <string name="free_download_failed">Model indirilemedi veya bütünlük denetimi başarısız. Bağlantıyı kontrol edip yeniden indirin.</string>
  <string name="free_capture_failed">Ücretsiz ses motoru durdu veya sese yetişemedi. Bu telefon için model hızı ölçülmeli.</string>
     <string name="test_turkish_voice">Türkçe sesi dene</string>
@@ -317,5 +317,72 @@
     <string name="voice_ready">Ses motoru hazır. Tamamlanan çeviri bölümleri okunacak.</string>
 <string name="voice_error_code">Ses motoru hata verdi (kod %1$s). Türkçe ses paketini ve motor ayarlarını kontrol edin.</string>
 <string name="voice_volume_zero">Medya sesi sıfır. Türkçe okumayı duymak için medya sesini artırın.</string>
-<string name="free_capture_overrun">Telefon bu tanıma ayarında canlı sesi işleyemedi. Ses biriktirilmeden dinleme durduruldu. Hızlı modu seçip yeniden deneyin.</string>
+<string name="free_capture_overrun">Telefon bu tanıma ayarında canlı sesi işleyemedi. Ses biriktirilmeden dinleme durduruldu. Hızlı modu veya Ayarlar içindeki Hafif İngilizce motorunu seçip yeniden deneyin.</string>
+<string name="phrase_overrides">Doğal konuşma ve argo paketi · 517 tam ifade varyantı</string>
+<string name="translation_failed_line">Bu bölüm çevrilemedi; atlanmış metin: %1$s</string>
+<string name="voice_service_failed">Cihazın ses servisi yanıt vermiyor. Türkçe sesi dene ile tekrar kontrol edin.</string>
+<string name="capture_lag">Cihaz sesi geriden işliyor: %1$s ms. Hızlı modu deneyin.</string>
+<string name="capture_clipping">Ses seviyesi çok yüksek; bozulma olabilir. Kaynak sesi biraz azaltın.</string>
+<string name="capture_quiet">Sessizlik veya düşük mikrofon seviyesi</string>
+<string name="capture_normal">Mikrofon açık · ses sinyali geliyor</string>
+<string name="free_model_corrupt">Tanıma modelinin dosya doğrulaması başarısız. İngilizce modeli yeniden indirin.</string>
+<string name="speech_gate_failed">Konuşma algılama kontrolü başlatılamadı. Güncel APK paketini yeniden yükleyin.</string>
+<string name="live_engine_help">Ücretsiz canlı dinleme İngilizce → Türkçe çalışır. Alternatif dil paketleri ve Android testi, iki canlı motor seçeneği de kapalıyken görünür.</string>
+<string name="legacy_speech_test">Alternatif Android motorunu dene</string>
+<string name="live_reading_enabled">Sesli okuma açık. Kulaklık zorunlu değil; yankı kontrolü cihaz desteğine bağlıdır.</string>
+<string name="live_sync_reading">Canlı ses eşitleme: geride kalan okumaları atla, yazılı geçmişi koru</string>
+<string name="audio_route_auto">Kulaklık bağlantısı (otomatik; zorunlu değil)</string>
+<string name="live_skipped">Canlı eşitleme: %1$s eski ses bölümü atlandı. Çeviriler yazılı geçmişte saklanır.</string>
+<string name="history_title">Çeviri kayıtları</string>
+<string name="history_help">En yeni 6 kayıt aşağıda. Son 100 tamamlanmış çeviri cihazda saklanır; canlı önizlemeler kaydedilmez.</string>
+<string name="history_count">Kayıt: %1$s / 100</string>
+<string name="history_all">Tüm kayıtları görüntüle</string>
+<string name="live_preview_help">Önizleme değiştirilebilir. Ses yalnızca bölümlendirme kurallarıyla kesinleştirilen bölümü okur; noktalama tahmini hata yapabilir.</string>
+<string name="clause_mode">Akıllı konuşma bölümlendirme (ücretsiz İngilizce dinleme)</string>
+<string name="clause_waiting">Cümle tahmini açık · noktalama modeli dinleme başlayınca yüklenir.</string>
+<string name="clause_ready">Cihaz içi noktalama modeli hazır · kararlı anlam grupları ve kısa duraklamalar izleniyor.</string>
+<string name="clause_disabled">Bölümlendirme kapalı · sesli çeviri tanıma motorunun konuşma sonunu bekler.</string>
+<string name="clause_fallback">Noktalama modeli yüklenemedi · duraklama ve kararlı metin kurallarıyla devam ediliyor.</string>
+<string name="local_mt_option">Alternatif OPUS-MT motorunu dene (ücretsiz İngilizce Dinle)</string>
+<string name="local_mt_waiting">OPUS-MT seçili · model APK içinde. Her ifadede daha iyi sonuç garanti edilmez; yavaş veya desteklenmeyen istekte hızlı motora dönülür.</string>
+<string name="local_mt_fast">Hızlı çeviri motoru + açık olan konuşma paketi kullanılır. OPUS-MT karşılaştırma için isteğe bağlıdır.</string>
+<string name="local_mt_used">Son model çevirisi: cihaz içi OPUS-MT. Tam ifade eşleşmeleri konuşma paketinden gelir.</string>
+<string name="local_mt_fallback">Bu bölüm için OPUS-MT tamamlanamadı; hızlı çeviri motoru kullanıldı.</string>
+<string name="local_mt_phrase">Son çeviri: tam ifade konuşma paketinden.</string>
+ <string name="privacy_title">Gizlilik ve veriler</string>
+ <string name="privacy_open">Gizlilik politikasını aç</string>
+ <string name="privacy_no_browser">Bağlantıyı açacak tarayıcı bulunamadı.</string>
+ <string name="billing_canceled">Satın alma iptal edildi. Ücretlendirme yapılmadı.</string>
+ <string name="billing_retry">Google Play işlemi tamamlanamadı. Bağlantınızı kontrol edip yeniden deneyin.</string>
+ <string name="billing_pending">Ödeme bekleniyor. Google Play onayından sonra Pro açılacak.</string>
+ <string name="privacy_summary">Kamera görüntüleri ve ücretsiz Dinle sesi cihazda işlenir; uygulama ham ses veya kamera videosu kaydetmez. Çeviri kayıtları cihazda tutulur; Kayıtlar bölümünden silinebilir. Paylaş seçeneğiyle yalnız seçtiğiniz uygulamaya gönderilir. ML Kit cihaz/kurulum tanımlayıcıları, kullanım ve performans bilgileri toplayabilir. Modeller için internet gerekir. Android ses tanıma ve TTS sağlayıcınız ağ üzerinden işlem yapabilir. İsteğe bağlı bulut modunda ses veya metin yapılandırdığınız hizmete gönderilebilir. Google Play ödemeleri Google tarafından işlenir.</string>
+<string name="saved_read_aloud">Sesli oku</string>
+<string name="license_title">Açık kaynak lisansları</string>
+<string name="subscription_manage">Abonelikleri yönet</string>
+    <string name="local_engine_title">Ücretsiz dinleme motoru</string>
+    <string name="local_engine_giga">Gelişmiş İngilizce · yaklaşık 190 MB</string>
+    <string name="local_engine_light">Hafif İngilizce · yaklaşık 73 MB</string>
+    <string name="local_engine_help">Gelişmiş model daha fazla bellek kullanır. Telefonunuzda gecikme oluşursa Hafif modeli deneyin. İlk kullanımda seçili model indirilir; tanıma cihazda çalışır.</string>
+    <string name="listen_trace_enable">Dinle tanılamasını tut (isteğe bağlı)</string>
+    <string name="listen_trace_help">Tanınan ve çevrilen metinlerle işlem sürelerini geçici olarak tutar. Ses kaydetmez. Paylaş düğmesine basana kadar cihazınızdan çıkmaz. Kapatınca silinir.</string>
+    <string name="listen_trace_share">Dinle tanılamasını paylaş</string>
+    <string name="listen_trace_empty">Önce tanılamayı açıp kısa bir Dinle denemesi yapın.</string>
+    <string name="context_option">Gelişmiş çeviri — beta (İngilizce → Türkçe)</string>
+    <string name="context_help">Oyun ve film replikleri için cihaz içi Hy-MT2. Önceki iki kısa repliği bağlam olarak kullanır. İsteğe bağlı 1,83 GB indirme; 64 bit ve en az 6 GB RAM önerilir. Kalite ve hız telefona göre değişir. Taslak yazı hızlı motordan gelir; onaylı çeviri gelişmiş motorla denenir.</string>
+    <string name="context_manage">Gelişmiş dil paketini yönet</string>
+    <string name="context_waiting">Gelişmiş mod seçili. Dinle başlatılınca model hazırlanır; bu sırada deneme süresi işlemez.</string>
+    <string name="context_off">Gelişmiş motor kapalı. Mevcut hafif çeviri motoru kullanılır.</string>
+    <string name="context_warming">Gelişmiş model hazırlanıyor… Durdur ile iptal edebilirsiniz.</string>
+    <string name="context_ready">Gelişmiş motor hazır (%1$s).</string>
+    <string name="context_used">Son onaylı çeviri: Hy-MT2 (%1$s).</string>
+    <string name="context_fallback">Şu anda hızlı motor (ML Kit): gelişmiş motor hazır değil, gecikti, birikme oluştu veya çıktı denetimini geçemedi. Gelişmiş motor etkinse 20 saniyelik aradan sonra yeniden denenir.</string>
+    <string name="context_unsupported">Bu anda yeterli boş bellek veya 64 bit çalışma desteği yok. Hafif motoru kullanabilirsiniz. Paket için en az 6 GB RAM ve hazırlık sırasında yaklaşık 2,5 GB boş bellek gerekir.</string>
+    <string name="context_download_help">Yaklaşık 1,83 GB Hy-MT2 paketi indirilecek. En az 4 GB boş alan gerekir; Wi-Fi önerilir. Hazırlandıktan sonra çeviri cihazda çalışır, ses veya metin sunucuya gönderilmez. Model ücretsizdir; bağlantınızın veri ücreti olabilir. İptal edilen indirme daha sonra devam eder.</string>
+    <string name="context_download">Paketi indir</string>
+    <string name="context_progress">Dil paketi indiriliyor: %% %1$s</string>
+    <string name="context_download_failed">İndirme tamamlanamadı veya iptal edildi. Bağlantıyı ve boş alanı kontrol edip yeniden deneyin; yarım indirme devam eder.</string>
+    <string name="context_installed">Hy-MT2 paketi kurulu (1,83 GB). Gelişmiş mod yalnızca sürekli Dinle, İngilizce → Türkçe yönünde kullanılır. Kamerayı etkilemez. Deneyseldir; anlam hataları olabilir. Model hazırlığı ve hız denetimi Dinle başlatılınca yapılır.</string>
+    <string name="context_enable">Modu seç</string>
+    <string name="context_delete">Paketi sil</string>
+<string name="microphone_stop">Dinlemeyi durdur</string>
 </resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.DialoguePackTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-23T08:43:42" hostname="ff679f5dcc0e" time="0.29">
+  <properties/>
+  <testcase name="multipleShortMatchesKeepPausesBetweenSpokenSentences" classname="com.optima.gametranslator.DialoguePackTest" time="0.111"/>
+  <testcase name="MultipleSentencesMatchOnlyWhenEverySentenceIsKnown" classname="com.optima.gametranslator.DialoguePackTest" time="0.07"/>
+  <testcase name="profanityAndColloquialNegationAreRetainedInAuthoredExamples" classname="com.optima.gametranslator.DialoguePackTest" time="0.013"/>
+  <testcase name="unknownContextAndNegationCannotBeRewrittenAsAKnownPositivePhrase" classname="com.optima.gametranslator.DialoguePackTest" time="0.069"/>
+  <testcase name="questionIntonationCannotBeTurnedIntoAnAuthoredAssertion" classname="com.optima.gametranslator.DialoguePackTest" time="0.011"/>
+  <testcase name="idiomsDoNotBecomeLiteralBodyPartsOrTemperature" classname="com.optima.gametranslator.DialoguePackTest" time="0.011"/>
+  <testcase name="completePackHas517UniqueNonemptyEntries" classname="com.optima.gametranslator.DialoguePackTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

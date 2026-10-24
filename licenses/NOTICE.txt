@@ -9,3 +9,14 @@ Model card license: Apache-2.0. Revision 672fbf1b30579d6585301139bb363f42a0ad4a2
 Original TorchScript model: Zengwei/icefall-asr-librispeech-streaming-zipformer-2023-05-17.
 Model files are downloaded unchanged; only int8 left-context-64 ONNX files and tokens.txt are used.
 The engine license text is supplied here. Per-component license metadata must also be reviewed before store distribution.
+
+
+0.29 optional context translation:
+Hy-MT2-1.8B, Copyright Tencent, Apache License 2.0.
+https://huggingface.co/tencent/Hy-MT2-1.8B
+LiteRT conversion by litert-community, pinned revision a45c92d69a8dccfbeee5000507780f78dae2b153.
+https://huggingface.co/litert-community/Hy-MT2-1.8B
+Model weights downloaded separately; never bundled in this APK.
+LiteRT-LM Android 0.16.1, Copyright Google LLC, Apache License 2.0.
+https://github.com/google-ai-edge/LiteRT-LM/tree/v0.16.1
+Full licenses: HY_MT2_APACHE_2.txt and LITERT_LM_APACHE_2.txt.

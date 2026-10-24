@@ -1,0 +1,64 @@
+{
+  "version": "0.28-listen-fix",
+  "versionCode": 39,
+  "date": "2026-10-23",
+  "play_general_release_ready": false,
+  "fixes": [
+    "Normalize ASR text before the native punctuation model (Locale.ROOT)",
+    "Display completed revisable previews after ASR word rewrites within the same utterance",
+    "Cap already-confirmed short-fragment hold at 1250ms even when unconfirmed continuation is present",
+    "Default hard-coded phrase overrides to false while respecting explicit saved selection",
+    "Opt-in bounded, memory-only recognized/translated text and timing diagnostics with manual share"
+  ],
+  "checks": {
+    "full_gradle_build": "PASS: assembleDebug, testDebugUnitTest, lintDebug, bundleRelease, lintRelease",
+    "native_fixture_replay_gradle": "PASS: testDebugUnitTest, lintDebug, lintRelease after adding actual uppercase native fixtures",
+    "junit": {
+      "tests": 179,
+      "failures": 0
+    },
+    "python": {
+      "server_tests": 28,
+      "native_policy_tests": 5,
+      "failures": 0
+    },
+    "lint": {
+      "debug_errors": 0,
+      "release_errors": 0,
+      "debug_warnings": 67,
+      "release_warnings": 66
+    },
+    "pinned_native_and_models": "PASS",
+    "native_16kb_elf": {
+      "debug_libraries": 36,
+      "arm64_libraries": 8,
+      "release_libraries": 36
+    },
+    "arm64_zipalign_and_test_signature": "PASS",
+    "retained_apk_payload_matches_universal": true,
+    "bundletool_validation": "PASS: bundletool 1.18.2",
+    "release_bundle": "UNSIGNED audit only, not a Play upload"
+  },
+  "native_case_evidence": {
+    "case_comparison_samples": 5,
+    "uppercase_fixture_predictions": 1647,
+    "raw_uppercase_predictions_with_any_change": 0,
+    "kotlin_replay_preserves_all_words": true,
+    "scope": "written stream regression and native punctuation, not full translation accuracy or Android mic/phone latency"
+  },
+  "apk": {
+    "apk": "/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_28_ARM64_Test.apk",
+    "bytes": 107744144,
+    "sha256": "d2c41cae55f9cbae45530a4975f9b5afe4c2369c4ac9fdfbd7b6fd19375619b1",
+    "payload_matches_universal": true
+  },
+  "limitations": [
+    "No physical device or game audio QA performed",
+    "No Turkish translation accuracy benchmark performed",
+    "On-device ML Kit translation model and Android TTS unchanged",
+    "No new ASR model or Samsung integration added; 0.27 ASR reports remain historical",
+    "Diagnostics voice_queue is enqueue time, not actual audio playback time",
+    "True zero-delay faithful translation cannot be certified by these tests",
+    "Private Play signing, support/privacy configuration and license/purchase/device validation remain required"
+  ]
+}

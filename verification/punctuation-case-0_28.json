@@ -1,0 +1,45 @@
+{
+  "scope": "Actual Linux Sherpa-ONNX 1.13.8 punctuation inference. 3 transcripts from real native ASR in 0.27; 2 written dialogue/narration samples. Not Turkish translation quality, Android latency or microphone testing.",
+  "model_sha256": "9d611f445fe4a46186080fe161be6059d87d72eb88d3a8cb00c1a06e83a6067e",
+  "cases": [
+    {
+      "case": "written_game_dialogue",
+      "raw_asr_shape": "WE NEED TO FIND ANOTHER WAY OUT THE GUARDS ARE COMING DOWN THE STAIRS AND WE DO NOT HAVE MUCH TIME",
+      "old_native_output": "WE NEED TO FIND ANOTHER WAY OUT THE GUARDS ARE COMING DOWN THE STAIRS AND WE DO NOT HAVE MUCH TIME",
+      "prepared_input": "we need to find another way out the guards are coming down the stairs and we do not have much time",
+      "fixed_native_output": "We need to find another way out. The guards are coming down the stairs, and we do not have much time"
+    },
+    {
+      "case": "written_narration",
+      "raw_asr_shape": "WE WENT TO THE STATION AND THE GUARD TOLD US TO WAIT BUT THE TRAIN HAD ALREADY LEFT I HAVE BEEN WAITING FOR YOU FOR A LONG TIME AND NOW WE NEED TO LEAVE BECAUSE THE POLICE ARE COMING",
+      "old_native_output": "WE WENT TO THE STATION AND THE GUARD TOLD US TO WAIT BUT THE TRAIN HAD ALREADY LEFT I HAVE BEEN WAITING FOR YOU FOR A LONG TIME AND NOW WE NEED TO LEAVE BECAUSE THE POLICE ARE COMING",
+      "prepared_input": "we went to the station and the guard told us to wait but the train had already left i have been waiting for you for a long time and now we need to leave because the police are coming",
+      "fixed_native_output": "We went to the station, and the guard told us to wait, but the train had already left. I have been waiting for you for a long time. and now we need to leave because the police are coming"
+    },
+    {
+      "case": "actual_asr_literary0",
+      "raw_asr_shape": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+      "old_native_output": "AFTER EARLY NIGHTFALL THE YELLOW LAMPS WOULD LIGHT UP HERE AND THERE THE SQUALID QUARTER OF THE BROTHELS",
+      "prepared_input": "after early nightfall the yellow lamps would light up here and there the squalid quarter of the brothels",
+      "fixed_native_output": "After early nightfall, the yellow lamps would light up here and there the squalid quarter of the brothels"
+    },
+    {
+      "case": "actual_asr_literary1",
+      "raw_asr_shape": "GOD AS A DIRECT CONSEQUENCE OF THE SIN WHICH MAN THUS PUNISHED HAD GIVEN HER A LOVELY CHILD WHOSE PLACE WAS ON THAT SAME DISHONOURED BOSOM TO CONNECT HER PARENT FOR EVER WITH THE RACE AND DESCENT OF MORTALS AND TO BE FINALLY A BLESSED SOUL IN HEAVEN",
+      "old_native_output": "GOD AS A DIRECT CONSEQUENCE OF THE SIN WHICH MAN THUS PUNISHED HAD GIVEN HER A LOVELY CHILD WHOSE PLACE WAS ON THAT SAME DISHONOURED BOSOM TO CONNECT HER PARENT FOR EVER WITH THE RACE AND DESCENT OF MORTALS AND TO BE FINALLY A BLESSED SOUL IN HEAVEN",
+      "prepared_input": "god as a direct consequence of the sin which man thus punished had given her a lovely child whose place was on that same dishonoured bosom to connect her parent for ever with the race and descent of mortals and to be finally a blessed soul in heaven",
+      "fixed_native_output": "God as a direct consequence of the sin, which man thus punished, had given her a lovely child whose place was on that same dishonoured bosom to connect her parent for ever with the race and descent of mortals, and to be finally a blessed soul in Heaven."
+    },
+    {
+      "case": "actual_asr_public_speech_jfk",
+      "raw_asr_shape": "AND SO MY FELLOW AMERICANS ASK NOT WHAT YOUR COUNTRY CAN DO FOR YOU ASK WHAT YOU CAN DO FOR YOUR COUNTRY",
+      "old_native_output": "AND SO MY FELLOW AMERICANS ASK NOT WHAT YOUR COUNTRY CAN DO FOR YOU ASK WHAT YOU CAN DO FOR YOUR COUNTRY",
+      "prepared_input": "and so my fellow americans ask not what your country can do for you ask what you can do for your country",
+      "fixed_native_output": "And so my fellow Americans ask not what your country can do for you. Ask what you can do for your country."
+    }
+  ],
+  "android_jni_reference": {
+    "url": "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/v1.13.8/sherpa-onnx/jni/online-punctuation.cc",
+    "entry": "OnlinePunctuation.addPunctuation delegates to AddPunctuationWithCase, matching the native Python test API"
+  }
+}

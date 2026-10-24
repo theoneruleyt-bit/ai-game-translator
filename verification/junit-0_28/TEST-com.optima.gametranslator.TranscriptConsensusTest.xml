@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.TranscriptConsensusTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-23T08:43:43" hostname="ff679f5dcc0e" time="0.007">
+  <properties/>
+  <testcase name="staleCallbacksCannotConfirmAFirstGuess" classname="com.optima.gametranslator.TranscriptConsensusTest" time="0.001"/>
+  <testcase name="caseAndPunctuationAreEquivalentButNewTurnsStartEmpty" classname="com.optima.gametranslator.TranscriptConsensusTest" time="0.0"/>
+  <testcase name="unconfirmedClauseCannotReachSpeechEvenAfterTimerExpires" classname="com.optima.gametranslator.TranscriptConsensusTest" time="0.003"/>
+  <testcase name="endpointStillFlushesAnUnconfirmedShortReply" classname="com.optima.gametranslator.TranscriptConsensusTest" time="0.001"/>
+  <testcase name="revisionsInvalidateStabilityWithoutWaitingForNewAudio" classname="com.optima.gametranslator.TranscriptConsensusTest" time="0.001"/>
+  <testcase name="aRewrittenTailIsNotStable" classname="com.optima.gametranslator.TranscriptConsensusTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

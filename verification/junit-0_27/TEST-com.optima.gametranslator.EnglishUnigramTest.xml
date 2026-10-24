@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.EnglishUnigramTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-23T07:36:52" hostname="ff679f5dcc0e" time="0.342">
+  <properties/>
+  <testcase name="unsupportedUnicodeFailsExplicitlyRatherThanUsingApproximateNormalization" classname="com.optima.gametranslator.EnglishUnigramTest" time="0.129"/>
+  <testcase name="nativeSentencePieceParityFor684EnglishDialogueAndNegationInputs" classname="com.optima.gametranslator.EnglishUnigramTest" time="0.123"/>
+  <testcase name="unknownGeneratedTokenDoesNotBecomeASpokenGuess" classname="com.optima.gametranslator.EnglishUnigramTest" time="0.03"/>
+  <testcase name="largeInputIsNotSilentlyTruncatedByTheTokenizer" classname="com.optima.gametranslator.EnglishUnigramTest" time="0.029"/>
+  <testcase name="nativeTurkishDetokenizationPreservesLettersAndNegation" classname="com.optima.gametranslator.EnglishUnigramTest" time="0.031"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

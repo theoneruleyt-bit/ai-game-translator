@@ -11,6 +11,20 @@ import android.util.Base64
 class PlayBilling(private val activity: Activity, private val changed: () -> Unit, private val authority: ProService) : PurchasesUpdatedListener {
     data class Plan(val name: String,val price: String,val details: ProductDetails,val token: String?)
     val plans=mutableListOf<Plan>()
+    var status="";private set
+    private val verificationKey by lazy {
+        try { KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(Base64.decode(activity.getString(R.string.play_license_key),Base64.DEFAULT))) }
+        catch(_: Exception) { null }
+    }
+    val configured get()=if(authority.enabled)authority.signedIn else verificationKey!=null
+    private fun report(result: BillingResult) {
+        status=when(result.responseCode) {
+            BillingClient.BillingResponseCode.OK -> ""
+            BillingClient.BillingResponseCode.USER_CANCELED -> activity.getString(R.string.billing_canceled)
+            else -> activity.getString(R.string.billing_retry)
+        }
+        changed()
+    }
     private var localPro=false
     val pro get()=if(authority.enabled)authority.pro else localPro
     private var closed=false
@@ -20,7 +34,7 @@ class PlayBilling(private val activity: Activity, private val changed: () -> Uni
         .enableAutoServiceReconnection().build()
     fun connect() {
         client.startConnection(object: BillingClientStateListener {
-            override fun onBillingSetupFinished(result: BillingResult) { if(result.responseCode==BillingClient.BillingResponseCode.OK&&!closed)refresh() }
+            override fun onBillingSetupFinished(result: BillingResult) { if(!closed) { report(result);if(result.responseCode==BillingClient.BillingResponseCode.OK)refresh() } }
             override fun onBillingServiceDisconnected() { }
         })
     }
@@ -36,7 +50,7 @@ class PlayBilling(private val activity: Activity, private val changed: () -> Uni
                     data.productDetailsList.forEach { details ->
                         if(type==BillingClient.ProductType.SUBS)details.subscriptionOfferDetails.orEmpty().filter { it.offerId==null&&it.basePlanId in listOf("monthly","yearly") }.forEach { offer ->
                             plans.add(Plan(offer.basePlanId,offer.pricingPhases.pricingPhaseList.last().formattedPrice,details,offer.offerToken))
-                        } else details.oneTimePurchaseOfferDetails?.let { plans.add(Plan("lifetime",it.formattedPrice,details,null)) }
+                        } else details.oneTimePurchaseOfferDetails?.let { plans.add(Plan("lifetime",it.formattedPrice,details,it.offerToken)) }
                     }
                     changed()
                 } }
@@ -58,14 +72,20 @@ class PlayBilling(private val activity: Activity, private val changed: () -> Uni
         }
     }
     fun buy(plan: Plan) {
-        if(closed||!client.isReady||authority.enabled&&!authority.signedIn)return
+        if(closed||!client.isReady)return
+        if(!configured) { status=activity.getString(R.string.pro_unavailable);changed();return }
         val item=BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(plan.details)
         plan.token?.let { item.setOfferToken(it) }
         val flow=BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(item.build()))
         if(authority.enabled)flow.setObfuscatedAccountId(authority.accountId)
-        client.launchBillingFlow(activity,flow.build())
+        report(client.launchBillingFlow(activity,flow.build()))
     }
     override fun onPurchasesUpdated(result: BillingResult,purchases: MutableList<Purchase>?) {
+        if(closed)return
+        report(result)
+        if(purchases.orEmpty().any { it.purchaseState==Purchase.PurchaseState.PENDING }) {
+            status=activity.getString(R.string.billing_pending);changed()
+        }
         if(result.responseCode==BillingClient.BillingResponseCode.OK) { if(authority.enabled)refresh() else { val request=++refreshId;purchases.orEmpty().forEach { verify(it,request) } } }
     }
     private fun verifyOnServer(purchases: List<Purchase>) {
@@ -83,7 +103,7 @@ class PlayBilling(private val activity: Activity, private val changed: () -> Uni
         if(key.isBlank())return
         val valid=try {
             if(org.json.JSONObject(purchase.originalJson).optString("packageName")!=activity.packageName)return
-            val publicKey=KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(Base64.decode(key,Base64.DEFAULT)))
+            val publicKey=verificationKey?:return
             Signature.getInstance("SHA1withRSA").run { initVerify(publicKey);update(purchase.originalJson.toByteArray(Charsets.UTF_8));verify(Base64.decode(purchase.signature,Base64.DEFAULT)) }
         } catch (_: Exception) { false }
         if(!valid)return

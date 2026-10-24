@@ -27,6 +27,10 @@ jobs:
           python3 -m unittest discover -s scripts -p "test_*.py" -v
       - name: Verify pinned Sherpa native dependency
         run: python3 scripts/check_sherpa_dependency.py
+      - name: Verify bundled sentence-boundary model
+        run: python3 scripts/check_punctuation_model.py
+      - name: Verify local translation pack
+        run: python3 scripts/check_translation_pack.py
       - name: Build APK, unsigned release bundle, tests and lint
         run: gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease :app:lintRelease --no-daemon --continue
       - name: Check packaged native ELF alignment

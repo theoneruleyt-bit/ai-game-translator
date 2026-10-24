@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.StabilityGateTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-19T10:29:19" hostname="c27e1204a5e0" time="0.002">
+  <properties/>
+  <testcase name="failedTranslationCanBeRetried" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="realRepetitionAfterAbsence" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="punctuationJitterDoesNotRestartStability" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="duplicateAndShortGapAreSuppressed" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="numberChangesAreDistinct" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="shortDistinctWordsStayDistinct" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="oneFrameNoiseDoesNotPass" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="newLineDoesNotNeedBlankFrame" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="minorLongLineOcrJitterIsTolerated" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <testcase name="shortSubtitleCanPassBeforeOld600msWindow" classname="com.optima.gametranslator.StabilityGateTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

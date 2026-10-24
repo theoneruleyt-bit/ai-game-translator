@@ -1,0 +1,4 @@
+English–Turkish translation from camera, microphone and images.
+Optional advanced on-device Listen engine.
+Turkish text-to-speech, translation history, light and dark themes.
+Translation results depend on device and audio conditions.

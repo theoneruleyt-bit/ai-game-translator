@@ -20,3 +20,6 @@ server/.env
 *.sqlite
 *.sqlite-*
 __pycache__/
+
+/release.properties
+/private-signing/

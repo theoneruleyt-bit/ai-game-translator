@@ -1,0 +1,63 @@
+{
+  "version": "0.23-adaptive-speech-clauses",
+  "versionCode": 34,
+  "checked_at": "2026-10-19T09:48:16.624073+00:00",
+  "base": "Android_Game_Translator_0_22",
+  "tasks": {
+    ":app:assembleDebug": "PASS",
+    ":app:testDebugUnitTest": "PASS",
+    ":app:lintDebug": "PASS",
+    ":app:bundleRelease": "PASS",
+    ":app:lintRelease": "PASS"
+  },
+  "android_junit": {
+    "tests": 137,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_tests": 33,
+  "bundled_punctuation_checksum": "PASS: model and BPE vocabulary",
+  "native_punctuation": {
+    "scope": "Linux x86_64 Sherpa 1.13.8 CPU punctuation inference; outputs replayed by Kotlin stream tests. Not Android ASR or Turkish translation accuracy.",
+    "model_sha256": "9d611f445fe4a46186080fe161be6059d87d72eb88d3a8cb00c1a06e83a6067e",
+    "vocab_sha256": "e118b7ad88c54db562517df49e1cffd4836d166c34fb190fd311d7f34eb238f5",
+    "native_predictions": 1647,
+    "elapsed_seconds": 9.586,
+    "median_inference_ms": 5.595,
+    "max_inference_ms": 16.814,
+    "transcripts": [
+      "we need to find another way out the guards are coming down the stairs and we do not have much time i will meet you at the station bring the car around and wait by the gate do not leave without me",
+      "we went to the station and the guard told us to wait but the train had already left i have been waiting for you for a long time and now we need to leave because the police are coming"
+    ],
+    "fixture_sha256": "190e695e7ef688d057132496643e4ef7212962f0f5e69deae4d843f1ac7ad360"
+  },
+  "native_fixture_replay_tests": {
+    "tests": 2,
+    "result": "PASS: continuous text emits before native endpoint; full cumulative endpoint neither repeats nor loses words in these fixtures"
+  },
+  "policy_test_scope": "Stable meaning groups, pauses, incomplete dependent clauses, prefix insertion/deletion, late revisions, real repeated dialogue, invalid model words, decimals and abbreviations. Text fixtures, not device speech.",
+  "native_16kb_alignment": "PASS: universal APK (32), ARM64 APK (7), release AAB (32)",
+  "packaging": {
+    "zipalign": "PASS",
+    "signature": "PASS",
+    "same_test_signing_key_as_0_22": true,
+    "payload_entries_verified": 563
+  },
+  "delivered_apk": {
+    "apk": "/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_23_ARM64_Test.apk",
+    "bytes": 82548401,
+    "sha256": "9c200018f0e9f966b9cd8ee57c3ad57d5e76ae9e42fdd7cb60a25a879133a186",
+    "certificate_sha256": "ad6cf7228e75cb0a702f03aca74fa825a79a8a447ce8f3118a064b46364f6f1d",
+    "payload_entries_verified": 563
+  },
+  "universal_apk_sha256": "6b02ee4b5c4d28daec64258b549851824d79b58bc43dd4a3aa71c9aa8e7d2662",
+  "physical_device_test": "NOT RUN",
+  "android_model_load_and_microphone_test": "NOT RUN; ARM64 JNI online punctuation entrypoints verified present in pinned AAR",
+  "turkish_mlkit_accuracy_device_test": "NOT RUN",
+  "device_end_to_end_latency_measurement": "NOT RUN",
+  "headset_bluetooth_acoustic_test": "NOT RUN",
+  "audio_regression_0_20": "Historical 12-check report; not rerun for 0.23. Current native tests cover punctuation, not raw-audio ASR.",
+  "release_bundle": "Unsigned validation bundle built; delivered APK uses public test key.",
+  "build_environment_note": "Generated build outputs isolated outside shared workspace via external Gradle init script. Application build configuration remains usable on clean GitHub runners."
+}

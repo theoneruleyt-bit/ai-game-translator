@@ -1,0 +1,8 @@
+{
+  "scope": "Actual Linux Sherpa 1.13.8 punctuation predictions for uppercase versions of written 0.23 clause fixtures. Kotlin tests replay original native output versus normalized native output, with transcript consensus and StreamingTurns. Not Android microphone latency or Turkish translation accuracy.",
+  "native_predictions": 1647,
+  "changed_uppercase_inputs": 0,
+  "elapsed_seconds": 13.595,
+  "input_fixture_sha256": "190e695e7ef688d057132496643e4ef7212962f0f5e69deae4d843f1ac7ad360",
+  "fixture_sha256": "3c2e23977b94b67d2709529795065cf0ba1df50cf19057cdbec67681dc1705df"
+}

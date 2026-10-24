@@ -22,4 +22,12 @@ class AdaptiveTempoTest {
         val calibrated=t.estimateMillis(text);t.completed(text,1f,200000)
         assertEquals(calibrated,t.estimateMillis(text))
     }
+ @Test fun liveBacklogCanUseVeryFastReadingButCameraLimitIsPreserved() {
+  val t=AdaptiveTempo();var live=1f
+  repeat(10) { live=t.choose("Bu uzun bir replik",1.1f,9000,8000,500,true,2f) }
+  assertTrue(live>1.5f);assertTrue(live<=2f)
+  val camera=AdaptiveTempo();var normal=1f
+  repeat(10) { normal=camera.choose("Bu uzun bir replik",1.1f,9000,8000,500,true) }
+  assertTrue(normal<=1.5f)
+ }
 }

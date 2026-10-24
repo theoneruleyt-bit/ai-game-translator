@@ -16,10 +16,11 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
 /** English Zipformer streaming entirely on the device. No inference API. */
-class FreeStreamingSpeech(context: Context) {
-    private val root=File(context.filesDir,"free-streaming-en-v1")
+class FreeStreamingSpeech(context: Context,private val echo: EchoReference?=null,private val profile: LocalSpeechModel=LocalSpeechModels.giga) {
+    private val root=File(context.filesDir,profile.folder)
     private val parent=context.filesDir
     private val messages=context.resources
+    private val assets=context.assets
     private val main=Handler(Looper.getMainLooper())
     private val worker=Executors.newSingleThreadExecutor()
     private val generation=AtomicLong()
@@ -29,19 +30,17 @@ class FreeStreamingSpeech(context: Context) {
     @Volatile private var closed=false
     @Volatile private var flush=false
     private class AudioQueueOverrun: Exception()
-    private data class Part(val file: String,val size: Long,val sha: String)
-    private val parts=listOf(
-        Part("encoder-epoch-99-avg-1-chunk-16-left-64.int8.onnx",71082637,"0d072fd4ef956294ba9db9e9a71a541ac70659095ec4934c8453d8b2fe740187"),
-        Part("decoder-epoch-99-avg-1-chunk-16-left-64.int8.onnx",1307236,"98da299f471e38bb4e1a8df579b8cc9122d6039576a77e357b3c60f17dd83b02"),
-        Part("joiner-epoch-99-avg-1-chunk-16-left-64.int8.onnx",259335,"d944208d660d67c8d72cd2acaeac971fa5ceb8c80e76c1968148846fedd6e297"),
-        Part("tokens.txt",5048,"49e3c2646595fd907228b3c6787069658f67b17377c60aeb8619c4551b2316fb"))
-    private val base="https://huggingface.co/csukuangfj/sherpa-onnx-streaming-zipformer-en-2023-06-26/resolve/672fbf1b30579d6585301139bb363f42a0ad4a24/"
+    private class ModelCorrupt: Exception()
+    private class GateUnavailable: Exception()
+    private data class Frame(val samples: FloatArray,val capturedAt: Long)
+    private val parts=profile.parts
+    private val base=profile.base
     fun ready()=File(root,"ready-v1").isFile&&parts.all { File(root,it.file).length()==it.size }
     private fun deliver(token: Long,action: ()->Unit) { main.post { if(!closed&&generation.get()==token)action() } }
     fun prepare(onProgress: (Int)->Unit,onDone: ()->Unit,onError: (String)->Unit) {
         stop();val token=generation.get()
         worker.execute {
-            val staging=File(parent,"free-streaming-staging-$token")
+            val staging=File(parent,"free-streaming-staging-${java.util.UUID.randomUUID()}")
             try {
                 if(ready()) { deliver(token,onDone);return@execute }
                 check(staging.mkdirs()||staging.isDirectory)
@@ -77,13 +76,57 @@ class FreeStreamingSpeech(context: Context) {
         }
     }
     @SuppressLint("MissingPermission")
-    fun start(mode: Int,onReady: ()->Unit,onText: (String,Boolean)->Unit,onLevel: (Int)->Unit,onError: (String)->Unit) {
+    fun start(mode: Int,onReady: ()->Unit,onText: (String,Boolean,String)->Unit,onLevel: (Int)->Unit,onError: (String)->Unit,onSignal: (CaptureSignal)->Unit={},onSpeech: (Boolean)->Unit={},adaptiveClauses: Boolean=true,onClauseStatus: (Boolean)->Unit={}) {
         stop();val token=generation.get();flush=false
         worker.execute {
-            var decoder: OnlineRecognizer?=null;var stream: OnlineStream?=null
-            var input: AudioRecord?=null;var capture: Thread?=null
+            var decoder: OnlineRecognizer?=null;var stream: OnlineStream?=null;var voiceDetector: Vad?=null
+            var input: AudioRecord?=null;var capture: Thread?=null;var echoEffect: MicrophoneEcho?=null
+            var punctuator: SpeechPunctuator?=null
+            val clauses=AdaptiveSpeechClauses(adaptiveClauses)
+            val consensus=TranscriptConsensus()
+            val turns=StreamingTurns()
+            var utterance=0L
+            fun publish(outputs: List<StreamingTurns.Output>) { outputs.forEach { output ->
+                val id="$token:$utterance"
+                deliver(token) { onText(output.text,output.final,id) }
+                if(output.final)utterance++
+            } }
+            fun report(message: String) { publish(turns.flushConfirmed());deliver(token) { onError(message) } }
             try {
                 check(generation.get()==token&&!closed);check(ready())
+                for(part in parts) {
+                    check(generation.get()==token&&!closed)
+                    val digest=MessageDigest.getInstance("SHA-256")
+                    File(root,part.file).inputStream().use { input ->
+                        val buffer=ByteArray(65536)
+                        while(true) { check(generation.get()==token&&!closed);val n=input.read(buffer);if(n<0)break;digest.update(buffer,0,n) }
+                    }
+                    val checksum=digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
+                    if(checksum!=part.sha) { File(root,"ready-v1").delete();throw ModelCorrupt() }
+                }
+                val vadDigest=MessageDigest.getInstance("SHA-256")
+                assets.open("silero_vad.onnx").use { input ->
+                    val buffer=ByteArray(65536)
+                    while(true) { val n=input.read(buffer);if(n<0)break;vadDigest.update(buffer,0,n) }
+                }
+                if(vadDigest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }!="9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6")throw GateUnavailable()
+                val vad=try { Vad(assetManager=assets,config=VadModelConfig(
+                    sileroVadModelConfig=SileroVadModelConfig(model="silero_vad.onnx",threshold=.5f,
+                        minSilenceDuration=.25f,minSpeechDuration=.064f,windowSize=512,maxSpeechDuration=60f),
+                    sampleRate=16000,numThreads=1,provider="cpu")) } catch(_: Exception) { throw GateUnavailable() }
+                voiceDetector=vad
+                if(adaptiveClauses) {
+                    punctuator=try { SpeechPunctuator(assets) } catch(_: Exception) { null }
+                        catch(_: LinkageError) { null } catch(_: OutOfMemoryError) { null }
+                    val loaded=punctuator!=null;deliver(token) { onClauseStatus(loaded) }
+                }
+                fun punctuate(text: String): String {
+                    return try { punctuator?.apply(text)?:text } catch(_: Exception) {
+                        punctuator?.close();punctuator=null;deliver(token) { onClauseStatus(false) };text
+                    }
+                }
+                val windows=PcmWindows();val evidence=SpeechEvidence();val audioGate=SpeechAudioGate()
+                val boundary=SpeechTurnBoundary()
                 val policy=SpeechEndpointPolicy.forMode(mode)
                 val endpoint=EndpointConfig(EndpointRule(false,2.4f,0f),
                     EndpointRule(true,policy.trailingSilence,0f),
@@ -96,11 +139,12 @@ class FreeStreamingSpeech(context: Context) {
                 val engine=try { OnlineRecognizer(config=config) } catch(error: Exception) { File(root,"ready-v1").delete();throw error };decoder=engine
                 val session=engine.createStream();stream=session
                 val min=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT);check(min>0)
-                val mic=AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION,16000,AudioFormat.CHANNEL_IN_MONO,
+                val mic=AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION,16000,AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT,maxOf(min*2,6400));input=mic
+                echoEffect=MicrophoneEcho(mic)
                 synchronized(lock) { check(generation.get()==token&&!closed);check(mic.state==AudioRecord.STATE_INITIALIZED);recorder=mic;mic.startRecording() }
                 check(mic.recordingState==AudioRecord.RECORDSTATE_RECORDING)
-                val frames=java.util.concurrent.ArrayBlockingQueue<FloatArray>(40)
+                val frames=java.util.concurrent.ArrayBlockingQueue<Frame>(40)
                 val failure=java.util.concurrent.atomic.AtomicReference<Exception?>()
                 val producer=Thread({
                     try {
@@ -109,43 +153,77 @@ class FreeStreamingSpeech(context: Context) {
                         while(generation.get()==token&&!closed) {
                             val n=mic.read(samples,0,samples.size,AudioRecord.READ_BLOCKING)
                             if(generation.get()!=token||closed)break
-                            check(n>0);if(!frames.offer(FloatArray(n) { samples[it]/32768f }))throw AudioQueueOverrun()
+                            check(n>0);val at=android.os.SystemClock.elapsedRealtime()
+                            val raw=FloatArray(n) { samples[it]/32768f }
+                            if(!frames.offer(Frame(echo?.clean(raw,at)?:raw,at)))throw AudioQueueOverrun()
                         }
                     } catch(error: Exception) { failure.set(error) }
                 },"zipformer-microphone").apply { isDaemon=true }
                 capture=producer;producer.start();deliver(token,onReady)
-                val turns=StreamingTurns()
-                fun publish(outputs: List<StreamingTurns.Output>) { outputs.forEach { output -> deliver(token) { onText(output.text,output.final) } } }
-                var previous="";var lastPartial=0L;var lastLevel=0L
+                var previous="";var lastPartial=0L;var lastLevel=0L;var lastSignal=0L
+                var audioSamples=0L;var quietSamples=0L;var lastFrameAt=android.os.SystemClock.elapsedRealtime()
                 while(generation.get()==token&&!closed) {
                     failure.get()?.let { throw it }
                     val frame=frames.poll(100,java.util.concurrent.TimeUnit.MILLISECONDS)
-                    if(frame==null) { check(producer.isAlive);publish(turns.tick(android.os.SystemClock.elapsedRealtime()));continue }
-                    val now=android.os.SystemClock.elapsedRealtime()
+                    if(frame==null) { check(producer.isAlive);check(android.os.SystemClock.elapsedRealtime()-lastFrameAt<3000);continue }
+                    val now=android.os.SystemClock.elapsedRealtime();lastFrameAt=now
+                    val samples=frame.samples
+                    audioSamples+=samples.size;val audioNow=audioSamples*1000/16000
+                    if(now-lastSignal>=500) { lastSignal=now;val health=CaptureSignal.inspect(samples,now-frame.capturedAt);deliver(token) { onSignal(health) } }
                     if(now-lastLevel>150) {
                         lastLevel=now
-                        val level=(kotlin.math.sqrt(frame.sumOf { (it*it).toDouble() }/frame.size)*600).toInt().coerceIn(0,100)
+                        val level=(kotlin.math.sqrt(samples.sumOf { (it*it).toDouble() }/samples.size)*600).toInt().coerceIn(0,100)
                         deliver(token) { onLevel(level) }
                     }
-                    session.acceptWaveform(frame,16000)
-                    while(engine.isReady(session)) { check(generation.get()==token&&!closed);engine.decode(session) }
-                    val text=engine.getResult(session).text.trim()
-                    if(engine.isEndpoint(session)||flush) {
-                        flush=false;previous=""
-                        publish(turns.update(text,true,now))
-                        engine.reset(session)
-                    } else if(text.isNotBlank()&&text!=previous&&now-lastPartial>=120) {
-                        previous=text;lastPartial=now;publish(turns.update(text,false,now))
+                    var speech=false
+                    windows.accept(samples) { window ->
+                        vad.acceptWaveform(window);speech=speech||vad.isSpeechDetected()
+                        while(!vad.empty())vad.pop()
                     }
-                    publish(turns.tick(now))
+                    // Reject digital silence even during a stale VAD hangover.
+                    speech=speech&&SpeechTurnBoundary.hasSignal(samples)
+                    boundary.observe(speech,audioNow)
+                    deliver(token) { onSpeech(speech) }
+                    evidence.observe(speech)
+                    quietSamples=if(speech)0 else quietSamples+samples.size
+                    val acceptedAudio=audioGate.accept(samples,speech)
+                    if(acceptedAudio.isEmpty()) {
+                        if(flush) { flush=false;publish(turns.flushConfirmed()) }
+                        publish(turns.tick(audioNow));continue
+                    }
+                    acceptedAudio.forEach { session.acceptWaveform(it,16000) }
+                    var decoded=false
+                    while(engine.isReady(session)) { check(generation.get()==token&&!closed);engine.decode(session);decoded=true }
+                    val hypothesis=engine.getResult(session).text.trim()
+                    val text=boundary.accept(hypothesis,audioNow)
+                    val stableWords=consensus.observe(text,decoded)
+                    // Do not let decoder noise keep a silent turn alive indefinitely.
+                    if(engine.isEndpoint(session)||boundary.mustEnd(audioNow)||flush) {
+                        flush=false;previous=""
+                        if(evidence.endTurn())clauses.update(text,audioNow,quietSamples*1000/16000,true,::punctuate)
+                            .forEach { publish(turns.update(it.text,it.final,audioNow)) }
+                        else clauses.reset()
+                        engine.reset(session);audioGate.endTurn();boundary.reset();consensus.reset()
+                    } else if(evidence.allowsPreview()&&text.isNotBlank()) {
+                        // Preserve the recognizer context; only the translation cursor advances at a soft boundary.
+                        clauses.updateStable(text,audioNow,quietSamples*1000/16000,false,stableWords,::punctuate).forEach { output ->
+                            if(output.final||output.text!=previous&&now-lastPartial>=120) {
+                                previous=if(output.final) "" else output.text;lastPartial=now
+                                publish(turns.update(output.text,output.final,audioNow))
+                            }
+                        }
+                    }
+                    publish(turns.tick(audioNow))
                 }
-            } catch(_: AudioQueueOverrun) { deliver(token) { onError(messages.getString(R.string.free_capture_overrun)) } }
-            catch(_: OutOfMemoryError) { deliver(token) { onError(messages.getString(R.string.speech_memory_error)) } }
-            catch(_: LinkageError) { deliver(token) { onError(messages.getString(R.string.ui_225)) } }
-            catch(_: Exception) { deliver(token) { onError(messages.getString(R.string.free_capture_failed)) } }
+            } catch(_: GateUnavailable) { report(messages.getString(R.string.speech_gate_failed)) }
+            catch(_: ModelCorrupt) { report(messages.getString(R.string.free_model_corrupt)) }
+            catch(_: AudioQueueOverrun) { report(messages.getString(R.string.free_capture_overrun)) }
+            catch(_: OutOfMemoryError) { report(messages.getString(R.string.speech_memory_error)) }
+            catch(_: LinkageError) { report(messages.getString(R.string.ui_225)) }
+            catch(_: Exception) { report(messages.getString(R.string.free_capture_failed)) }
             finally {
                 synchronized(lock) { if(recorder===input)recorder=null;try { input?.stop() } catch(_: Exception) {};capture?.join(1000);input?.release() }
-                stream?.release();decoder?.release()
+                stream?.release();decoder?.release();voiceDetector?.release();punctuator?.close();echoEffect?.close()
             }
         }
     }

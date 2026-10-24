@@ -10,15 +10,16 @@ class AdaptiveTempo {
         return maxOf(1,syllables,words*2)+text.count { it in ",;:.!?" }*2
     }
     fun estimateMillis(text: String): Long=(units(text)*millisPerUnit).toLong().coerceAtLeast(300)
-    fun choose(text: String,base: Float,waitingMillis: Long,ageMillis: Long,sourceMillis: Long,enabled: Boolean): Float {
+    fun choose(text: String,base: Float,waitingMillis: Long,ageMillis: Long,sourceMillis: Long,enabled: Boolean,maxRate: Float=1.5f): Float {
         if(!enabled)return base.coerceIn(.7f,1.5f)
+        val ceiling=maxRate.coerceIn(1.5f,2f).toDouble()
         val duration=estimateMillis(text).toDouble()
         val sourceTarget=if(sourceMillis>=500) duration/sourceMillis else base.toDouble()
-        val backlog=(waitingMillis.coerceAtLeast(0)/12000.0+ageMillis.coerceAtLeast(0)/20000.0).coerceAtMost(.35)
-        val target=(maxOf(base.toDouble(),sourceTarget)+backlog).coerceIn(.85,1.5)
+        val backlog=(waitingMillis.coerceAtLeast(0)/12000.0+ageMillis.coerceAtLeast(0)/20000.0).coerceAtMost(if(ceiling>1.5) .75 else .35)
+        val target=(maxOf(base.toDouble(),sourceTarget)+backlog).coerceIn(.85,ceiling)
         // Slow speech is allowed only with a measured source window and no backlog.
-        val desired=if(sourceMillis>=500&&waitingMillis==0L&&ageMillis<1500) (sourceTarget+backlog).coerceIn(.85,1.5) else target
-        val result=desired.coerceIn((previousRate-.15).toDouble(),(previousRate+.20).toDouble()).toFloat().coerceIn(.85f,1.5f)
+        val desired=if(sourceMillis>=500&&waitingMillis==0L&&ageMillis<1500) (sourceTarget+backlog).coerceIn(.85,ceiling) else target
+        val result=desired.coerceIn((previousRate-.15).toDouble(),(previousRate+if(ceiling>1.5) .35 else .20).toDouble()).toFloat().coerceIn(.85f,ceiling.toFloat())
         previousRate=result;return result
     }
     fun completed(text: String,rate: Float,elapsedMillis: Long) {

@@ -1,0 +1,61 @@
+{
+  "version": "0.24-conversation-pack",
+  "versionCode": 35,
+  "checked_at": "2026-10-19T10:31:52.374681+00:00",
+  "base": "Android_Game_Translator_0_23",
+  "tasks": {
+    ":app:assembleDebug": "PASS",
+    ":app:testDebugUnitTest": "PASS",
+    ":app:lintDebug": "PASS",
+    ":app:bundleRelease": "PASS",
+    ":app:lintRelease": "PASS"
+  },
+  "android_junit": {
+    "tests": 149,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_tests": 33,
+  "conversation_pack": {
+    "whole_phrase_variants": 517,
+    "default_enabled_for_mic_english": true,
+    "phrase_scope": "Whole expressions only; all-known multi-sentence matching. Unknown contexts, negation and unsupported question-to-assertion matches fall through to neural translation.",
+    "training_claim": "Authored phrase resource, not a newly trained neural model"
+  },
+  "local_model": {
+    "name": "Helsinki-NLP/opus-mt_tiny_eng-tur",
+    "revision": "daadff27d04f77a1f37b43ab4983ee50468ea7d7",
+    "android_runtime": "Google LiteRT 1.4.1",
+    "default_enabled": false,
+    "packaged_in_apk": true,
+    "native_tokenizer_parity_fixtures": 684,
+    "native_turkish_detokenization_fixtures": 5,
+    "typed_host_inference_examples": 18,
+    "host_compatibility_runtime": "LiteRT 1.4.0; repeated with a newer host runtime; not an Android inference test",
+    "phone_or_mlkit_accuracy_comparison": "NOT RUN",
+    "limits": "ASCII English adapter; 256 source tokens; max 128 target steps; no silent truncation; cooperative 2.5s check after loading, fallback to ML Kit on failure"
+  },
+  "native_16kb_alignment": "PASS: universal APK (36), ARM64 APK (8), release AAB (36)",
+  "packaging": {
+    "zipalign": "PASS",
+    "signature": "PASS",
+    "same_test_signing_key_as_0_23": true,
+    "payload_entries_verified": 567
+  },
+  "delivered_apk": {
+    "apk": "/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_24_ARM64_Test.apk",
+    "bytes": 107608055,
+    "sha256": "39a341adf572cb04fea962dc942dbbd2607dce16513c55c49ab1c2ed0e873dea",
+    "certificate_sha256": "ad6cf7228e75cb0a702f03aca74fa825a79a8a447ce8f3118a064b46364f6f1d",
+    "payload_entries_verified": 567
+  },
+  "universal_apk_sha256": "cc6482acd49890c93fafa5a111cf9fce49ccad93e058fd4942f21441ac13aaaa",
+  "physical_device_test": "NOT RUN",
+  "android_model_load_and_microphone_test": "NOT RUN",
+  "device_end_to_end_latency_measurement": "NOT RUN",
+  "headset_bluetooth_acoustic_test": "NOT RUN",
+  "raw_audio_asr_regression": "Historical 0.20 audio report retained, not rerun in 0.24; recognition model and stream code unchanged.",
+  "release_bundle": "Unsigned validation bundle built; delivered APK uses public test key.",
+  "build_environment_note": "Generated outputs isolated outside shared workspace via external Gradle init script. Clean GitHub runners use the normal module build directory."
+}

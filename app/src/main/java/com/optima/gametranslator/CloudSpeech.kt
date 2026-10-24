@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 /** PCM microphone -> authenticated WSS gateway -> STT V2 streaming responses. */
-class CloudSpeech {
+class CloudSpeech(private val echo: EchoReference?=null) {
     private val main=Handler(Looper.getMainLooper())
     private val worker=Executors.newSingleThreadExecutor()
     private val client=OkHttpClient.Builder().connectTimeout(10,TimeUnit.SECONDS)
@@ -58,13 +58,14 @@ class CloudSpeech {
     }
     @SuppressLint("MissingPermission")
     private fun capture(ws: WebSocket,token: Long,onReady: ()->Unit,onError: (String)->Unit) {
-        var input: AudioRecord?=null
+        var input: AudioRecord?=null;var echoEffect: MicrophoneEcho?=null
         try {
             if(generation.get()!=token)return
             val min=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT)
             check(min>0)
-            val mic=AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION,16000,AudioFormat.CHANNEL_IN_MONO,
+            val mic=AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION,16000,AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,maxOf(min*2,6400));input=mic
+            echoEffect=MicrophoneEcho(mic)
             synchronized(lock) { check(generation.get()==token);check(mic.state==AudioRecord.STATE_INITIALIZED);recorder=mic;mic.startRecording() }
             check(mic.recordingState==AudioRecord.RECORDSTATE_RECORDING);onReady()
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO)
@@ -73,11 +74,14 @@ class CloudSpeech {
                 val n=mic.read(buffer,0,buffer.size,AudioRecord.READ_BLOCKING)
                 if(generation.get()!=token)break
                 check(n>0&&n%2==0)
+                val raw=FloatArray(n/2) { val i=it*2;((buffer[i].toInt() and 255) or (buffer[i+1].toInt() shl 8)).toShort()/32768f }
+                val clean=echo?.clean(raw,android.os.SystemClock.elapsedRealtime())?:raw
+                for(i in clean.indices) { val value=(clean[i]*32768f).toInt().coerceIn(-32768,32767);buffer[i*2]=value.toByte();buffer[i*2+1]=(value shr 8).toByte() }
                 // 64 KB ~= 2 seconds of PCM: never queue minutes of stale audio.
                 check(ws.queueSize()<=64000&&ws.send(buffer.toByteString(0,n)))
             }
         } catch(_: Exception) { if(generation.get()==token)onError("capture") }
-        finally { synchronized(lock) { if(recorder===input)recorder=null;try { input?.stop() } catch(_: Exception) {};input?.release() } }
+        finally { synchronized(lock) { if(recorder===input)recorder=null;try { input?.stop() } catch(_: Exception) {};input?.release();echoEffect?.close() } }
     }
     fun stop() { generation.incrementAndGet();synchronized(lock) { try { recorder?.stop() } catch(_: Exception) {} };socket?.cancel();socket=null }
     fun close() { closed=true;stop();worker.shutdown();client.dispatcher.executorService.shutdown();client.connectionPool.evictAll() }

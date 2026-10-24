@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.sqrt
 
 /** Capture never waits for decoding. Overflow is reported rather than silently losing speech. */
-class OfflineSpeech(context: Context) {
+class OfflineSpeech(context: Context,private val echo: EchoReference?=null) {
     private val messages=context.resources
     private val app=context.applicationContext
     private val root=File(app.filesDir,"speech-models")
@@ -98,7 +98,7 @@ class OfflineSpeech(context: Context) {
         stop();val token=generation.get();val target=modelPath;flushRequested=false
         worker.execute {
             if(generation.get()!=token||closed)return@execute
-            var model: Model?=null;var recognizer: Recognizer?=null;var input: AudioRecord?=null;var captureThread: Thread?=null
+            var model: Model?=null;var recognizer: Recognizer?=null;var input: AudioRecord?=null;var captureThread: Thread?=null;var echoEffect: MicrophoneEcho?=null
             try {
                 check(ContextCompat.checkSelfPermission(app,Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)
                 check(ready())
@@ -107,8 +107,9 @@ class OfflineSpeech(context: Context) {
                 val decoder=Recognizer(model,16000f);recognizer=decoder
                 val minimum=AudioRecord.getMinBufferSize(16000,AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT)
                 check(minimum>0)
-                val mic=AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION,16000,
+                val mic=AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION,16000,
                     AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT,maxOf(minimum*2,6400));input=mic
+                echoEffect=MicrophoneEcho(mic)
                 check(mic.state==AudioRecord.STATE_INITIALIZED)
                 synchronized(lock) {
                     check(generation.get()==token&&!closed)
@@ -126,7 +127,10 @@ class OfflineSpeech(context: Context) {
                             val n=mic.read(readBuffer,0,readBuffer.size,AudioRecord.READ_BLOCKING)
                             if(generation.get()!=token||closed)break
                             check(n>0) { "Microphone read failed" }
-                            check(audio.offer(readBuffer.copyOf(n))) { "Recognition cannot keep up with audio" }
+                            val raw=FloatArray(n) { readBuffer[it]/32768f }
+                            val clean=echo?.clean(raw,android.os.SystemClock.elapsedRealtime())?:raw
+                            val captured=ShortArray(n) { (clean[it]*32768f).toInt().coerceIn(-32768,32767).toShort() }
+                            check(audio.offer(captured)) { "Recognition cannot keep up with audio" }
                         }
                     } catch(error: Exception) { captureFailure.set(error) }
                 },"translator-audio-capture").apply { isDaemon=true }
@@ -169,7 +173,7 @@ class OfflineSpeech(context: Context) {
                     captureThread?.join(1000)
                     input?.release()
                 }
-                recognizer?.close();model?.close()
+                recognizer?.close();model?.close();echoEffect?.close()
             }
         }
     }

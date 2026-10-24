@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.LiveSpeechSegmentsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-19T10:29:19" hostname="c27e1204a5e0" time="0.002">
+  <properties/>
+  <testcase name="emptyFinalCannotCutTheNextUtterance" classname="com.optima.gametranslator.LiveSpeechSegmentsTest" time="0.0"/>
+  <testcase name="previewNeverCommitsHalfASentence" classname="com.optima.gametranslator.LiveSpeechSegmentsTest" time="0.0"/>
+  <testcase name="aRevisedFinalKeepsWordsInsertedIntoThePrefix" classname="com.optima.gametranslator.LiveSpeechSegmentsTest" time="0.0"/>
+  <testcase name="aLongUtteranceRemainsComplete" classname="com.optima.gametranslator.LiveSpeechSegmentsTest" time="0.001"/>
+  <testcase name="shortPhraseAndRepeatedDialogueAreKept" classname="com.optima.gametranslator.LiveSpeechSegmentsTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

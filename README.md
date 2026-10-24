@@ -1,69 +1,48 @@
-# Güncel düzeltme: 0.19.3
+# Güncel: 0.31-play-rc (42)
 
-[FIX_0_19_3.md](FIX_0_19_3.md) — Süreye bağlı sözcük kesmesi kaldırıldı; sürekli kaynak metin ve kararlı çeviri önizlemesi. Gerçek örnek karşılaştırması: [ASR_BENCHMARK_0_19_3.md](ASR_BENCHMARK_0_19_3.md).
+Önce UPDATE_0_31_TR.md ve VALIDATION_0_31.json dosyalarını okuyun. Bu paket kaynak düzeltmesidir; Android derlemesi henüz doğrulanmadı.
 
-# Güncel düzeltme: 0.19.2
+# 0.30 — Play release candidate
 
-[FIX_0_19_2.md](FIX_0_19_2.md) — Türkçe TTS, kuyruk kurtarma ve ayrı ses durumu.
+See [PLAY_YUKLEME_ADIMLARI_TR.md](play-store/PLAY_YUKLEME_ADIMLARI_TR.md). This source is prepared for release checks. A signed upload bundle requires the real private Play configuration. Store prices: USD 5.99 monthly, 69.99 yearly, 99.99 lifetime; displayed prices come from Google Play ProductDetails.
 
-# Güncel düzeltme: 0.19.1
+# 0.29 context translation beta
 
-[FIX_0_19_1.md](FIX_0_19_1.md) — Türkçe ses testi ve görünür dinleme/seslendirme seçimi.
+Read [UPDATE_0_29_TR.md](UPDATE_0_29_TR.md) for installation, the optional 1.83 GB model download, phone requirements, and limitations. This is an opt-in experiment, not a claim of professional translation accuracy or Play publication readiness. Camera/ASR/TTS remain on the existing paths.
 
-# Güncel sürüm: 0.19 — Ücretsiz cihaz içi dinleme
+# AI Game Translator 0.28 — Dinle takılma düzeltmesi
 
-[FREE_0_19.md](FREE_0_19.md) — Varsayılan İngilizce Sherpa akışı; sunucu/API anahtarı gerekmez. Telefon performansı henüz doğrulanmadı. Aşağıdaki belgeler önceki aşamaların kayıtlarıdır.
+Android 10+, API 36, sürüm kodu 39. Bu sürüm doğrulanmış akış hatalarını düzeltir; kusursuz oyun tercümesi veya telefon üzerinde ölçülmüş düşük gecikme sertifikası değildir.
 
-# Önceki aşama: 0.18
+## Bulunan somut hatalar
 
-[CLOUD_0_18.md](CLOUD_0_18.md) — Kurulum olmadan canlı bulut motoru çalışmaz.
+1. Sherpa Zipformer metni BÜYÜK HARF ile veriyor. Noktalama/case modeli bu girdilerde ara cümle işaretleri üretmiyordu. Önceki küçük harfli testler bunu kaçırdı. Artık model girdisi Locale.ROOT ile normalleştirilir. Aynı native modelle önce/sonra kanıtı: `verification/punctuation-case-0_28.json` (3 gerçek native ASR transkripti ve 2 yazılı örnek). Android JNI ve Python aynı AddPunctuationWithCase girişini kullanır.
+2. Kelimeler düzeltilirken tamamlanmış Türkçe taslak sadece eski İngilizce önek birebir aynıysa gösteriliyordu. Sürekli yeniden yazılan metin ekranı boş/takılmış gösterebiliyordu. Artık aynı konuşma parçasındaki en son tamamlanan taslak gösterilir, daha yeni kesin sonuçların üstüne eski taslak yazılamaz. Taslak etiketi korunur; kesinleşmeden seslendirilmez.
+3. Onaylanmış kısa parça, henüz onaylanmamış devam metni yüzünden süresiz bekleyebiliyordu. Bekleme en fazla 1.25 saniye; bu süre sadece zaten onaylanmış kısa parçaya uygulanır. Onaysız kelimeler süre doldu diye seslendirilmez.
 
-# Güncel düzeltme: 0.17.1
+Hazır ifade karşılıkları yeni/varsayılan ayarlarda artık kapalıdır. Kullanıcının açıkça kaydettiği seçim korunur. Bunlar geniş bir dil modeli değildir; bağlama göre anlamı değiştirebilir. İlk karşılaştırmada hazır ifade paketi ve deneysel OPUS-MT kapalı, anlam grubu modu açık, hız Dengeli olsun. Bu sürüm yeni çeviri modeli veya yeni ücretli servis eklemez. Google ML Kit çevrimdışı çevirisi oyun argo ve bağlamında sınırlıdır.
 
-[FIX_0_17_1.md](FIX_0_17_1.md)
+Gelişmiş İngilizce (190 MB) ve Hafif İngilizce (73 MB) seçenekleri/önbellekleri korunur. 0.27 modelleri yeniden indirilmez. Telefon ağır kalırsa aynı kaydı iki modelle karşılaştırın. Kamera, görsel, Türkçe Android TTS ve Pro akışı korunur. Test APK'sı önceki açık test sertifikasıyla imzalıdır.
 
-# Güncel aşama: 0.17
+## Telefon üzerinde kısa teşhis
 
-Ses yakalama, otomatik tempo ve isteğe bağlı doğal/duygulu ses pilotu için [STAGE_0_17.md](STAGE_0_17.md). Kurulum: [server/PROFESSIONAL_PILOT.md](server/PROFESSIONAL_PILOT.md).
+Ayarlar → Dinle tanılamasını tut → Dinle modunda 20–30 saniye sorunlu kaydı çalın → durdurun → Ayarlar → Dinle tanılamasını paylaş.
 
-# 0.16.3 — Kamera 3 dk + Dinle 3 dk + Görsel 10 adet
+Tanılama isteğe bağlı ve varsayılan kapalıdır. Yalnız en son 128 metin/zaman olayı bellekte kalır; ses kaydedilmez. Otomatik gönderim yoktur. Kapatınca veya uygulama yeniden oluşturulunca kayıt silinir. Paylaşım metin içerir; kişisel konuşmalar yerine izinli bir test kaydı kullanın. `asr_draft`/`asr_confirmed`, `translation_start`/`translation_draft`/`translation_final`/`translation_error`, `voice_queue` aşamalarını ayırır. voice_queue gerçek hoparlör oynatma zamanı değildir; sourceAgeMs tanımadan önceki gecikmeyi ölçmez.
 
-Güncel deneme hakları ve kurulum: [TRIAL_0_16_3.md](TRIAL_0_16_3.md). Önceki belgelerdeki ortak 3 dakika ve sınırsız ücretsiz galeri ifadeleri artık geçerli değildir.
+Kaynak İngilizce yanlışsa ASR/mikrofon; kaynak doğru ve Türkçe yanlışsa çeviri modeli; Türkçe hazır olup ses gecikiyorsa ses kuyruğu incelenir. Gerçek oyun klibi ve bu rapor olmadan kalan sorunun cihazdaki kök nedeni kesinleşmez.
 
-# 0.16.2 — Eksiksiz konuşma ve görünür dinleme seçimleri
-
-Güncel kurulum ve davranış: [FIX_0_16_2.md](FIX_0_16_2.md). Önceki 0.16 belgesindeki konuşma bitmeden kısa sözcük parçalarının seslendirilmesi bu sürümde kaldırılmıştır; yazılı ara çeviri canlıdır, ses tamamlanmış bölümü okur.
-
-# 0.16.1 — Test düzeltmesi
-
-Güncel düzeltme ve commit adımları: [FIX_0_16_1.md](FIX_0_16_1.md).
-
-# 0.16 — Canlı konuşma çevirisi
-
-Güncel kurulum, dil paketleri ve telefon testi: [LIVE_SPEECH_0_16.md](LIVE_SPEECH_0_16.md). APK indirmesi Releases taslağından yapılır.
-
-# 0.15.1 indirme düzeltmesi
-
-Yeni indirme adımları için [CI_DOWNLOAD_FIX.md](CI_DOWNLOAD_FIX.md) dosyasını okuyun. Önceki 0.15 artifact indirme yönergeleri bu pakette geçersizdir.
-
-# AI Game Translator 0.15 — Son kontroller / Sunucusuz
-
-Kamera ve mikrofon ile İngilizce → Türkçe yerel çeviri ve Türkçe seslendirme. Ortak 3 dakikalık aktif demo. Aylık $4.99 / yıllık $49.99 / ömür boyu $199 Pro modeli korunur.
-
-Bu paket hedef Android API seviyesini 36'ya ve AGP'yi 8.10.1'e taşır. İlk sürüm sunucusuzdur: pro_server_url/google_web_client_id boştur. Yerel demo veri silmeyle sıfırlanabilir. Gerçek ödeme Play Console ürünü/lisans anahtarı ve satın alma testleri tamamlanınca etkinleşir.
-
-## GitHub'a aktar
-ZIP içindeki Android_Game_Translator_0_15 klasörünün içeriğini mevcut repo köküne aktar. `scripts`, `.github`, `app`, `server`, `signing`, `.gitignore`, Gradle dosyaları ve belgeleri birlikte üzerine yaz. İkinci iç içe proje klasörü oluşturma.
+## Kontroller ve GitHub
 
 ```bash
+gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease :app:lintRelease --no-daemon --continue
 git add .
-git commit -m "v0.15: API 36 and final release/native compatibility checks"
+git commit -m "Fix uppercase ASR punctuation, rewritten live previews and held confirmed fragments"
 git push
 ```
 
-Actions yeşil olduktan sonra AI-Game-Translator-0.15-final-checks-debug artifact içindeki APK'yı mevcut uygulamanın üzerine kur. Final-checks-and-unsigned-AAB-0.15 artifact içinde lint, native raporları ve imzasız release bundle bulunur. İmzasız AAB yayımlanacak dosya değildir; üretim imzası daha sonra hazırlanır. Artifact retention 3 gündür.
+Güncel sonuçlar: `VERIFICATION_0_28.md`, `RELEASE_AUDIT_0_28.json`. Önceki raporlar tarihseldir. 0.27 ASR karşılaştırması, 0.28 Türkçe çeviri kalite testi olarak sunulmaz.
 
-## Kontroller
-Bu ortamda 23 Python testi ve kaynak kontrolleri geçti. Android SDK yok; APK/JUnit/lint/AAB ve gerçek native .so uyumluluğu GitHub'da doğrulanmalı. CI 16 KB ELF/ZIP kontrolü eklendi; başarısızsa rapordaki kütüphane düzeltilmeden mağazaya gidilmez. Kontrol baskılanmaz.
+Play yayını: [play-store/BASLA.md](play-store/BASLA.md). Gerçek özel imza, lisans anahtarı, destek/politika URL'si, cihaz ve mağaza testleri henüz tamamlanmış sayılmaz. Deneme hakları kamera 180 saniye, Dinle 180 saniye, görsel 10 adet; Pro aylık $4.99, yıllık $49.99, ömür boyu $199 olarak korunur.
 
-Önceki 0.14'ün yeşil olması yeni 0.15 veya mağaza uygunluğu için onay sayılmaz. Tam inceleme FINAL_REVIEW.md, telefon listesi RELEASE_CHECKS.md, ödeme ayarları PRO_SETUP.md içinde.
+Teknik sınırın resmî kaynağı: https://developers.google.com/ml-kit/language/translation — cihaz içi model günlük/basit çeviriler içindir; özel kullanım kalitesi ayrıca değerlendirilmelidir.

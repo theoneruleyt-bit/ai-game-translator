@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.StreamingTurnsTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-19T08:49:37" hostname="c27e1204a5e0" time="0.004">
+  <properties/>
+  <testcase name="emptyEndpointCannotEraseAlreadyConfirmedFragment" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.001"/>
+  <testcase name="tinyFragmentJoinsContinuationInsteadOfBeingSpokenTwice" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.0"/>
+  <testcase name="captureRecoveryPreservesConfirmedFragmentButNotUnconfirmedWords" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.001"/>
+  <testcase name="longFinalIsNotSplitAtAWordCounter" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.001"/>
+  <testcase name="repeatedDialogueRemainsRepeated" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.0"/>
+  <testcase name="shortCompleteAnswerStillCommitsAfterGrace" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.0"/>
+  <testcase name="revisedPreviewNeverBecomesConfirmedText" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.0"/>
+  <testcase name="modePresetsAlwaysRequireSilenceForLongTurns" classname="com.optima.gametranslator.StreamingTurnsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

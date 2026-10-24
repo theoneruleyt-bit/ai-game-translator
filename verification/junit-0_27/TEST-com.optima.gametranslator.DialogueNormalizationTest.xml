@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.DialogueNormalizationTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-23T07:36:51" hostname="ff679f5dcc0e" time="0.008">
+  <properties/>
+  <testcase name="cameraLookupKeepsItsBehavior" classname="com.optima.gametranslator.DialogueNormalizationTest" time="0.001"/>
+  <testcase name="ambiguousAliasDoesNotPickAnArbitraryTranslation" classname="com.optima.gametranslator.DialogueNormalizationTest" time="0.004"/>
+  <testcase name="colloquialReductionDoesNotInventASubject" classname="com.optima.gametranslator.DialogueNormalizationTest" time="0.002"/>
+  <testcase name="asrSpellingAndNegationMatchTheSameWholeExpression" classname="com.optima.gametranslator.DialogueNormalizationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

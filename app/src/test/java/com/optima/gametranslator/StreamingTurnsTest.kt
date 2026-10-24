@@ -36,7 +36,18 @@ class StreamingTurnsTest {
  @Test fun modePresetsAlwaysRequireSilenceForLongTurns() {
   for(m in 0..2) { val p=SpeechEndpointPolicy.forMode(m)
    assertTrue(p.longTurnSilence>0);assertTrue(p.longTurnSeconds>=18)
-   assertTrue(p.trailingSilence>=.85f);assertTrue(p.paths>=2)
+   assertTrue(p.trailingSilence>=.55f);assertTrue(p.paths>=2)
   }
+ }
+ @Test fun balancedEndpointReducesWaitingWithoutResettingDuringSpeech() {
+  val fast=SpeechEndpointPolicy.forMode(0);val balanced=SpeechEndpointPolicy.forMode(1);val full=SpeechEndpointPolicy.forMode(2)
+  assertEquals(.70f,balanced.trailingSilence,.001f)
+  assertTrue(fast.trailingSilence<balanced.trailingSilence);assertTrue(balanced.trailingSilence<full.trailingSilence)
+  assertEquals(20f,balanced.longTurnSeconds,.001f);assertTrue(balanced.longTurnSilence>0)
+ }
+ @Test fun captureRecoveryPreservesConfirmedFragmentButNotUnconfirmedWords() {
+  val t=StreamingTurns();t.update("I need",true,0);t.update("help tomorrow",false,200)
+  assertEquals("I need",t.flushConfirmed().single().text)
+  assertTrue(t.flushConfirmed().isEmpty())
  }
 }

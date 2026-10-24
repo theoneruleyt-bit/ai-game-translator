@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.ListenRegressionTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-23T08:43:43" hostname="ff679f5dcc0e" time="0.034">
+  <properties/>
+  <testcase name="confirmedShortTextCannotBeHeldForeverByUnconfirmedContinuation" classname="com.optima.gametranslator.ListenRegressionTest" time="0.003"/>
+  <testcase name="EnglishPreparationIsIndependentOfTurkishSystemLocale" classname="com.optima.gametranslator.ListenRegressionTest" time="0.001"/>
+  <testcase name="uppercaseSingleSpeakerKeepsEveryWordAndCommitsBeforeEndpoint" classname="com.optima.gametranslator.ListenRegressionTest" time="0.01"/>
+  <testcase name="traceIsOptInBoundedAndClearedWhenDisabled" classname="com.optima.gametranslator.ListenRegressionTest" time="0.002"/>
+  <testcase name="diagnosticSnapshotCannotChangeOrGrowTheLiveRing" classname="com.optima.gametranslator.ListenRegressionTest" time="0.0"/>
+  <testcase name="uppercaseNativeShapeNoLongerWaitsForTheWholeGameDialogue" classname="com.optima.gametranslator.ListenRegressionTest" time="0.017"/>
+  <testcase name="aRewrittenDraftStillAppearsButCannotCrossAnEndpointOrANewerDisplay" classname="com.optima.gametranslator.ListenRegressionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

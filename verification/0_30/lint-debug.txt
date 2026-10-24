@@ -1,0 +1,401 @@
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:243: Warning: Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background [ApplySharedPref]
+        if(sync)editor.commit() else editor.apply()
+                       ~~~~~~~~
+
+   Explanation for issues of type "ApplySharedPref":
+   Consider using apply() instead of commit on shared preferences. Whereas
+   commit blocks and writes its data to persistent storage immediately, apply
+   will handle it in the background.
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/ProService.kt:50: Warning: Call to CredentialManager.getCredential without use of NoCredentialException [CredentialManagerMisuse]
+        CredentialManager.create(activity).getCredentialAsync(activity,request,cancellation,ContextCompat.getMainExecutor(activity),
+        ^
+
+   Explanation for issues of type "CredentialManagerMisuse":
+   When calling CredentialManager.getCredential or
+   CredentialManager.getCredentialAsync, you should handle
+   NoCredentialException somewhere in your project.
+
+   https://developer.android.com/identity/sign-in/credential-manager#handle-exceptions
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/build.gradle.kts:47: Warning: A newer version of androidx.credentials:credentials than 1.3.0 is available: 1.6.0 [GradleDependency]
+ implementation("androidx.credentials:credentials:1.3.0")
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/build.gradle.kts:48: Warning: A newer version of androidx.credentials:credentials-play-services-auth than 1.3.0 is available: 1.6.0 [GradleDependency]
+ implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/build.gradle.kts:53: Warning: A newer version of androidx.activity:activity-ktx than 1.10.1 is available: 1.13.0 [GradleDependency]
+ implementation("androidx.activity:activity-ktx:1.10.1")
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/build.gradle.kts:54: Warning: A newer version of androidx.camera:camera-camera2 than 1.4.2 is available: 1.6.2 [GradleDependency]
+ implementation("androidx.camera:camera-camera2:1.4.2")
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/build.gradle.kts:55: Warning: A newer version of androidx.camera:camera-lifecycle than 1.4.2 is available: 1.6.2 [GradleDependency]
+ implementation("androidx.camera:camera-lifecycle:1.4.2")
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/build.gradle.kts:56: Warning: A newer version of androidx.camera:camera-view than 1.4.2 is available: 1.6.2 [GradleDependency]
+ implementation("androidx.camera:camera-view:1.4.2")
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "GradleDependency":
+   This detector looks for usages of libraries where the version you are using
+   is not the current stable release. Using older versions is fine, and there
+   are cases where you deliberately want to stick with an older version.
+   However, you may simply not be aware that a more recent version is
+   available, and that is what this lint check helps find.
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 29. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
+
+   Explanation for issues of type "ObsoleteSdkInt":
+   This check flags version checks that are not necessary, because the
+   minSdkVersion (or surrounding known API level) is already at least as high
+   as the version checked for.
+
+   Similarly, it also looks for resources in -vNN folders, such as values-v14
+   where the version qualifier is less than or equal to the minSdkVersion,
+   where the contents should be merged into the best folder.
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:34: Warning: The resource R.string.ui_032 appears to be unused [UnusedResources]
+ <string name="ui_032" formatted="false">"Kısa konuşma testi"</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:48: Warning: The resource R.string.ui_046 appears to be unused [UnusedResources]
+ <string name="ui_046" formatted="false">"Türkçe sesli okuma açık. Yeni tamamlanan replikler okunacak; mikrofon açık kalıyor."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:51: Warning: The resource R.string.ui_049 appears to be unused [UnusedResources]
+ <string name="ui_049" formatted="false">"Türkçe sesi kulaklıkla dinliyorum"</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:52: Warning: The resource R.string.ui_050 appears to be unused [UnusedResources]
+ <string name="ui_050" formatted="false">"Kulaklık kullanımı seçildi. Sesli okuma seçeneğin korunuyor."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:53: Warning: The resource R.string.ui_051 appears to be unused [UnusedResources]
+ <string name="ui_051" formatted="false">"Hoparlörden okuma kullanılabilir. Kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:93: Warning: The resource R.string.ui_091 appears to be unused [UnusedResources]
+ <string name="ui_091" formatted="false">"SON REPLİKLER"</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:97: Warning: The resource R.string.ui_095 appears to be unused [UnusedResources]
+ <string name="ui_095" formatted="false">"Geçmiş temizlendi."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:186: Warning: The resource R.string.ui_184 appears to be unused [UnusedResources]
+ <string name="ui_184" formatted="false">"Bir replik çevrilemedi. İnterneti/modeli kontrol et."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:199: Warning: The resource R.string.ui_197 appears to be unused [UnusedResources]
+ <string name="ui_197" formatted="false">"Mikrofon açık • cihaz içi İngilizce → Türkçe"</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:201: Warning: The resource R.string.ui_199 appears to be unused [UnusedResources]
+ <string name="ui_199" formatted="false">"Replik çevriliyor • mikrofon açık kalıyor"</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:202: Warning: The resource R.string.ui_200 appears to be unused [UnusedResources]
+ <string name="ui_200" formatted="false">"Konuşma sürüyor • cihaz içi dinleme açık"</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:211: Warning: The resource R.string.ui_209 appears to be unused [UnusedResources]
+ <string name="ui_209" formatted="false">"Üç denemede İngilizce metin alınamadı. Kısa konuşma testini dene; mikrofonu, İngilizce konuşma paketini ve interneti kontrol et."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:219: Warning: The resource R.string.ui_217 appears to be unused [UnusedResources]
+ <string name="ui_217" formatted="false">"İki denemede konuşma metni alınamadı. Kısa konuşma testini aç; mikrofon izni, İngilizce tanıma ve interneti kontrol et."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:228: Warning: The resource R.string.ui_226 appears to be unused [UnusedResources]
+ <string name="ui_226" formatted="false">"Yerel dinleme başlatılamadı veya kesildi. Mikrofon iznini ve başka uygulamaların mikrofon kullanımını kontrol et."</string>
+         ~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:248: Warning: The resource R.string.pro_expired appears to be unused [UnusedResources]
+    <string name="pro_expired">Deneme tamamlandı</string>
+            ~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:299: Warning: The resource R.string.cloud_headphones appears to be unused [UnusedResources]
+ <string name="cloud_headphones">Kendi sesini yeniden algılamaması için canlı dinlemede sesli okuma kulaklık seçeneği gerektirir.</string>
+         ~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:311: Warning: The resource R.string.listening_voice_choice appears to be unused [UnusedResources]
+    <string name="listening_voice_choice">Dinlerken Türkçe okumayı açmak için kulaklık kullanın. Telefon hoparlörünün sesi mikrofona geri girerse yanlış tanıma oluşabilir.</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:312: Warning: The resource R.string.listening_with_headphones appears to be unused [UnusedResources]
+    <string name="listening_with_headphones">Kulaklıkla sesli çeviri</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/values/strings.xml:313: Warning: The resource R.string.listening_text_only appears to be unused [UnusedResources]
+    <string name="listening_text_only">Yalnızca yazılı çeviri</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests =true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests =true.
+   ,
+
+   Available options:
+
+   **skip-libraries** (default is true):
+   Whether the unused resource check should skip reporting unused resources in libraries.
+
+   Many libraries will declare resources that are part of the library surface; other modules depending on the library will also reference the resources. To avoid reporting all these resources as unused (in the context of a library), the unused resource check normally skips reporting unused resources in libraries. Instead, run the unused resource check on the consuming app module (along with `checkDependencies=true`).
+
+   However, there are cases where you want to check that all the resources declared in a library are used; in that case, you can disable the skip option.
+
+   To configure this option, use a `lint.xml` file with an <option> like this:
+
+   ```xml
+   <lint>
+       <issue id="UnusedResources">
+           <option name="skip-libraries" value="true" />
+       </issue>
+   </lint>
+   ```
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/ContextConversationTranslator.kt:54: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+                check(cache.usableSpace>=1024L*1024*1024) { "Insufficient model cache storage" }
+                            ~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/ContextModelPack.kt:48: Warning: Consider also using StorageManager#getAllocatableBytes and allocateBytes which will consider clearable cached data [UsableSpace]
+                    check(directory.usableSpace>=BYTES-offset+2L*1024*1024*1024) { "Insufficient storage" }
+                                    ~~~~~~~~~~~
+
+   Explanation for issues of type "UsableSpace":
+   When you need to allocate disk space for large files, consider using the
+   new allocateBytes(FileDescriptor, long) API, which will automatically clear
+   cached files belonging to other apps (as needed) to meet your request.
+
+   When deciding if the device has enough disk space to hold your new data,
+   call getAllocatableBytes(UUID) instead of using getUsableSpace(), since the
+   former will consider any cached data that the system is willing to clear on
+   your behalf.
+
+   Note that these methods require API level 26. If your app is running on
+   older devices, you will probably need to use both APIs, conditionally
+   switching on Build.VERSION.SDK_INT. Lint only looks in the same compilation
+   unit to see if you are already using both APIs, so if it warns even though
+   you are already using the new API, consider moving the calls to the same
+   file or suppressing the warning.
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/mipmap-hdpi/ic_launcher.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/mipmap-mdpi/ic_launcher.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/mipmap-xhdpi/ic_launcher.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/mipmap-xxhdpi/ic_launcher.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+
+   Explanation for issues of type "IconLauncherShape":
+   According to the Android Design Guide
+   (https://d.android.com/r/studio-ui/designer/material/iconography) your
+   launcher icons should "use a distinct silhouette", a "three-dimensional,
+   front view, with a slight perspective as if viewed from above, so that
+   users perceive some depth."
+
+   The unique silhouette implies that your launcher icon should not be a
+   filled square.
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml:1: Warning: The application adaptive icon is missing a monochrome tag [MonochromeLauncherIcon]
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/icon_background"/><foreground android:drawable="@drawable/icon_foreground"/></adaptive-icon>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "MonochromeLauncherIcon":
+   If android:roundIcon and android:icon are both in your manifest, you must
+   either remove the reference to android:roundIcon if it is not needed; or,
+   supply the monochrome icon in the drawable defined by the android:roundIcon
+   and android:icon attribute.
+
+   For example, if android:roundIcon and android:icon are both in the
+   manifest, a launcher might choose to use android:roundIcon over
+   android:icon to display the adaptive app icon. Therefore, your themed
+   application iconwill not show if your monochrome attribute is not also
+   specified in android:roundIcon.
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/res/drawable/brand_icon.png: Warning: Found bitmap drawable res/drawable/brand_icon.png in densityless folder [IconLocation]
+
+   Explanation for issues of type "IconLocation":
+   The res/drawable folder is intended for density-independent graphics such
+   as shapes defined in XML. For bitmaps, move it to drawable-mdpi and
+   consider providing higher and lower resolution versions in drawable-ldpi,
+   drawable-hdpi and drawable-xhdpi. If the icon really is density independent
+   (for example a solid color) you can place it in drawable-nodpi.
+
+   https://developer.android.com/guide/practices/screens_support.html
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:294: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+            val uri=android.net.Uri.parse("https://play.google.com/store/account/subscriptions").buildUpon()
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:472: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                    stopSession();offline.selectPack(SpeechPack.ALL[index]);settings.edit().putInt("speech_pack",index).apply()
+                                                                            ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:487: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                stopSession();slangEnabled=checked;settings.edit().putBoolean("slang",checked).apply()
+                                                   ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:492: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            setOnCheckedChangeListener { _,checked -> stopSession();phraseOverrides=checked;settings.edit().putBoolean("conversation_pack_v2",checked).apply() }
+                                                                                            ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:498: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                settings.edit().putBoolean("local_mt",checked).apply()
+                ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:510: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                settings.edit().putBoolean("context_mt",checked).apply()
+                ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:522: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            setOnCheckedChangeListener { _,checked -> liveReadingSync=checked;if(::voice.isInitialized)voice.liveSync=checked;settings.edit().putBoolean("live_reading_sync",checked).apply() }
+                                                                                                                              ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:527: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                stopSession();adaptiveClauses=checked;settings.edit().putBoolean("adaptive_clauses",checked).apply()
+                                                      ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:535: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            setOnCheckedChangeListener { _,checked -> stopSession();freeListening=checked;if(checked) { cloudListening=false;if(::cloudChoice.isInitialized)cloudChoice.isChecked=false };settings.edit().putBoolean("free_listening",checked).putBoolean("cloud_listening",cloudListening).apply();updateListeningOptions() }
+                                                                                                                                                                                          ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:540: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            setOnCheckedChangeListener { _,checked -> stopSession();cloudListening=checked;if(checked) { freeListening=false;if(::freeChoice.isInitialized)freeChoice.isChecked=false };settings.edit().putBoolean("cloud_listening",checked).putBoolean("free_listening",freeListening).apply();updateListeningOptions() }
+                                                                                                                                                                                        ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:618: Warning: Use the KTX extension property View.isVisible instead? [UseKtx]
+        controls.addView(button(getString(R.string.ui_052)) { advanced.visibility=if(advanced.visibility==View.VISIBLE)View.GONE else View.VISIBLE })
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:618: Warning: Use the KTX extension property View.isVisible instead? [UseKtx]
+        controls.addView(button(getString(R.string.ui_052)) { advanced.visibility=if(advanced.visibility==View.VISIBLE)View.GONE else View.VISIBLE })
+                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:624: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { settings.edit().putInt("rate_step",progress).putFloat("tempo_rate",.9f+progress*.1f).apply();if(::voice.isInitialized) voice.rate=0.9f+progress*0.1f }
+                                                                                                ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:648: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { settings.edit().putInt("pitch_step",progress).apply();if(::voice.isInitialized) voice.pitch=.85f+progress*.05f }
+                                                                                                ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:657: Warning: Use the KTX extension property View.isVisible instead? [UseKtx]
+        speakerCard.addView(button(getString(R.string.ui_062)) { speakerContent.visibility=if(speakerContent.visibility==View.VISIBLE)View.GONE else View.VISIBLE })
+                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:657: Warning: Use the KTX extension property View.isVisible instead? [UseKtx]
+        speakerCard.addView(button(getString(R.string.ui_062)) { speakerContent.visibility=if(speakerContent.visibility==View.VISIBLE)View.GONE else View.VISIBLE })
+                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:678: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            profilePrefs.edit().clear().apply();speakers.clear();message(getString(R.string.ui_075))
+            ~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:736: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        if(!settings.getBoolean("guide_seen",false)) { settings.edit().putBoolean("guide_seen",true).apply();showGuide() }
+                                                       ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:792: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        settings.edit().putFloat("area_left",area.left).putFloat("area_top",area.top).putFloat("area_right",area.right).putFloat("area_bottom",area.bottom).putBoolean("auto_voice",autoVoice.isChecked).putBoolean("region",region.isChecked)
+        ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:807: Warning: Use the KTX extension function String.toUri instead? [UseKtx]
+            try { startActivity(Intent(Intent.ACTION_VIEW,android.net.Uri.parse(url))) }
+                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:822: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                stopSession();settings.edit().putString("theme",values[index]).apply();dialog.dismiss();recreate()
+                              ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:828: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                stopSession();settings.edit().putString("language",values[index]).apply();dialog.dismiss();recreate()
+                              ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:834: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                settings.edit().putInt("text_size",sizes[index]).apply();result.textSize=sizes[index].toFloat();dialog.dismiss()
+                ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:844: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                        stopSession();settings.edit().putString("local_speech_engine",models[index].id).apply()
+                                      ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:863: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                settings.edit().putBoolean("adaptive",adaptiveReading).putFloat("tempo_rate",voice.rate).apply()
+                ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:870: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            setOnCheckedChangeListener { _,checked -> adaptiveReading=checked;voice.adaptiveSpeed=checked;settings.edit().putBoolean("adaptive",checked).apply() }
+                                                                                                          ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:875: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                keepScreen=checked;settings.edit().putBoolean("screen",checked).apply()
+                                   ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:889: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                profilePrefs.edit().putInt("style_${slot}",index).apply();dialog.dismiss()
+                ~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:895: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        settings.edit().putString("translation_history_v1",entries.toString()).apply()
+        ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:947: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        if(chosen!=null)profilePrefs.edit().putString("voice_${slot}",chosen).apply()
+                        ~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:956: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                profilePrefs.edit().putString("voice_${slot}",voices[index].name).apply()
+                ~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:970: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                if(voice.selectVoice(voices[index])) { settings.edit().putString("default_voice",voices[index].name).apply();voiceChoice.text=labels[index];message(getString(R.string.ui_158)) }
+                                                       ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:981: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+            stopSession();speedMode=index;settings.edit().putInt("speed_mode",index).apply()
+                                          ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:1039: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+                    .setPositiveButton(getString(R.string.pro_start)) { _,_ -> settings.edit().putBoolean("trial_split_started_v2",true).apply();primaryAction() }
+                                                                               ~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:1129: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        val editor=profilePrefs.edit()
+                   ~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/PhraseBook.kt:25: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+        prefs.edit().putString("items",array.toString()).apply();return true
+        ~~~~~~~~~~~~
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/PhraseBook.kt:27: Warning: Use the KTX extension function SharedPreferences.edit instead? [UseKtx]
+    fun clear() { prefs.edit().remove("items").apply() }
+                  ~~~~~~~~~~~~
+
+   Explanation for issues of type "UseKtx":
+   The Android KTX libraries decorates the Android platform SDK as well as
+   various libraries with more convenient extension functions available from
+   Kotlin, allowing you to use default parameters, named parameters, and
+   more.
+
+   Available options:
+
+   **remove-defaults** (default is true):
+   Whether to skip arguments that match the defaults provided by the extension.
+
+   Extensions often provide default values for some of the parameters. For example:
+   ```kotlin
+   fun Path.readLines(charset: Charset = Charsets.UTF_8): List<String> { return Files.readAllLines(this, charset) }
+   ```
+   This lint check will by default automatically omit parameters that match the default, so if your code was calling
+
+   ```kotlin
+   Files.readAllLines(file, Charset.UTF_8)
+   ```
+   lint would replace this with
+   ```kotlin
+   file.readLines()
+   ```
+   rather than
+
+   ```kotlin
+   file.readLines(Charset.UTF_8
+   ```
+   You can turn this behavior off using this option.
+
+   To configure this option, use a `lint.xml` file with an <option> like this:
+
+   ```xml
+   <lint>
+       <issue id="UseKtx">
+           <option name="remove-defaults" value="true" />
+       </issue>
+   </lint>
+   ```
+
+   **require-present** (default is true):
+   Whether to only offer extensions already available.
+
+   This option lets you only have lint suggest extension replacements if those extensions are already available on the class path (in other words, you're already depending on the library containing the extension method.)
+
+   To configure this option, use a `lint.xml` file with an <option> like this:
+
+   ```xml
+   <lint>
+       <issue id="UseKtx">
+           <option name="require-present" value="true" />
+       </issue>
+   </lint>
+   ```
+
+/workspace/scratch/fda5c1a96b16/AI_Game_Translator_0_30/app/src/main/java/com/optima/gametranslator/MainActivity.kt:1239: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+        metrics.text=getString(R.string.ui_187, (if(active) getString(R.string.ui_188, ((SystemClock.elapsedRealtime()-sessionStarted)/1000).toString()) else "").toString(), (completed).toString(), (waiting.size + if(translating) 1 else 0).toString(), (sounds).toString(), (lastLag/1000.0).toString(), (rejected).toString())+if(::voice.isInitialized) "\n"+getString(R.string.tempo_status,java.lang.String.format(java.util.Locale.ROOT,"%.2f",voice.currentRate),(voice.estimatedWaitingMillis/1000).toString()) else ""
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "SetTextI18n":
+   When calling TextView#setText
+   * Never call Number#toString() to format numbers; it will not handle
+   fraction separators and locale-specific digits properly. Consider using
+   String#format with proper format specifications (%d or %f) instead.
+   * Do not pass a string literal (e.g. "Hello") to display text. Hardcoded
+   text can not be properly translated to other languages. Consider using
+   Android resource strings instead.
+   * Do not build messages by concatenating text chunks. Such messages can not
+   be properly translated.
+
+   https://developer.android.com/guide/topics/resources/localization.html
+
+0 errors, 75 warnings

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.AdaptiveTempoTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-19T08:49:37" hostname="c27e1204a5e0" time="0.018">
+  <properties/>
+  <testcase name="slowSourceCanSlowPlayback" classname="com.optima.gametranslator.AdaptiveTempoTest" time="0.013"/>
+  <testcase name="liveBacklogCanUseVeryFastReadingButCameraLimitIsPreserved" classname="com.optima.gametranslator.AdaptiveTempoTest" time="0.001"/>
+  <testcase name="completedPlaybackCalibratesEstimate" classname="com.optima.gametranslator.AdaptiveTempoTest" time="0.001"/>
+  <testcase name="manualModePreservesRate" classname="com.optima.gametranslator.AdaptiveTempoTest" time="0.0"/>
+  <testcase name="changesAreGradual" classname="com.optima.gametranslator.AdaptiveTempoTest" time="0.0"/>
+  <testcase name="backlogAcceleratesWithinLimit" classname="com.optima.gametranslator.AdaptiveTempoTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

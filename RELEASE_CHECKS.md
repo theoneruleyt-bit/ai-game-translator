@@ -13,8 +13,8 @@ Bu liste hazırlandı; fiziksel cihaz testleri tamamlanmış olarak işaretlenme
 | Arka plan / ekran kilidi / tema-dil değişimi | Kamera, mikrofon ve TTS durur; süre korunur. Döndükten sonra kullanıcı yeniden başlatır. |
 | Yerel model yokken ağ kesilmesi | İndirme anlaşılır hata verir; demo tüketilmez; bağlantı gelince tekrar denenebilir. |
 | Modeller hazırken interneti kapatma (varsayılan test) | Kamera, Vosk ve yerel çeviri çalışır. Ağ gerektiren TTS motorları başarısız olabilir; yerel Türkçe ses kullanılmalı. |
-| 60 saniye kamera + 60 saniye mikrofon | Toplam yaklaşık 60 saniye kalan demo; durdurulan aralık tüketilmez. |
-| Demo bitişi | Canlı giriş durur, Pro ekranı açılır, otomatik ödeme yoktur. Fotoğraf/metin açık kalır. |
+| 60 saniye kamera + 60 saniye mikrofon | Kamera ve mikrofonun her birinde yaklaşık 120 saniye kalır; durdurulan aralık tüketilmez. |
+| Demo bitişi | İlgili canlı giriş durur, Pro ekranı açılır; diğer modun ayrı sayacı korunur. Görsel hakkı 10 başarılı çeviridir. Otomatik ödeme yoktur. |
 | Türkçe/İngilizce + açık/koyu + büyük yazı | Etiketler görünür, Pro seçenekleri kaydırılır, önemli düğmeler kesilmez. |
 | Ses örnekleri / uzun replik / kulaklık | Türkçe yerel ses okunur; başlamış replik kesilmez; hoparlörün mikrofon tarafından tekrar algılanması için kulaklıkla kıyasla. |
 | Uzun oturum | Pil/ısı değerlendirmesi için yetkili Pro test hesabıyla 15–30 dakika kamera ve mikrofon ayrı ayrı; çökme/artan kuyruk olmamalı. 3 dakikalık debug demo kendi başına bunu sağlayamaz. |

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.optima.gametranslator.EchoReferenceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-22T13:39:24" hostname="16fea8bccd03" time="0.084">
+  <properties/>
+  <testcase name="oldPlaybackCannotAffectNewAudioAfterTailExpires" classname="com.optima.gametranslator.EchoReferenceTest" time="0.025"/>
+  <testcase name="pcmDecoderPreservesSampleAndStereoBoundariesAcrossByteChunks" classname="com.optima.gametranslator.EchoReferenceTest" time="0.001"/>
+  <testcase name="unrelatedSourceAudioIsPreserved" classname="com.optima.gametranslator.EchoReferenceTest" time="0.033"/>
+  <testcase name="resamplingIsIndependentOfCallbackChunkSizes" classname="com.optima.gametranslator.EchoReferenceTest" time="0.005"/>
+  <testcase name="unknownPcmEncodingFailsOpenWithoutAlteringMicrophone" classname="com.optima.gametranslator.EchoReferenceTest" time="0.007"/>
+  <testcase name="referenceEchoIsRemovedWithoutMutingOtherSpeech" classname="com.optima.gametranslator.EchoReferenceTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

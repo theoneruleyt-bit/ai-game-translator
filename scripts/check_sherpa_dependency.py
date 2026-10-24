@@ -11,3 +11,7 @@ with zipfile.ZipFile(p) as archive:
         assert files,abi
         for name in files:assert all(row['compatible'] for row in inspect_elf(archive.read(name))),name
 print('Pinned Sherpa AAR checksum and 64-bit 16 KB alignment: PASS')
+
+vad=Path('app/src/main/assets/silero_vad.onnx')
+assert hashlib.sha256(vad.read_bytes()).hexdigest()=='9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6'
+print('Bundled Silero VAD checksum: PASS')

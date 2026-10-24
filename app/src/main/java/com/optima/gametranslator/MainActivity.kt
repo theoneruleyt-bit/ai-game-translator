@@ -46,14 +46,22 @@ class MainActivity : ComponentActivity() {
     private lateinit var source: TextView
     private lateinit var result: TextView
     private lateinit var history: TextView
+    private lateinit var historyCount: TextView
     private lateinit var preview: PreviewView
     private lateinit var subtitleArea: SubtitleAreaView
     private val subtitleFilter=SubtitleFilter()
     private lateinit var previewBox: LinearLayout
     private lateinit var micHero: LinearLayout
-    private val offline by lazy { OfflineSpeech(this) }
-    private val cloudSpeech=CloudSpeech()
-    private val freeSpeech by lazy { FreeStreamingSpeech(this) }
+    private val echoReference=EchoReference()
+    private val finalTurns=FinalTurnGuard()
+    private var liveReadingSync=true
+    private var adaptiveClauses=true
+    private lateinit var clauseStatus: TextView
+    private val offline by lazy { OfflineSpeech(this,echoReference) }
+    private val cloudSpeech=CloudSpeech(echoReference)
+    private val localSpeechModel by lazy { LocalSpeechModels.forId(settings.getString("local_speech_engine",null)) }
+    private val freeSpeech by lazy { FreeStreamingSpeech(this,echoReference,localSpeechModel) }
+    private lateinit var legacySpeechOptions: LinearLayout
     private lateinit var freeChoice: CheckBox
     private lateinit var cloudChoice: CheckBox
     private var freeListening=true
@@ -111,12 +119,45 @@ class MainActivity : ComponentActivity() {
     private val recognizer=TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     private val professional=ProfessionalGateway()
     private val professionalWorker=java.util.concurrent.Executors.newSingleThreadExecutor()
-    private val translator=Translation.getClient(TranslatorOptions.Builder()
-        .setSourceLanguage(TranslateLanguage.ENGLISH).setTargetLanguage(TranslateLanguage.TURKISH).build())
-    private val reverseTranslator=Translation.getClient(TranslatorOptions.Builder()
-        .setSourceLanguage(TranslateLanguage.TURKISH).setTargetLanguage(TranslateLanguage.ENGLISH).build())
+    private val translationRuntime=TranslationRuntime()
+    private var previewTicket=0L
+    private var phraseOverrides=false
+    private val listeningTrace=ListeningTrace()
+    private var contextMt=false
+    private var contextPausedUntil=0L
+    private var contextPreparing=false
+    private val contextPackLazy=lazy { ContextModelPack(this) }
+    private val contextPack by contextPackLazy
+    private val contextTranslatorLazy=lazy { ContextConversationTranslator(this,contextPack) }
+    private val contextTranslator by contextTranslatorLazy
+    private lateinit var contextChoice: CheckBox
+    private lateinit var contextStatus: TextView
+    private lateinit var tinyMtChoice: CheckBox
+    private var contextDialog: AlertDialog?=null
+    private fun usesContextMt()=contextMt&&mode==Mode.MIC&&freeListening&&!translatingTurkish()
+    private var localMt=false
+    private val localTranslator by lazy { LocalConversationTranslator(this) }
+    private val conversationPack by lazy { ConversationLexicon(this,"conversation-v2-en-tr.tsv") }
+    private lateinit var localMtStatus: TextView
+    private fun usesLocalMt()=!contextMt&&localMt&&mode==Mode.MIC&&freeListening&&!translatingTurkish()
+    private fun phraseTranslation(text: String): String? {
+        if(!slangEnabled||usesContextMt())return null
+        val reverse=translatingTurkish()
+        if(mode==Mode.MIC&&!reverse)return if(phraseOverrides)conversationPack.exactSentences(text) else null
+        if(mode==Mode.MIC&&!phraseOverrides)return null
+        return conversation.exact(text,reverse)
+    }
+    private var lastTranslationIssue: String?=null
     private fun translatingTurkish()=mode==Mode.MIC&&offline.pack.language=="tr"
-    private fun translateSmart(text: String,allowProfessional: Boolean=true): com.google.android.gms.tasks.Task<String> {
+    private fun translateSmart(text: String,allowProfessional: Boolean=true,preview: Boolean=false): com.google.android.gms.tasks.Task<String> {
+        val guard=mode==Mode.MIC&&!translatingTurkish()
+        if(guard)TranslationSourceGuard.exact(text)?.let { return com.google.android.gms.tasks.Tasks.forResult(it) }
+        return translateUnchecked(text,allowProfessional,preview).continueWith { task ->
+            if(!task.isSuccessful)throw(task.exception?:IllegalStateException("Translation canceled"))
+            if(guard)TranslationSourceGuard.validate(text,task.result) else task.result
+        }
+    }
+    private fun translateUnchecked(text: String,allowProfessional: Boolean,preview: Boolean): com.google.android.gms.tasks.Task<String> {
         val reverse=translatingTurkish()
         if(allowProfessional&&professional.configured&&!(mode==Mode.MIC&&freeListening)) {
             val translationEpoch=epoch
@@ -127,13 +168,59 @@ class MainActivity : ComponentActivity() {
                     else { handler.post { if(valid(translationEpoch))message(getString(R.string.professional_fallback)) };translateSmart(text,false) }
                 }
         }
-        val exact=if(slangEnabled) conversation.exact(text,reverse) else null
-        if(exact!=null)return com.google.android.gms.tasks.Tasks.forResult(exact)
-        val prepared=if(slangEnabled&&!reverse) conversation.normalizeEnglish(text) else text
-        return (if(reverse) reverseTranslator else translator).translate(prepared)
+        if(usesContextMt()&&!preview) {
+            val translationEpoch=epoch
+            fun fastFallback(): com.google.android.gms.tasks.Task<String> {
+                if(valid(translationEpoch)) {
+                    contextStatus.text=getString(R.string.context_fallback)
+                    listeningTrace.record(SystemClock.elapsedRealtime(),"translation_engine",text,"ML Kit fallback;context unavailable/paused/rejected")
+                }
+                val prepared=if(slangEnabled)conversation.normalizeDialogueEnglish(text) else text
+                return translationRuntime.translate(prepared,false,false)
+            }
+            val now=SystemClock.elapsedRealtime()
+            if(!contextTranslator.ready||waiting.size>1||now<contextPausedUntil) {
+                if(waiting.size>1)contextPausedUntil=now+20_000
+                return fastFallback()
+            }
+            return contextTranslator.translate(text).continueWithTask { task ->
+                if(!valid(translationEpoch))com.google.android.gms.tasks.Tasks.forException<String>(IllegalStateException("Translation session changed"))
+                else if(task.isSuccessful) {
+                    contextStatus.text=getString(R.string.context_used,contextTranslator.backendName)
+                    listeningTrace.record(SystemClock.elapsedRealtime(),"translation_engine",text,"Hy-MT2;${contextTranslator.backendName}")
+                    com.google.android.gms.tasks.Tasks.forResult(task.result)
+                } else {
+                    contextPausedUntil=SystemClock.elapsedRealtime()+20_000
+                    fastFallback()
+                }
+            }
+        }
+        val exact=if(preview)null else phraseTranslation(text)
+        if(exact!=null) {
+            if(mode==Mode.MIC&&::localMtStatus.isInitialized)localMtStatus.text=getString(R.string.local_mt_phrase)
+            return com.google.android.gms.tasks.Tasks.forResult(exact)
+        }
+        val prepared=if(slangEnabled&&!reverse) {
+            if(mode==Mode.MIC)conversation.normalizeDialogueEnglish(text) else conversation.normalizeEnglish(text)
+        } else text
+        if(usesLocalMt()&&!preview) {
+            val translationEpoch=epoch
+            return localTranslator.translate(prepared).continueWithTask { task ->
+                if(!valid(translationEpoch)) {
+                    com.google.android.gms.tasks.Tasks.forException<String>(IllegalStateException("Translation session changed"))
+                } else if(task.isSuccessful) {
+                    if(valid(translationEpoch))localMtStatus.text=getString(R.string.local_mt_used)
+                    com.google.android.gms.tasks.Tasks.forResult(task.result)
+                } else {
+                    if(valid(translationEpoch))localMtStatus.text=getString(R.string.local_mt_fallback)
+                    translationRuntime.translate(prepared,reverse,false)
+                }
+            }
+        }
+        return translationRuntime.translate(prepared,reverse,preview)
     }
     private fun updateSpeechDirection() {
-        if(::voice.isInitialized) { voice.professional=if(mode==Mode.MIC&&freeListening)null else professional;voice.setTargetLanguage(if(translatingTurkish()) "en" else "tr") }
+        if(::voice.isInitialized) { voice.liveMode=active&&mode==Mode.MIC;voice.liveSync=liveReadingSync;voice.echoReference=if(mode==Mode.MIC)echoReference else null;voice.professional=if(mode==Mode.MIC&&freeListening)null else professional;voice.setTargetLanguage(if(translatingTurkish()) "en" else "tr") }
     }
     private val gate=StabilityGate()
     private val speakers=SpeakerRouter()
@@ -190,11 +277,13 @@ class MainActivity : ComponentActivity() {
     private fun renderProOffers() {
         val content=proOffers?:return
         content.removeAllViews()
-        val configured=if(proService.enabled)proService.signedIn else getString(R.string.play_license_key).isNotBlank()
+        if(billing.pro) { content.addView(label(getString(R.string.pro_active),16f,mint));return }
+        val configured=billing.configured
         if(billing.plans.isEmpty()||!configured)content.addView(label(getString(R.string.pro_unavailable),14f,muted))
+        if(billing.status.isNotBlank())content.addView(label(billing.status,14f,muted))
         billing.plans.sortedBy { listOf("monthly","yearly","lifetime").indexOf(it.name) }.forEach { plan ->
             val title=when(plan.name) { "monthly"->R.string.pro_monthly;"yearly"->R.string.pro_yearly;else->R.string.pro_lifetime }
-            content.addView(button(getString(title)+" • "+plan.price) { proDialog?.dismiss();billing.buy(plan) }.apply { isEnabled=configured })
+            content.addView(button(getString(title)+" • "+plan.price) { billing.buy(plan) }.apply { isEnabled=configured })
         }
     }
     private fun showPro() {
@@ -209,6 +298,12 @@ class MainActivity : ComponentActivity() {
         dialog.setOnDismissListener { if(proDialog===dialog) { proDialog=null;proOffers=null } }
         renderProOffers()
         content.addView(label(getString(R.string.pro_terms),12f,muted))
+        content.addView(button(getString(R.string.subscription_manage)) {
+            val uri=android.net.Uri.parse("https://play.google.com/store/account/subscriptions").buildUpon()
+                .appendQueryParameter("sku","translator_pro").appendQueryParameter("package",packageName).build()
+            try { startActivity(Intent(Intent.ACTION_VIEW,uri)) }
+            catch(_: android.content.ActivityNotFoundException) { message(getString(R.string.privacy_no_browser)) }
+        })
         dialog.show();billing.refresh()
     }
     private val settings by lazy { getSharedPreferences("app_settings",MODE_PRIVATE) }
@@ -310,6 +405,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window,false)
         volumeControlStream=android.media.AudioManager.STREAM_MUSIC
         dark=resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK==android.content.res.Configuration.UI_MODE_NIGHT_YES
         ink=if(dark)Color.rgb(10,17,29) else Color.rgb(243,247,251)
@@ -320,7 +416,7 @@ class MainActivity : ComponentActivity() {
         androidx.core.view.WindowInsetsControllerCompat(window,window.decorView).apply {
             isAppearanceLightStatusBars=!dark;isAppearanceLightNavigationBars=!dark
         }
-        offline.selectPack(SpeechPack.ALL[settings.getInt("speech_pack",0).coerceIn(0,2)]);slangEnabled=settings.getBoolean("slang",true)
+        offline.selectPack(SpeechPack.ALL[settings.getInt("speech_pack",0).coerceIn(0,2)]);slangEnabled=settings.getBoolean("slang",true);phraseOverrides=settings.getBoolean("conversation_pack_v2",false);localMt=settings.getBoolean("local_mt",false);contextMt=settings.getBoolean("context_mt",false);liveReadingSync=settings.getBoolean("live_reading_sync",true);adaptiveClauses=settings.getBoolean("adaptive_clauses",true)
         freeListening=settings.getBoolean("free_listening",true);cloudListening=if(freeListening) false else settings.getBoolean("cloud_listening",false);speedMode=settings.getInt("speed_mode",1).coerceIn(0,2);adaptiveReading=settings.getBoolean("adaptive",true);keepScreen=settings.getBoolean("screen",true)
         selectedSpeaker=settings.getInt("speaker",0).coerceIn(0,16)
         automaticSubtitleNames=settings.getBoolean("names",true)
@@ -387,29 +483,74 @@ class MainActivity : ComponentActivity() {
                     updateSpeechDirection();refreshReadiness();dialog.dismiss()
                     message(getString(R.string.speech_pack_selected))
                 }.setNegativeButton(getString(R.string.ui_039),null).show()
-        };micHero.addView(packChoice)
+        };legacySpeechOptions=vertical();legacySpeechOptions.addView(packChoice);micHero.addView(legacySpeechOptions)
         speedChoice=button(getString(R.string.ui_136,recognitionModes()[speedMode])) { chooseRecognitionSpeed() }
         micHero.addView(speedChoice)
         micHero.addView(label(getString(R.string.complete_speech_help),13f,muted))
-        micHero.addView(label(getString(R.string.speech_pack_help),13f,muted))
+        legacySpeechOptions.addView(label(getString(R.string.speech_pack_help),13f,muted))
+        micHero.addView(label(getString(R.string.live_engine_help),13f,muted))
+        micHero.addView(label(getString(R.string.live_preview_help),13f,mint))
         micHero.addView(CheckBox(this).apply {
             text=getString(R.string.slang_support);setTextColor(textInk);isChecked=slangEnabled
             setOnCheckedChangeListener { _,checked ->
                 stopSession();slangEnabled=checked;settings.edit().putBoolean("slang",checked).apply()
             }
         })
+        micHero.addView(CheckBox(this).apply {
+            text=getString(R.string.phrase_overrides);setTextColor(textInk);isChecked=phraseOverrides
+            setOnCheckedChangeListener { _,checked -> stopSession();phraseOverrides=checked;settings.edit().putBoolean("conversation_pack_v2",checked).apply() }
+        })
+        tinyMtChoice=CheckBox(this).apply {
+            text=getString(R.string.local_mt_option);setTextColor(textInk);isChecked=localMt
+            setOnCheckedChangeListener { _,checked ->
+                stopSession();localMt=checked;if(checked&&::contextChoice.isInitialized)contextChoice.isChecked=false
+                settings.edit().putBoolean("local_mt",checked).apply()
+                localMtStatus.text=getString(if(checked)R.string.local_mt_waiting else R.string.local_mt_fast)
+            }
+        }
+        micHero.addView(tinyMtChoice)
+        localMtStatus=label(getString(if(localMt)R.string.local_mt_waiting else R.string.local_mt_fast),12f,muted)
+        micHero.addView(localMtStatus)
+        contextChoice=CheckBox(this).apply {
+            text=getString(R.string.context_option);setTextColor(textInk);isChecked=contextMt
+            setOnCheckedChangeListener { _,checked ->
+                stopSession();contextMt=checked
+                if(checked)tinyMtChoice.isChecked=false
+                settings.edit().putBoolean("context_mt",checked).apply()
+                contextStatus.text=getString(if(checked)R.string.context_waiting else R.string.context_off)
+                if(!checked&&contextTranslatorLazy.isInitialized())contextTranslator.unload()
+            }
+        }
+        micHero.addView(contextChoice)
+        contextStatus=label(getString(if(contextMt)R.string.context_waiting else R.string.context_off),12f,muted)
+        micHero.addView(contextStatus)
+        micHero.addView(label(getString(R.string.context_help),12f,muted))
+        micHero.addView(button(getString(R.string.context_manage)) { manageContextPack() })
+        micHero.addView(CheckBox(this).apply {
+            text=getString(R.string.live_sync_reading);setTextColor(textInk);isChecked=liveReadingSync
+            setOnCheckedChangeListener { _,checked -> liveReadingSync=checked;if(::voice.isInitialized)voice.liveSync=checked;settings.edit().putBoolean("live_reading_sync",checked).apply() }
+        })
+        micHero.addView(CheckBox(this).apply {
+            text=getString(R.string.clause_mode);setTextColor(textInk);isChecked=adaptiveClauses
+            setOnCheckedChangeListener { _,checked ->
+                stopSession();adaptiveClauses=checked;settings.edit().putBoolean("adaptive_clauses",checked).apply()
+                clauseStatus.text=getString(if(checked)R.string.clause_waiting else R.string.clause_disabled)
+            }
+        })
+        clauseStatus=label(getString(if(adaptiveClauses)R.string.clause_waiting else R.string.clause_disabled),12f,mint)
+        micHero.addView(clauseStatus)
         freeChoice=CheckBox(this).apply {
             text=getString(R.string.free_listening);setTextColor(mint);isChecked=freeListening
-            setOnCheckedChangeListener { _,checked -> stopSession();freeListening=checked;if(checked) { cloudListening=false;if(::cloudChoice.isInitialized)cloudChoice.isChecked=false };settings.edit().putBoolean("free_listening",checked).putBoolean("cloud_listening",cloudListening).apply() }
+            setOnCheckedChangeListener { _,checked -> stopSession();freeListening=checked;if(checked) { cloudListening=false;if(::cloudChoice.isInitialized)cloudChoice.isChecked=false };settings.edit().putBoolean("free_listening",checked).putBoolean("cloud_listening",cloudListening).apply();updateListeningOptions() }
         };micHero.addView(freeChoice)
-        micHero.addView(button(getString(R.string.free_prepare)) { prepareFreeSpeech() })
+        micHero.addView(button(getString(R.string.free_prepare,(localSpeechModel.downloadBytes/1_000_000).toInt())) { prepareFreeSpeech() })
         cloudChoice=CheckBox(this).apply {
             text=getString(R.string.cloud_listening);setTextColor(mint);isChecked=cloudListening
-            setOnCheckedChangeListener { _,checked -> stopSession();cloudListening=checked;if(checked) { freeListening=false;if(::freeChoice.isInitialized)freeChoice.isChecked=false };settings.edit().putBoolean("cloud_listening",checked).putBoolean("free_listening",freeListening).apply() }
+            setOnCheckedChangeListener { _,checked -> stopSession();cloudListening=checked;if(checked) { freeListening=false;if(::freeChoice.isInitialized)freeChoice.isChecked=false };settings.edit().putBoolean("cloud_listening",checked).putBoolean("free_listening",freeListening).apply();updateListeningOptions() }
         };micHero.addView(cloudChoice)
         micHero.addView(button(getString(R.string.cloud_setup)) { configureProfessional() })
-        micHero.addView(button(getString(R.string.ui_023)) { prepareSpeechModel() })
-        micHero.addView(CheckBox(this).apply {
+        legacySpeechOptions.addView(button(getString(R.string.ui_023)) { prepareSpeechModel() })
+        legacySpeechOptions.addView(CheckBox(this).apply {
             text=getString(R.string.ui_024);setTextColor(mint);isChecked=true
             setOnCheckedChangeListener { _,checked ->
                 stopSession();offlineMode=checked;localSpeech.visibility=if(checked) View.GONE else View.VISIBLE
@@ -420,7 +561,7 @@ class MainActivity : ComponentActivity() {
             visibility=View.GONE
             text=getString(R.string.ui_027);setTextColor(muted);isChecked=false
             setOnCheckedChangeListener { _,_ -> if(active&&mode==Mode.MIC) { stopSession();message(getString(R.string.ui_028)) } }
-        };micHero.addView(localSpeech)
+        };legacySpeechOptions.addView(localSpeech)
         micHero.addView(button(getString(R.string.ui_029)) {
             if(active&&mode==Mode.MIC&&freeListening) { freeSpeech.finishUtterance();message(getString(R.string.ui_030)) }
             else if(active&&mode==Mode.MIC&&cloudListening)message(getString(R.string.cloud_final))
@@ -428,7 +569,7 @@ class MainActivity : ComponentActivity() {
             else if(active&&mode==Mode.MIC&&listening) requestSpeechFinal(epoch,micRound)
             else message(getString(R.string.ui_031))
         })
-        micHero.addView(button(getString(R.string.ui_032)) {
+        legacySpeechOptions.addView(button(getString(R.string.legacy_speech_test)) {
             if(!modelReady) { message(getString(R.string.ui_033)) }
             else {
                 stopSession()
@@ -443,6 +584,7 @@ class MainActivity : ComponentActivity() {
                     }.setNegativeButton(getString(R.string.ui_039),null).show()
             }
         })
+        updateListeningOptions()
         hint=label("",14f,muted);root.addView(hint)
         val controls=card(root)
         status=label(getString(R.string.ui_040),15f);controls.addView(status)
@@ -455,8 +597,7 @@ class MainActivity : ComponentActivity() {
             text=getString(R.string.ui_045);setTextColor(textInk);isChecked=settings.getBoolean("auto_voice",true)
             setOnCheckedChangeListener { _,checked ->
                 if(!checked) { deferredSystemVoice.clear();if(::voice.isInitialized)voice.stop() }
-                if(checked&&active&&mode==Mode.MIC&&(freeListening||cloudListening)&&!headphones.isChecked) confirmListeningVoice {}
-                else if(checked&&active&&mode==Mode.MIC&&offlineMode) message(getString(R.string.ui_046))
+                if(checked&&active&&mode==Mode.MIC)message(getString(R.string.live_reading_enabled))
             }
         };controls.addView(autoVoice)
         voiceStatus=label("",13f,mint);controls.addView(voiceStatus)
@@ -468,14 +609,9 @@ class MainActivity : ComponentActivity() {
             }
         };controls.addView(region)
         headphones=CheckBox(this).apply {
-            text=getString(R.string.ui_049);setTextColor(muted);isChecked=false
-            setOnCheckedChangeListener { _,checked ->
-                if(active&&mode==Mode.MIC) {
-                    if(offlineMode) { message(if(checked) getString(R.string.ui_050) else getString(R.string.ui_051)) }
-                    else if(!checked&&voice.count>0) pauseMicrophone() else scheduleListening()
-                }
-            }
+            text=getString(R.string.audio_route_auto);setTextColor(muted);isChecked=false;isEnabled=false
         };controls.addView(headphones)
+        updateAudioRoute()
         controls.addView(button(getString(R.string.test_turkish_voice)) {
             if(active)stopSession()
             voice.professional=null;voice.setTargetLanguage("tr")
@@ -565,19 +701,26 @@ class MainActivity : ComponentActivity() {
             else message(if(phraseBook.add(PhraseBook.Phrase(lastSource,lastTranslation))) getString(R.string.ui_087) else getString(R.string.ui_088))
         }))
         row(output,listOf(button(getString(R.string.ui_089)) { translateTypedText() },button(getString(R.string.ui_090)) { showSavedPhrases() }))
-        val recent=card(root);recent.addView(label(getString(R.string.ui_091),11f,muted))
-        history=label(getString(R.string.ui_092),14f);recent.addView(history)
-        row(recent,listOf(button(getString(R.string.ui_093)) { shareHistory() },button(getString(R.string.ui_094)) { log.clear();history.text=getString(R.string.ui_095) }))
         root.addView(button(getString(R.string.ui_096)) {
             try { startActivity(Intent("com.android.settings.TTS_SETTINGS")) }
             catch (_: Exception) { message(getString(R.string.ui_097)) }
         })
-        val scroll=ScrollView(this).apply { isFillViewport=true;clipToPadding=false;addView(root) }
+        val recent=card(root)
+        recent.addView(label(getString(R.string.history_title),20f).apply { setTypeface(null,Typeface.BOLD) })
+        recent.addView(label(getString(R.string.history_help),12f,muted))
+        historyCount=label("",12f,mint);recent.addView(historyCount)
+        history=label(getString(R.string.ui_092),14f).apply { setTextIsSelectable(true) };recent.addView(history)
+        recent.addView(button(getString(R.string.history_all)) { showTranslationHistory() })
+        row(recent,listOf(button(getString(R.string.ui_093)) { shareHistory() },button(getString(R.string.ui_094)) {
+            log.clear();persistHistory();renderHistory()
+        }))
+        val scroll=ScrollView(this).apply { isFillViewport=true;clipToPadding=true;setBackgroundColor(ink);addView(root) }
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(scroll) { view,insets ->
             val bars=insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() or androidx.core.view.WindowInsetsCompat.Type.displayCutout())
-            view.setPadding(bars.left,bars.top,bars.right,bars.bottom);insets
+            view.setPadding(bars.left,bars.top,bars.right,bars.bottom);androidx.core.view.WindowInsetsCompat.CONSUMED
         }
         setContentView(scroll)
+        androidx.core.view.ViewCompat.requestApplyInsets(scroll)
         voice=VoicePlayer(this,{
             if(::voice.isInitialized&&voice.ready&&voice.count==0&&!restoredVoice) {
                 restoredVoice=true
@@ -586,15 +729,15 @@ class MainActivity : ComponentActivity() {
             refreshMetrics();if(active&&mode==Mode.MIC) scheduleListening() },
             { if(active&&mode==Mode.MIC&&!freeListening&&!cloudListening&&!offlineMode&&!headphones.isChecked) pauseMicrophone() },{ message(it) })
         voice.rate=settings.getFloat("tempo_rate",.9f+settings.getInt("rate_step",2)*.1f);voice.pitch=.85f+settings.getInt("pitch_step",3)*.05f
-        voice.adaptiveSpeed=adaptiveReading;voice.professional=professional
+        voice.adaptiveSpeed=adaptiveReading;voice.professional=professional;updateSpeechDirection()
         selectMode(Mode.CAMERA)
         if(savedInstanceState!=null) {
             lastSource=savedInstanceState.getString("last_source").orEmpty();lastTranslation=savedInstanceState.getString("last_translation").orEmpty()
             lastSpeaker=savedInstanceState.getInt("last_speaker",0)
             if(lastTranslation.isNotBlank()) { source.text=lastSource;result.text=lastTranslation }
-            savedInstanceState.getStringArrayList("recent_phrases")?.forEach { log.addLast(it) }
-            if(log.isNotEmpty())history.text=log.take(4).joinToString("\n\n")
+            savedInstanceState.getStringArrayList("recent_phrases")?.take(100)?.forEach { log.addLast(it.take(3000)) }
         }
+        restoreHistory();renderHistory()
         if(!region.isChecked)subtitleArea.visibility=View.GONE
         if(savedInstanceState!=null)selectMode(Mode.entries.getOrElse(savedInstanceState.getInt("mode",0)) { Mode.CAMERA })
         com.google.mlkit.common.model.RemoteModelManager.getInstance()
@@ -634,7 +777,7 @@ class MainActivity : ComponentActivity() {
             .setItems(items.map { it.translation.take(80) }.toTypedArray()) { _,index ->
                 val item=items[index]
                 AlertDialog.Builder(this).setTitle(getString(R.string.ui_105)).setMessage(item.source+"\n\n"+item.translation)
-                    .setPositiveButton("Sesli oku") { _,_ -> enqueueVoice(item.translation) }
+                    .setPositiveButton(getString(R.string.saved_read_aloud)) { _,_ -> enqueueVoice(item.translation) }
                     .setNeutralButton(getString(R.string.ui_084)) { _,_ -> copyTranslation(item.translation) }
                     .setNegativeButton(getString(R.string.ui_106),null).show()
             }.setNeutralButton(getString(R.string.ui_107)) { _,_ ->
@@ -664,6 +807,23 @@ class MainActivity : ComponentActivity() {
             .setMessage(getString(R.string.ui_118))
             .setPositiveButton(getString(R.string.ui_119),null).show()
     }
+    private fun showPrivacy() {
+        val url=getString(R.string.privacy_policy_url)
+        val contact=getString(R.string.support_email)
+        val text=getString(R.string.privacy_summary)+(if(contact.isNotBlank()) "\n\n"+contact else "")
+        val dialog=AlertDialog.Builder(this).setTitle(getString(R.string.privacy_title)).setMessage(text)
+            .setNegativeButton(getString(R.string.pro_close),null)
+        if(url.startsWith("https://"))dialog.setPositiveButton(getString(R.string.privacy_open)) { _,_ ->
+            try { startActivity(Intent(Intent.ACTION_VIEW,android.net.Uri.parse(url))) }
+            catch(_: android.content.ActivityNotFoundException) { message(getString(R.string.privacy_no_browser)) }
+        }
+        dialog.setNeutralButton(getString(R.string.license_title)) { _,_ ->
+            val notice=assets.open("licenses/THIRD_PARTY_NOTICES.txt").bufferedReader().use { it.readText() }
+            AlertDialog.Builder(this).setTitle(getString(R.string.license_title)).setMessage(notice)
+                .setPositiveButton(getString(R.string.pro_close),null).show()
+        }
+        dialog.show()
+    }
     private fun showSettings() {
         val view=vertical().apply { setPadding(dp(20),dp(12),dp(20),dp(12)) }
         view.addView(button(getString(R.string.ui_120)) {
@@ -684,6 +844,26 @@ class MainActivity : ComponentActivity() {
                 settings.edit().putInt("text_size",sizes[index]).apply();result.textSize=sizes[index].toFloat();dialog.dismiss()
             }.show()
         })
+        view.addView(button(getString(R.string.local_engine_title)) {
+            val models=LocalSpeechModels.all
+            val labels=arrayOf(getString(R.string.local_engine_giga),getString(R.string.local_engine_light))
+            val current=LocalSpeechModels.forId(settings.getString("local_speech_engine",null))
+            AlertDialog.Builder(this).setTitle(getString(R.string.local_engine_title))
+                .setSingleChoiceItems(labels,models.indexOf(current)) { dialog,index ->
+                    if(models[index]!=current) {
+                        stopSession();settings.edit().putString("local_speech_engine",models[index].id).apply()
+                        dialog.dismiss();recreate()
+                    } else dialog.dismiss()
+                }.setNegativeButton(getString(R.string.ui_106),null).show()
+        })
+        view.addView(label(getString(R.string.local_engine_help),13f,muted))
+        view.addView(CheckBox(this).apply {
+            text=getString(R.string.listen_trace_enable);setTextColor(textInk);isChecked=listeningTrace.enabled
+            setOnCheckedChangeListener { _,checked -> listeningTrace.enabled=checked }
+        })
+        view.addView(label(getString(R.string.listen_trace_help),12f,muted))
+        view.addView(button(getString(R.string.listen_trace_share)) { shareListeningTrace() })
+        view.addView(button(getString(R.string.privacy_title)) { showPrivacy() })
         view.addView(button(getString(R.string.professional_title)) { configureProfessional() })
         view.addView(button(getString(R.string.tempo_title)) {
             val labels=arrayOf(getString(R.string.tempo_auto),getString(R.string.tempo_slow),getString(R.string.tempo_normal),getString(R.string.tempo_fast),getString(R.string.tempo_very_fast))
@@ -719,6 +899,48 @@ class MainActivity : ComponentActivity() {
                 profilePrefs.edit().putInt("style_${slot}",index).apply();dialog.dismiss()
                 enqueueVoice("Bu konuşmacının ton ve okuma tarzı böyle duyulacak.",slot)
             }.setNegativeButton(getString(R.string.ui_106),null).show()
+    }
+    private fun persistHistory() {
+        val entries=org.json.JSONArray();log.take(100).forEach { entries.put(it.take(3000)) }
+        settings.edit().putString("translation_history_v1",entries.toString()).apply()
+    }
+    private fun restoreHistory() {
+        val stored=settings.getString("translation_history_v1",null)
+        if(stored==null) { if(log.isNotEmpty())persistHistory();return }
+        try {
+            val entries=org.json.JSONArray(stored);val restored=mutableListOf<String>()
+            for(i in 0 until minOf(100,entries.length())) {
+                val item=entries.optString(i,"").take(3000);if(item.isNotBlank())restored.add(item)
+            }
+            log.clear();restored.forEach { log.addLast(it) }
+        } catch(_: org.json.JSONException) { /* A bad saved payload must not prevent app startup. */ }
+    }
+    private fun renderHistory() {
+        if(!::history.isInitialized)return
+        historyCount.text=getString(R.string.history_count,log.size.toString())
+        history.text=if(log.isEmpty())getString(R.string.ui_092) else log.take(6).joinToString("\n\n────────\n\n")
+    }
+    private fun showTranslationHistory() {
+        if(log.isEmpty()) { message(getString(R.string.ui_146));return }
+        val content=label(log.joinToString("\n\n────────\n\n"),15f).apply {
+            setTextIsSelectable(true);setPadding(dp(18),dp(12),dp(18),dp(12))
+        }
+        AlertDialog.Builder(this).setTitle(getString(R.string.history_title))
+            .setView(ScrollView(this).apply { addView(content) })
+            .setPositiveButton(getString(R.string.ui_106),null).show()
+    }
+    private fun shareListeningTrace() {
+        val rows=listeningTrace.snapshot()
+        if(rows.isEmpty()) { message(getString(R.string.listen_trace_empty));return }
+        val origin=rows.first().at
+        val events=org.json.JSONArray()
+        rows.forEach { event -> events.put(org.json.JSONObject().put("ms",event.at-origin)
+            .put("stage",event.stage).put("text",event.text).put("detail",event.detail)) }
+        val installedVersion=runCatching { packageManager.getPackageInfo(packageName,0).versionName }.getOrNull().orEmpty()
+        val report=org.json.JSONObject().put("version",installedVersion).put("events",events).toString(2)
+        try { startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+            type="text/plain";putExtra(Intent.EXTRA_TEXT,report)
+        },getString(R.string.listen_trace_share))) } catch(_: Exception) { message(getString(R.string.ui_148)) }
     }
     private fun shareHistory() {
         if(log.isEmpty()) { message(getString(R.string.ui_146));return }
@@ -760,6 +982,9 @@ class MainActivity : ComponentActivity() {
             }.setNegativeButton(getString(R.string.ui_106),null).show()
     }
     private fun recognitionModes()=arrayOf(getString(R.string.ui_133),getString(R.string.ui_134),getString(R.string.ui_135))
+    private fun updateListeningOptions() {
+        if(::legacySpeechOptions.isInitialized)legacySpeechOptions.visibility=if(freeListening||cloudListening) View.GONE else View.VISIBLE
+    }
     private fun chooseRecognitionSpeed() {
         val choices=recognitionModes()
         AlertDialog.Builder(this).setTitle(getString(R.string.ui_137)).setSingleChoiceItems(choices,speedMode) { dialog,index ->
@@ -792,15 +1017,13 @@ class MainActivity : ComponentActivity() {
     }
     private fun prepareModel() {
         prepare.isEnabled=false;message(getString(R.string.ui_166))
-        translator.downloadModelIfNeeded().continueWithTask { task ->
-            if(!task.isSuccessful) throw (task.exception ?: IllegalStateException("Translation download failed"))
-            reverseTranslator.downloadModelIfNeeded()
-        }.addOnSuccessListener {
+        translationRuntime.prepare().addOnSuccessListener {
             if(alive) { modelReady=true;refreshReadiness();prepare.isEnabled=true;prepare.text=getString(R.string.ui_167);message(getString(R.string.ui_168)) }
         }.addOnFailureListener { if(alive) { prepare.isEnabled=true;message(getString(R.string.ui_169)) } }
     }
     private fun primaryAction(serverChecked: Boolean=false) {
         if(!visible||!alive)return
+        if(contextPreparing) { stopSession();message(getString(R.string.ui_044));return }
         if(active) { stopSession();message(getString(R.string.ui_044));return }
         if(mode==Mode.MIC&&freeListening&&!freeSpeech.ready()) { prepareFreeSpeech();return }
         if(mode==Mode.MIC&&!freeListening&&cloudListening&&!professional.configured) { configureProfessional();return }
@@ -842,7 +1065,7 @@ class MainActivity : ComponentActivity() {
     @androidx.annotation.OptIn(markerClass=[ExperimentalGetImage::class, androidx.camera.view.TransformExperimental::class])
     private fun startCamera() {
         if(mode!=Mode.CAMERA||!visible||!alive)return
-        stopSession();active=true;beginSession();start.text=getString(R.string.ui_172);val token=epoch;message(getString(R.string.ui_173))
+        stopSession();active=true;beginSession();start.text=getString(if(mode==Mode.MIC)R.string.microphone_stop else R.string.ui_172);val token=epoch;message(getString(R.string.ui_173))
         val future=ProcessCameraProvider.getInstance(this)
         future.addListener({
             if(valid(token)&&active) try {
@@ -925,10 +1148,11 @@ class MainActivity : ComponentActivity() {
         pumpTranslation();refreshMetrics();return accepted
     }
     private fun pumpTranslation() {
-        if(translating||partialBusy||!alive)return
+        if(translating||!alive)return
         val line=retryLine?.also { retryLine=null }?:waiting.take()?:return
         val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;val cameraToken=cameraRevision;translating=true
-        val translationTask=if(!professional.configured&&mode==Mode.MIC&&offlineMode&&line.text==cachedSource&&cachedTranslation.isNotBlank())
+        if(active&&mode==Mode.MIC)listeningTrace.record(SystemClock.elapsedRealtime(),"translation_start",line.text,"queue=${waiting.size}")
+        val translationTask=if(!professional.configured&&!usesLocalMt()&&!usesContextMt()&&phraseTranslation(line.text)==null&&mode==Mode.MIC&&offlineMode&&line.text==cachedSource&&cachedTranslation.isNotBlank())
             com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translateSmart(line.text)
         translationTask.addOnSuccessListener { translated ->
             if(valid(token) && (!fromCamera || cameraToken==cameraRevision&&SystemClock.elapsedRealtime()-line.seenAt<=(if(professional.configured) 6000 else 1500))) {
@@ -936,31 +1160,36 @@ class MainActivity : ComponentActivity() {
                     if(!billing.pro)imageTrial.consume()
                     pendingTrialImage=null;saveTrialUsage(true);refreshPro()
                 }
-                completed++;lastLag=SystemClock.elapsedRealtime()-line.seenAt
+                if(active&&mode==Mode.MIC)listeningTrace.record(SystemClock.elapsedRealtime(),"translation_final",translated,"sourceAgeMs=${SystemClock.elapsedRealtime()-line.seenAt}")
+                lastTranslationIssue=null;completed++;lastLag=SystemClock.elapsedRealtime()-line.seenAt
                 lastTranslation=translated;lastSource=line.text;lastSpeaker=line.speakerSlot
                 if(active&&mode==Mode.MIC) { liveCaption.addLast(translated);while(liveCaption.size>4)liveCaption.removeFirst() }
                 if(!(active&&mode==Mode.MIC)||line.displayRevision>=lastSpeechDisplayRevision) {
                     if(active&&mode==Mode.MIC)lastSpeechDisplayRevision=line.displayRevision
                     result.text=if(active&&mode==Mode.MIC) liveCaption.joinToString(" ") else if(line.speakerName.isBlank()) translated else getString(R.string.ui_180, (line.speakerName).toString(), (line.speakerSlot).toString(), (translated).toString())
                 }
-                log.addFirst("${if(line.speakerName.isBlank()) getString(R.string.ui_068, (line.speakerSlot).toString()) else line.speakerName} • ${line.text}\n${translated}")
+                val time=java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT,java.text.DateFormat.MEDIUM).format(java.util.Date())
+                log.addFirst("$time • ${if(line.speakerName.isBlank()) getString(R.string.ui_068, (line.speakerSlot).toString()) else line.speakerName}\n${line.text}\n${translated}".take(3000))
                 while(log.size>100) log.removeLast()
-                history.text=log.take(4).joinToString("\n\n")
-                if(autoVoice.isChecked) enqueueVoice(translated,line.speakerSlot,line.sourceMillis)
+                persistHistory();renderHistory()
+                if(autoVoice.isChecked) enqueueVoice(translated,line.speakerSlot,line.sourceMillis,line.seenAt)
                 if(active&&mode==Mode.MIC&&offlineMode) message(getString(R.string.ui_181))
                 else if(active&&mode==Mode.CAMERA) message(getString(R.string.ui_182))
                 else if(!active) message(getString(R.string.ui_183))
             }
-        }.addOnFailureListener {
+        }.addOnFailureListener { error ->
             if(valid(token)) {
+                if(active&&mode==Mode.MIC)listeningTrace.record(SystemClock.elapsedRealtime(),"translation_error",line.text,error.javaClass.simpleName)
                 if(active&&mode==Mode.MIC&&line.attempts<2) { retryLine=line.copy(attempts=line.attempts+1);message(getString(R.string.speech_translation_retry)) }
-                else { gate.release(line.text);recent.forget(line.text);rejected++;message(getString(R.string.ui_184)) }
+                else {
+                    gate.release(line.text);recent.forget(line.text);rejected++
+                    lastTranslationIssue=getString(R.string.translation_failed_line,line.text.take(100));message(requireNotNull(lastTranslationIssue))
+                }
             }
         }.addOnCompleteListener { if(valid(token)) { translating=false;refreshMetrics();pumpTranslation();if(mode==Mode.MIC) { scheduleListening();if(pendingPartial.isNotBlank()) schedulePartial(0) } } }
     }
-    private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker,sourceMillis: Long=0) {
+    private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker,sourceMillis: Long=0,sourceAt: Long=SystemClock.elapsedRealtime()) {
         if(text.isBlank())return
-        if(active&&mode==Mode.MIC&&(freeListening||cloudListening)&&!headphones.isChecked) { autoVoice.isChecked=false;message(getString(R.string.cloud_headphones));return }
         if(active&&mode==Mode.MIC&&!freeListening&&!cloudListening&&!offlineMode&&!headphones.isChecked&&listening) {
             if(deferredSystemVoice.size<16)deferredSystemVoice.addLast(DeferredVoice(text,speakerSlot,sourceMillis))
             else { rejected++;message(getString(R.string.ui_186)) }
@@ -968,7 +1197,9 @@ class MainActivity : ComponentActivity() {
         }
         if(!voice.ready&&voice.professional?.configured!=true) { message(getString(R.string.ui_185));return }
         val style=if(speakerSlot==0) 0 else profilePrefs.getInt("style_${speakerSlot}",(speakerSlot-1)%resources.getStringArray(R.array.speaker_styles).size)
-        if(!voice.add(text, active&&mode==Mode.CAMERA,if(translatingTurkish()) null else speakerVoiceName(speakerSlot),voice.pitch*SpeakerStyle.pitch(style),voice.rate*SpeakerStyle.rate(style),sourceMillis)) { rejected++;message(voice.lastFailure ?: getString(R.string.ui_186)) }
+        voice.liveMode=active&&mode==Mode.MIC
+        if(active&&mode==Mode.MIC)listeningTrace.record(SystemClock.elapsedRealtime(),"voice_queue",text,"waitingMs=${voice.estimatedWaitingMillis}")
+        if(!voice.add(text, active&&mode==Mode.CAMERA,if(translatingTurkish()) null else speakerVoiceName(speakerSlot),voice.pitch*SpeakerStyle.pitch(style),voice.rate*SpeakerStyle.rate(style),sourceMillis,sourceAt)) { rejected++;message(voice.lastFailure ?: getString(R.string.ui_186)) }
         refreshMetrics()
     }
     private fun configureProfessional() {
@@ -1016,6 +1247,8 @@ class MainActivity : ComponentActivity() {
             }
         }
         metrics.text=getString(R.string.ui_187, (if(active) getString(R.string.ui_188, ((SystemClock.elapsedRealtime()-sessionStarted)/1000).toString()) else "").toString(), (completed).toString(), (waiting.size + if(translating) 1 else 0).toString(), (sounds).toString(), (lastLag/1000.0).toString(), (rejected).toString())+if(::voice.isInitialized) "\n"+getString(R.string.tempo_status,java.lang.String.format(java.util.Locale.ROOT,"%.2f",voice.currentRate),(voice.estimatedWaitingMillis/1000).toString()) else ""
+        if(::voice.isInitialized&&mode==Mode.MIC&&voice.skippedLiveSegments>0)metrics.append("\n"+getString(R.string.live_skipped,voice.skippedLiveSegments.toString()))
+        lastTranslationIssue?.let { metrics.append("\n"+it) }
     }
     private fun prepareSpeechModel() {
         stopSession()
@@ -1030,7 +1263,7 @@ class MainActivity : ComponentActivity() {
         stopSession()
         if(!offline.ready()) { prepareSpeechModel();return }
         if(!modelReady) { prepareModel();return }
-        active=true;beginSession();val token=epoch;start.text=getString(R.string.ui_172)
+        active=true;beginSession();val token=epoch;start.text=getString(if(mode==Mode.MIC)R.string.microphone_stop else R.string.ui_172)
         signal.isIndeterminate=false;signal.progress=0;signalLabel.text=getString(R.string.ui_193)
         source.text=getString(R.string.ui_194);result.text=getString(R.string.ui_195)
         message(getString(R.string.ui_196))
@@ -1052,20 +1285,28 @@ class MainActivity : ComponentActivity() {
                 } else {
                     offline.stop();offlineFailures++
                     microphoneTrial.stop(SystemClock.elapsedRealtime());saveTrialUsage(true)
-                    handler.removeCallbacks(speechPulse);latestRecognized="";sourceBeganAt=0;sourceWindowMillis=0
-                    liveSegments.reset();pendingPartial="";partialUtterance++
+                    handler.removeCallbacks(speechPulse);resetSpeechPreview()
                     message(getString(R.string.speech_recovering))
                     handler.postDelayed({ if(valid(token)&&active&&mode==Mode.MIC)runOfflineCapture(token) },minOf(10000L,1000L*offlineFailures))
                 }
             }
         })
     }
-    private fun processLiveSpeech(text: String,final: Boolean) {
+    private fun processLiveSpeech(text: String,final: Boolean,eventId: String?=null) {
         if(!active||mode!=Mode.MIC)return
+        if(final&&!finalTurns.accept(eventId))return
+        if(final&&text.isBlank()) {
+            resetSpeechPreview()
+            source.text=if(liveCaption.isNotEmpty())lastSource else getString(R.string.ui_194)
+            result.text=if(liveCaption.isNotEmpty())liveCaption.joinToString(" ") else getString(R.string.ui_195)
+            return
+        }
         val now=SystemClock.elapsedRealtime()
+        if(!freeListening&&text.isNotBlank())voice.noteSourceSpeech(now)
         if(!final&&text.isNotBlank()&&sourceBeganAt==0L)sourceBeganAt=now
         sourceWindowMillis=if(final&&sourceBeganAt>0) (now-sourceBeganAt).coerceAtLeast(500) else 0
         if(final)sourceBeganAt=0
+        if(text!=latestRecognized||final)listeningTrace.record(now,if(final) "asr_confirmed" else "asr_draft",text)
         source.text=text
         if(text!=latestRecognized||final)speechDisplayRevision++
         if(!final&&latestRecognized.isBlank()&&text.isNotBlank())partialUtterance++
@@ -1076,80 +1317,134 @@ class MainActivity : ComponentActivity() {
         if(preview!=pendingPartial||pendingPartialFinal!=final)partialRevision++
         pendingPartial=preview;pendingPartialFinal=final
         partialStability.observe(preview,now)
-        if(final) { handler.removeCallbacks(partialTask);partialScheduled=false }
+        if(final) {
+            handler.removeCallbacks(partialTask);partialScheduled=false
+            previewTicket++;partialBusy=false;pendingPartial="";partialStability.reset()
+        }
         update.chunks.forEach { accept(it,SystemClock.elapsedRealtime()) }
-        if(preview.isNotBlank()&&(preview!=cachedSource||final)) schedulePartial(80)
+        if(!final&&preview.isNotBlank()&&preview!=cachedSource) schedulePartial(80)
     }
     private fun schedulePartial(delay: Long) {
         if(!partialScheduled) { partialScheduled=true;handler.postDelayed(partialTask,delay) }
     }
     private fun translatePartial() {
-        if(!alive||!active||mode!=Mode.MIC||pendingPartial.isBlank()||partialBusy||translating||waiting.size>0||!modelReady)return
+        // Preview has its own bounded native client; a queued final must not freeze live captions.
+        if(!alive||!active||mode!=Mode.MIC||pendingPartial.isBlank()||partialBusy||!modelReady)return
         if(freeListening&&!pendingPartialFinal&&!partialStability.ready(pendingPartial,SystemClock.elapsedRealtime())) { schedulePartial(100);return }
         val token=epoch;val revision=partialRevision;val utterance=partialUtterance;val text=pendingPartial;val finalPreview=pendingPartialFinal;val previewStarted=SystemClock.elapsedRealtime();val displayRevision=speechDisplayRevision
-        partialBusy=true
+        partialBusy=true;val ticket=++previewTicket
         if(freeListening&&!finalPreview)partialStability.submitted(SystemClock.elapsedRealtime())
-        val task=if(text==cachedSource&&cachedTranslation.isNotBlank()) com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translateSmart(text,false)
+        val task=if(text==cachedSource&&cachedTranslation.isNotBlank()) com.google.android.gms.tasks.Tasks.forResult(cachedTranslation) else translateSmart(text,false,true)
         task.addOnSuccessListener { translated ->
-            if(valid(token)) { cachedSource=text;cachedTranslation=translated }
-            if(valid(token)&&active&&utterance==partialUtterance&&displayRevision>=lastSpeechDisplayRevision&&finalPreview==pendingPartialFinal&&(pendingPartial==text||pendingPartial.startsWith("$text "))) {
+            if(valid(token)&&ticket==previewTicket) { cachedSource=text;cachedTranslation=translated }
+            if(valid(token)&&ticket==previewTicket&&active&&PreviewDelivery.allows(utterance==partialUtterance,displayRevision,lastSpeechDisplayRevision,finalPreview,pendingPartialFinal,pendingPartial)) {
+                listeningTrace.record(SystemClock.elapsedRealtime(),"translation_draft",translated,"inferenceMs=${SystemClock.elapsedRealtime()-previewStarted}")
                 lastSpeechDisplayRevision=displayRevision
                 lastLag=SystemClock.elapsedRealtime()-previewStarted;refreshMetrics()
                 result.text=if(finalPreview) translated else getString(R.string.ui_201, (translated).toString())
             }
         }.addOnCompleteListener {
-            if(valid(token)) {
+            if(valid(token)&&ticket==previewTicket) {
                 partialBusy=false;pumpTranslation()
-                if(revision!=partialRevision&&pendingPartial.isNotBlank()) schedulePartial(100)
+                if(pendingPartial.isNotBlank()&&(revision!=partialRevision||!it.isSuccessful)) schedulePartial(if(it.isSuccessful)100 else 500)
             }
         }
     }
-    private fun confirmListeningVoice(continueListening: ()->Unit) {
-        AlertDialog.Builder(this).setTitle(getString(R.string.test_turkish_voice))
-            .setMessage(getString(R.string.listening_voice_choice))
-            .setPositiveButton(getString(R.string.listening_with_headphones)) { _,_ ->
-                headphones.isChecked=true;autoVoice.isChecked=true;continueListening()
-            }.setNegativeButton(getString(R.string.listening_text_only)) { _,_ ->
-                autoVoice.isChecked=false;continueListening()
-            }.show()
+    private fun resetSpeechPreview() {
+        previewTicket++;partialRevision++;partialUtterance++;partialBusy=false
+        handler.removeCallbacks(partialTask);partialScheduled=false
+        latestRecognized="";pendingPartial="";pendingPartialFinal=false
+        cachedSource="";cachedTranslation="";sourceBeganAt=0;sourceWindowMillis=0
+        partialStability.reset();liveSegments.reset()
     }
     private fun prepareFreeSpeech() {
         stopSession();message(getString(R.string.free_downloading,"0"))
         freeSpeech.prepare({ percent -> message(getString(R.string.free_downloading,percent.toString())) },
             { message(getString(R.string.free_model_ready));refreshReadiness() },{ message(it) })
     }
+    private fun manageContextPack() {
+        stopSession()
+        if(contextPack.ready()) {
+            AlertDialog.Builder(this).setTitle(getString(R.string.context_option)).setMessage(getString(R.string.context_installed))
+                .setPositiveButton(getString(R.string.context_enable)) { _,_ -> contextChoice.isChecked=true }
+                .setNeutralButton(getString(R.string.context_delete)) { _,_ ->
+                    contextChoice.isChecked=false
+                    if(contextTranslatorLazy.isInitialized())contextTranslator.unload(true)
+                    if(contextPack.remove())contextStatus.text=getString(R.string.context_off)
+                }.setNegativeButton(getString(R.string.ui_106),null).show()
+            return
+        }
+        if(!contextTranslator.eligible()) { contextStatus.text=getString(R.string.context_unsupported);return }
+        contextDialog=AlertDialog.Builder(this).setTitle(getString(R.string.context_manage)).setMessage(getString(R.string.context_download_help))
+            .setPositiveButton(getString(R.string.context_download)) { _,_ ->
+                val progress=label(getString(R.string.context_progress,"0"),14f,textInk).apply { setPadding(dp(20),dp(20),dp(20),dp(20)) }
+                val dialog=AlertDialog.Builder(this).setTitle(getString(R.string.context_manage)).setView(progress)
+                    .setNegativeButton(getString(R.string.ui_106)) { _,_ -> contextPack.cancel() }.create()
+                dialog.setOnCancelListener { contextPack.cancel() };dialog.setCanceledOnTouchOutside(false);dialog.show();contextDialog=dialog
+                contextPack.download({ percent -> if(alive&&dialog.isShowing)progress.text=getString(R.string.context_progress,percent.toString()) },{ ok ->
+                    dialog.dismiss();if(!alive||!visible)return@download
+                    contextStatus.text=getString(if(ok)R.string.context_waiting else R.string.context_download_failed)
+                    if(ok)contextChoice.isChecked=true
+                })
+            }.setNegativeButton(getString(R.string.ui_106),null).show()
+    }
     private fun startFreeMicrophone() {
         stopSession()
         if(!freeSpeech.ready()) { prepareFreeSpeech();return }
         if(offline.pack.language!="en") { offline.selectPack(SpeechPack.FAST);packChoice.text=getString(R.string.speech_model_choice,resources.getStringArray(R.array.speech_packs)[0]);updateSpeechDirection() }
-        if(autoVoice.isChecked&&!headphones.isChecked) { confirmListeningVoice { startFreeMicrophone() };return }
         updateSpeechDirection();voice.refreshLanguage();voice.professional=null
         if(autoVoice.isChecked&&!voice.ready) { message(getString(R.string.install_turkish_voice));refreshMetrics();return }
-        active=true;beginSession();start.text=getString(R.string.ui_172);runFreeCapture(epoch)
+        listeningTrace.clear();listeningTrace.record(SystemClock.elapsedRealtime(),"session","","engine=${localSpeechModel.id};speed=$speedMode;phrases=$phraseOverrides;localMt=$localMt;contextMt=$contextMt;voice=${autoVoice.isChecked}")
+        if(usesContextMt()) {
+            if(!contextPack.ready()) { manageContextPack();return }
+            if(!contextTranslator.ready) {
+                val token=epoch;contextPreparing=true
+                start.text=getString(R.string.context_warming);contextStatus.text=getString(R.string.context_warming)
+                contextTranslator.prepare().addOnCompleteListener { task ->
+                    if(!valid(token))return@addOnCompleteListener
+                    contextPreparing=false
+                    if(task.isSuccessful)contextStatus.text=getString(R.string.context_ready,task.result)
+                    else contextStatus.text=getString(R.string.context_fallback)
+                    // Preparation never consumes the trial. Capture begins only after preparation finishes.
+                    active=true;beginSession();start.text=getString(if(mode==Mode.MIC)R.string.microphone_stop else R.string.ui_172);runFreeCapture(token)
+                }
+                return
+            }
+        }
+        active=true;beginSession();start.text=getString(if(mode==Mode.MIC)R.string.microphone_stop else R.string.ui_172);runFreeCapture(epoch)
     }
     private fun runFreeCapture(token: Long) {
         if(!valid(token)||!active||!freeListening||mode!=Mode.MIC)return
         message(getString(R.string.free_starting))
         freeSpeech.start(speedMode,{
             if(valid(token)&&active) { countLiveUse();message(getString(R.string.free_active));handler.removeCallbacks(speechPulse);handler.post(speechPulse) }
-        },{ text,final -> if(valid(token)&&active)processLiveSpeech(text,final) },
+        },{ text,final,eventId -> if(valid(token)&&active)processLiveSpeech(text,final,eventId) },
             { level -> if(valid(token)&&active) { signal.progress=level;meter.level=level } },{ error ->
             if(valid(token)&&active) {
                 if(error==getString(R.string.free_capture_failed)&&freeSpeech.ready()&&has(Manifest.permission.RECORD_AUDIO)) {
                     freeSpeech.stop();microphoneTrial.stop(SystemClock.elapsedRealtime());saveTrialUsage(true)
-                    handler.removeCallbacks(speechPulse);latestRecognized="";sourceBeganAt=0;pendingPartial="";partialUtterance++
+                    handler.removeCallbacks(speechPulse);resetSpeechPreview()
                     message(getString(R.string.speech_recovering))
                     handler.postDelayed({ if(valid(token)&&active)runFreeCapture(token) },2500)
                 } else { stopSession();message(error) }
             }
-        })
+        },onSignal={ health ->
+            if(valid(token)&&active)signalLabel.text=when {
+                health.backlogMillis>800 -> getString(R.string.capture_lag,health.backlogMillis.toString())
+                health.clippedPortion>.01 -> getString(R.string.capture_clipping)
+                health.rms<.004 -> getString(R.string.capture_quiet)
+                else -> getString(R.string.capture_normal)
+            }
+        },onSpeech={ speaking -> if(valid(token)&&active&&speaking)voice.noteSourceSpeech(SystemClock.elapsedRealtime()) },
+            adaptiveClauses=adaptiveClauses,onClauseStatus={ loaded ->
+                if(valid(token)&&active)clauseStatus.text=getString(if(loaded)R.string.clause_ready else R.string.clause_fallback)
+            })
     }
     private fun startCloudMicrophone() {
         stopSession()
         if(!professional.configured) { configureProfessional();return }
-        if(autoVoice.isChecked&&!headphones.isChecked)autoVoice.isChecked=false
         voice.professional=professional
-        active=true;beginSession();start.text=getString(R.string.ui_172);runCloudCapture(epoch)
+        active=true;beginSession();start.text=getString(if(mode==Mode.MIC)R.string.microphone_stop else R.string.ui_172);runCloudCapture(epoch)
     }
     private fun runCloudCapture(token: Long) {
         if(!valid(token)||!active||!cloudListening||mode!=Mode.MIC)return
@@ -1159,7 +1454,7 @@ class MainActivity : ComponentActivity() {
         },{ text,final -> if(valid(token)&&active)processLiveSpeech(text,final) },{ reason ->
             if(valid(token)&&active) {
                 microphoneTrial.stop(SystemClock.elapsedRealtime());saveTrialUsage(true)
-                handler.removeCallbacks(speechPulse);latestRecognized="";sourceBeganAt=0;pendingPartial="";partialUtterance++
+                handler.removeCallbacks(speechPulse);resetSpeechPreview()
                 if(reason in setOf("unauthorized","quota","configuration","service","protocol")) {
                     stopSession();message(getString(R.string.cloud_error,reason))
                 } else {
@@ -1170,6 +1465,7 @@ class MainActivity : ComponentActivity() {
         })
     }
     private fun startMicrophone() {
+        updateSpeechDirection();voice.refreshLanguage()
         if(!visible||!alive||mode!=Mode.MIC)return
         if(mode!=Mode.MIC)return
         if(freeListening) { startFreeMicrophone();return }
@@ -1177,7 +1473,7 @@ class MainActivity : ComponentActivity() {
         if(offlineMode) { startOfflineMicrophone();return }
         stopSession()
         if(!SpeechRecognizer.isRecognitionAvailable(this)) { message(getString(R.string.ui_202));return }
-        active=true;beginSession();start.text=getString(R.string.ui_172);errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
+        active=true;beginSession();start.text=getString(if(mode==Mode.MIC)R.string.microphone_stop else R.string.ui_172);errors=0;emptySpeechRounds=0;preferSystemSpeech=!localSpeech.isChecked
         message(getString(R.string.ui_203));handler.post(speechPulse);listenOnce()
     }
     private fun canListen()=!freeListening&&!cloudListening&&alive&&active&&mode==Mode.MIC&&!offlineMode&&has(Manifest.permission.RECORD_AUDIO)&&
@@ -1317,18 +1613,30 @@ class MainActivity : ComponentActivity() {
         captureClockStarted=false;pendingTrialImage=null
         saveTrialUsage(true);handler.removeCallbacks(trialTick)
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        epoch++;active=false;busy=false;accessChecking=false;frozen=false;translating=false;retryLine=null;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
+        contextPreparing=false;contextPausedUntil=0
+        if(contextTranslatorLazy.isInitialized())contextTranslator.reset()
+        epoch++;previewTicket++;finalTurns.reset();active=false;busy=false;accessChecking=false;frozen=false;translating=false;retryLine=null;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
         freeSpeech.stop();cloudSpeech.stop();professional.cancelRequests();provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();partialStability.reset();sourceBeganAt=0;sourceWindowMillis=0;liveCaption.clear();speechDisplayRevision=0;lastSpeechDisplayRevision=-1;deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
         if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }
         if(::start.isInitialized)start.text=when(mode) { Mode.CAMERA->getString(R.string.ui_042);Mode.MIC->getString(R.string.ui_160);Mode.IMAGE->getString(R.string.ui_161) }
         refreshMetrics()
     }
-    override fun onResume() { super.onResume();visible=true;if(::billing.isInitialized)billing.refresh();if(::voice.isInitialized)voice.refreshLanguage() }
-    override fun onStop() { visible=false;proDialog?.dismiss();stopSession();super.onStop() }
+    private fun updateAudioRoute() {
+        if(!::headphones.isInitialized)return
+        val audio=getSystemService(AUDIO_SERVICE) as android.media.AudioManager
+        headphones.isChecked=audio.getDevices(android.media.AudioManager.GET_DEVICES_OUTPUTS).any { device ->
+            device.type in intArrayOf(android.media.AudioDeviceInfo.TYPE_WIRED_HEADSET,android.media.AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+                android.media.AudioDeviceInfo.TYPE_USB_HEADSET,android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,android.media.AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
+        }
+    }
+    override fun onResume() { super.onResume();visible=true;updateAudioRoute();if(::billing.isInitialized)billing.refresh();if(::voice.isInitialized)voice.refreshLanguage() }
+    override fun onStop() { visible=false;proDialog?.dismiss();contextDialog?.dismiss();if(contextPackLazy.isInitialized())contextPack.cancel();stopSession();if(contextTranslatorLazy.isInitialized())contextTranslator.unload();super.onStop() }
     override fun onDestroy() {
         if(::billing.isInitialized)billing.close();if(::proService.isInitialized)proService.close();alive=false;epoch++;handler.removeCallbacks(restart);clearSpeechDeadline();provider?.unbindAll()
         speech?.destroy();if(::voice.isInitialized)voice.close()
-        freeSpeech.close();cloudSpeech.close();professional.clear();professionalWorker.shutdown();offline.close();recognizer.close();translator.close();reverseTranslator.close();super.onDestroy()
+        if(contextTranslatorLazy.isInitialized())contextTranslator.close()
+        if(contextPackLazy.isInitialized())contextPack.close()
+        freeSpeech.close();cloudSpeech.close();professional.clear();professionalWorker.shutdown();offline.close();recognizer.close();translationRuntime.close();localTranslator.close();super.onDestroy()
     }
 }
