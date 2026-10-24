@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: play-release
     env:
-      PLAY_UPLOAD_STORE_FILE: ${{ runner.temp }}/play-upload.jks
+      PLAY_UPLOAD_STORE_FILE: /tmp/play-upload.jks
       PLAY_UPLOAD_STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
       PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
       PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
