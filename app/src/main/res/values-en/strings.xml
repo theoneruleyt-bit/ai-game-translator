@@ -382,4 +382,7 @@
     <string name="context_enable">Select mode</string>
     <string name="context_delete">Delete pack</string>
 <string name="microphone_stop">Stop listening</string>
+    <string name="account_deletion_title">Account and data deletion</string>
+    <string name="account_deletion_message">Open the deletion page to request deletion of your app account and associated server data, or selected data without closing your account. Send your request to the support email shown there; this button does not delete data automatically. Ownership verification may be required.\n\nYour Google Account is not deleted. A deletion request does not cancel your Google Play subscription or issue a refund. Manage your subscription separately in Google Play. Manage on-device translation history from the history screen.</string>
+    <string name="account_deletion_open">Open deletion request page</string>
 </resources>

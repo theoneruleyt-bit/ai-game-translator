@@ -871,6 +871,17 @@ class MainActivity : ComponentActivity() {
         }
         dialog.show()
     }
+    private fun showAccountDeletion() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.account_deletion_title))
+            .setMessage(getString(R.string.account_deletion_message))
+            .setNegativeButton(getString(R.string.pro_close),null)
+            .setPositiveButton(getString(R.string.account_deletion_open)) { _,_ ->
+                val uri=android.net.Uri.parse("https://theoneruleyt-bit.github.io/ai-game-translator/delete-account.html")
+                try { startActivity(Intent(Intent.ACTION_VIEW,uri)) }
+                catch(_: android.content.ActivityNotFoundException) { message(getString(R.string.privacy_no_browser)) }
+            }.show()
+    }
     private fun showSettings() {
         val view=vertical().apply { setPadding(dp(20),dp(12),dp(20),dp(12)) }
         view.addView(button(getString(R.string.ui_120)) {
@@ -911,6 +922,7 @@ class MainActivity : ComponentActivity() {
         view.addView(label(getString(R.string.listen_trace_help),12f,muted))
         view.addView(button(getString(R.string.listen_trace_share)) { shareListeningTrace() })
         view.addView(button(getString(R.string.privacy_title)) { showPrivacy() })
+        view.addView(button(getString(R.string.account_deletion_title)) { showAccountDeletion() })
         view.addView(button(getString(R.string.professional_title)) { configureProfessional() })
         view.addView(button(getString(R.string.tempo_title)) {
             val labels=arrayOf(getString(R.string.tempo_auto),getString(R.string.tempo_slow),getString(R.string.tempo_normal),getString(R.string.tempo_fast),getString(R.string.tempo_very_fast))

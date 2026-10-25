@@ -385,4 +385,7 @@
     <string name="context_enable">Modu seç</string>
     <string name="context_delete">Paketi sil</string>
 <string name="microphone_stop">Dinlemeyi durdur</string>
+    <string name="account_deletion_title">Hesap ve veri silme</string>
+    <string name="account_deletion_message">Uygulama hesabınızı ve ilişkili sunucu verilerini silmek veya hesabınızı kapatmadan belirli verilerin silinmesini talep etmek için silme sayfasını açın. Talebinizi destek e-postasına göndermeniz gerekir; bu düğme verileri otomatik silmez. Kimlik doğrulaması istenebilir.\n\nGoogle hesabınız silinmez. Silme talebi Google Play aboneliğinizi iptal etmez veya ücret iadesi oluşturmaz. Aboneliğinizi Google Play üzerinden ayrıca yönetin. Cihazdaki çeviri geçmişini uygulamanın geçmiş ekranından yönetebilirsiniz.</string>
+    <string name="account_deletion_open">Silme talebi sayfasını aç</string>
 </resources>

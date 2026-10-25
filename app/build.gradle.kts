@@ -36,8 +36,8 @@ android {
         applicationId = "com.optima.gametranslator"
         minSdk = 29
         targetSdk = 36
-        versionCode = 48
-        versionName = "0.31.5-review-access"
+        versionCode = 49
+        versionName = "0.31.6-closed-test"
     }
 
     signingConfigs {
