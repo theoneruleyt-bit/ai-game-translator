@@ -259,8 +259,8 @@
  <string name="account_ready">Hesap bağlandı. Deneme ve Pro durumu güncellendi.</string>
  <string name="account_failed">Giriş tamamlanamadı. Hesap ve sunucu yapılandırmasını kontrol et.</string>
  <string name="account_offline">Hesap sunucusuna ulaşılamadı. Canlı kullanım durduruldu; bağlantı gelince tekrar başlat.</string>
- <string name="pro_server_url" translatable="false"></string>
- <string name="google_web_client_id" translatable="false"></string>
+ <string name="pro_server_url" translatable="false">https://pala-play-verifier.theoneruleyt.workers.dev</string>
+ <string name="google_web_client_id" translatable="false">434827447350-ubq64pe79vab8q38mj7eehh10qlfbd6p.apps.googleusercontent.com</string>
  <string name="speech_pack_title" formatted="false">"Konuşma dili ve model"</string>
  <string name="speech_pack_selected" formatted="false">"Seçilen konuşma paketini indir/kontrol et, sonra dinlemeyi başlat."</string>
  <string name="speech_pack_help" formatted="false">"Hızlı paket düşük gecikme için önerilir. Kapsamlı İngilizce paketi daha fazla bellek kullanır ve bazı telefonlarda daha yavaş olabilir. Türkçe paketi Türkçe → İngilizce dinleme içindir. İlk indirme internet gerektirir."</string>

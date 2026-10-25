@@ -36,8 +36,8 @@ android {
         applicationId = "com.optima.gametranslator"
         minSdk = 29
         targetSdk = 36
-        versionCode = 46
-        versionName = "0.31.3-pro-check"
+        versionCode = 47
+        versionName = "0.31.4-server-pilot"
     }
 
     signingConfigs {
@@ -261,5 +261,3 @@ tasks.matching {
 }.configureEach {
     mustRunAfter(verifyPlayConfiguration)
 }
-
-

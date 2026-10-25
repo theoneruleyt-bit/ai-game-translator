@@ -255,7 +255,7 @@ class MainActivity : ComponentActivity() {
             if(!alive||!active)return
             val now=SystemClock.elapsedRealtime()
             if(billing.pro)trial.stop(now) else { if(!trial.running)trial.start(now);trial.tick(now) }
-            if(now-lastServerCheck>=60000) {
+            if(now-lastServerCheck>=30000) {
                 lastServerCheck=now
                 if(proService.enabled)proService.refresh { ok -> if(alive&&active&&!ok) { stopSession();message(getString(R.string.account_offline)) } } else billing.refresh()
             }
@@ -277,8 +277,12 @@ class MainActivity : ComponentActivity() {
     private fun renderProOffers() {
         val content=proOffers?:return
         content.removeAllViews()
+        if(proService.enabled&&proService.migrationRequired) {
+            val tr=resources.configuration.locales[0].language=="tr"
+            content.addView(label(if(tr) "Önceki satın alımınız hesap geçişi gerektiriyor. Yeniden satın almayın; satın alma desteği üzerinden yardım alın." else "Your previous purchase requires account migration. Do not buy again; use purchase support.",14f,muted))
+        }
         if(billing.pro) { content.addView(label(getString(R.string.pro_active),16f,mint));return }
-        val configured=billing.configured
+        val configured=billing.configured&&!proService.migrationRequired
         if(billing.plans.isEmpty()||!configured)content.addView(label(getString(R.string.pro_unavailable),14f,muted))
         if(billing.status.isNotBlank())content.addView(label(billing.status,14f,muted))
         billing.plans.sortedBy { listOf("monthly","yearly","lifetime").indexOf(it.name) }.forEach { plan ->
@@ -297,6 +301,11 @@ class MainActivity : ComponentActivity() {
         proDialog=dialog
         dialog.setOnDismissListener { if(proDialog===dialog) { proDialog=null;proOffers=null } }
         renderProOffers()
+        if(proService.enabled)content.addView(button(getString(R.string.account_sign_in)) {
+            stopSession();proService.signIn { ok ->
+                if(alive) { refreshPro();renderProOffers();message(getString(if(ok) R.string.account_ready else R.string.account_failed));if(ok)billing.refresh() }
+            }
+        })
         content.addView(label(getString(R.string.pro_terms),12f,muted))
         content.addView(button(getString(R.string.subscription_manage)) {
             val uri=android.net.Uri.parse("https://play.google.com/store/account/subscriptions").buildUpon()
@@ -1654,4 +1663,3 @@ class MainActivity : ComponentActivity() {
         freeSpeech.close();cloudSpeech.close();professional.clear();professionalWorker.shutdown();offline.close();recognizer.close();translationRuntime.close();localTranslator.close();super.onDestroy()
     }
 }
-

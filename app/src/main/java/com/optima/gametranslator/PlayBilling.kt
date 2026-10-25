@@ -73,6 +73,7 @@ class PlayBilling(
             appendLine("Pro displayed: $pro; locally verified Pro: $localPro")
             appendLine("Last decision: $entitlementDecision")
             appendLine("Query generation: $refreshId")
+            appendLine(authority.diagnostics())
             appendLine("Expected plans: monthly, yearly-auto")
             appendLine("--- Catalog ---")
             if (catalogReports.isEmpty()) appendLine("No response recorded.")
@@ -437,5 +438,3 @@ class PlayBilling(
         client.endConnection()
     }
 }
-
-
