@@ -43,7 +43,7 @@ class PlayBilling(
 
     val configured: Boolean
         get() = if (authority.enabled) {
-            authority.signedIn
+            authority.signedIn && !authority.reviewSession
         } else {
             verificationKey != null
         }

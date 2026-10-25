@@ -33,6 +33,8 @@ class ProService(private val activity: Activity) {
     private var cancellation: CancellationSignal? = null
     private var signingIn = false
     private var idToken = ""
+    var reviewSession = false
+        private set
     private var identityExpiresAt = 0L
     var accountId = ""
         private set
@@ -54,6 +56,7 @@ class ProService(private val activity: Activity) {
 
     fun diagnostics(): String = buildString {
         appendLine("--- Server verification ---")
+        appendLine("Review session: $reviewSession")
         appendLine("Configured: $configured; signed in: $signedIn; busy: $stateBusy")
         appendLine("HTTP: $lastHttp; result: $lastStatus")
         appendLine("Server Pro: $pro; lease remaining ms: ${(grantedUntil-SystemClock.elapsedRealtime()).coerceAtLeast(0)}")
@@ -67,6 +70,7 @@ class ProService(private val activity: Activity) {
             done(false); return
         }
         signingIn = true
+        reviewSession = false
         grantedUntil = 0
         idToken = ""; accountId = ""; identityExpiresAt = 0
         lastRecords = ""; migrationRequired = false
@@ -109,15 +113,54 @@ class ProService(private val activity: Activity) {
         )
     }
 
+    fun signInForReview(username: String, password: String, done: (Boolean) -> Unit) {
+        if(!configured || closed || signingIn || stateBusy) { done(false); return }
+        if(username.isBlank() || password.isBlank()) { lastStatus="invalid_review_credentials";done(false);return }
+        signingIn=true;reviewSession=false;grantedUntil=0;idToken="";accountId="";identityExpiresAt=0
+        lastRecords="";migrationRequired=false
+        val body=JSONObject().put("username",username).put("password",password)
+        val started=SystemClock.elapsedRealtime()
+        worker.execute {
+            var reply: JSONObject?=null
+            var code="network_or_invalid_response"
+            var http=0
+            try {
+                val result=request(body,"","/v1/review-sign-in")
+                http=200
+                val token=result.getString("token")
+                check(token.startsWith("pr1.") && token.length<=2048)
+                check(result.getLong("expiresInMillis") in 1..3600000L)
+                reply=result
+            } catch(e: RequestFailure) { http=e.http;code=e.code } catch(_: Exception) { }
+            finally { body.remove("password") }
+            main.post {
+                if(!closed) {
+                    signingIn=false;lastHttp=http
+                    val result=reply
+                    if(result==null) {lastStatus=code;done(false)}
+                    else {
+                        val remaining=(result.getLong("expiresInMillis")-(SystemClock.elapsedRealtime()-started)).coerceAtLeast(0)
+                        if(remaining==0L) {lastStatus="sign_in_required";done(false)}
+                        else {
+                            idToken=result.getString("token");identityExpiresAt=System.currentTimeMillis()+remaining
+                            reviewSession=true;lastStatus="review_signed_in"
+                            refresh(done=done)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private class RequestFailure(val http: Int, val code: String) : Exception()
-    private fun request(body: JSONObject, token: String): JSONObject {
-        check(configured && token.isNotBlank())
-        val http = URL("$base/v1/state").openConnection() as HttpURLConnection
+    private fun request(body: JSONObject, token: String, path: String = "/v1/state"): JSONObject {
+        check(configured && (token.isNotBlank() || path == "/v1/review-sign-in"))
+        val http = URL(base + path).openConnection() as HttpURLConnection
         try {
             http.instanceFollowRedirects = false
             http.connectTimeout = 5000; http.readTimeout = 20000
             http.requestMethod = "POST"; http.doOutput = true
-            http.setRequestProperty("Authorization", "Bearer $token")
+            if(token.isNotBlank())http.setRequestProperty("Authorization", "Bearer $token")
             http.setRequestProperty("Content-Type", "application/json")
             val bytes = body.toString().toByteArray(Charsets.UTF_8)
             http.setFixedLengthStreamingMode(bytes.size)
@@ -140,7 +183,8 @@ class ProService(private val activity: Activity) {
                 val allowed = setOf("sign_in_required", "invalid_identity", "play_permission_denied",
                     "play_verification_unavailable", "google_service_unavailable", "invalid_server_configuration",
                     "invalid_google_response", "configuration_incomplete", "acknowledgement_failed",
-                    "purchase_account_mismatch", "verification_unavailable", "too_many_purchases")
+                    "purchase_account_mismatch", "verification_unavailable", "too_many_purchases",
+                    "invalid_review_credentials", "review_rate_limited", "review_unavailable")
                 throw RequestFailure(status, if (candidate in allowed) candidate else "server_request_failed")
             }
             return JSONObject(text)
@@ -154,7 +198,7 @@ class ProService(private val activity: Activity) {
         }
         if (!enabled) { done(true); return }
         if (closed || !signedIn) {
-            grantedUntil = 0; lastStatus = "sign_in_required"; done(false); return
+            grantedUntil = 0; if(lastHttp != 401)lastStatus = "sign_in_required"; done(false); return
         }
         waiters.add(done)
         if (stateBusy) return
@@ -182,7 +226,7 @@ class ProService(private val activity: Activity) {
                     stateBusy = false
                     lastHttp = responseCode
                     if (responseCode == 401) {
-                        idToken = ""; identityExpiresAt = 0; accountId = ""; grantedUntil = 0
+                        idToken = ""; identityExpiresAt = 0; accountId = ""; grantedUntil = 0; reviewSession = false
                     }
                     if (stateAgain && signedIn) {
                         stateAgain = false
@@ -221,7 +265,7 @@ class ProService(private val activity: Activity) {
     fun beginUsage() = Unit
     fun reportUsage(@Suppress("UNUSED_PARAMETER") elapsed: Long, done: (Boolean) -> Unit = {}) { done(true) }
     fun close() {
-        closed = true; grantedUntil = 0; idToken = ""; accountId = ""
+        closed = true; grantedUntil = 0; idToken = ""; accountId = ""; reviewSession = false
         cancellation?.cancel(); worker.shutdown(); waiters.clear()
     }
 }

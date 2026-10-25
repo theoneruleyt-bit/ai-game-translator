@@ -283,7 +283,7 @@ class MainActivity : ComponentActivity() {
         }
         if(billing.pro) { content.addView(label(getString(R.string.pro_active),16f,mint));return }
         val configured=billing.configured&&!proService.migrationRequired
-        if(billing.plans.isEmpty()||!configured)content.addView(label(getString(R.string.pro_unavailable),14f,muted))
+        if(billing.plans.isEmpty()||!configured)content.addView(label(getString(if(proService.enabled&&!proService.signedIn) R.string.account_required else R.string.pro_unavailable),14f,muted))
         if(billing.status.isNotBlank())content.addView(label(billing.status,14f,muted))
         billing.plans.sortedBy { listOf("monthly","yearly","lifetime").indexOf(it.name) }.forEach { plan ->
             val title=when(plan.name) { "monthly"->R.string.pro_monthly;"yearly"->R.string.pro_yearly;else->R.string.pro_lifetime }
@@ -305,6 +305,30 @@ class MainActivity : ComponentActivity() {
             stopSession();proService.signIn { ok ->
                 if(alive) { refreshPro();renderProOffers();message(getString(if(ok) R.string.account_ready else R.string.account_failed));if(ok)billing.refresh() }
             }
+        })
+        if(proService.enabled)content.addView(button("Review access") {
+            val form=vertical().apply { setPadding(dp(20),dp(12),dp(20),dp(12)) }
+            val username=EditText(this).apply {
+                hint="Username";setSingleLine(true);setText("play-review")
+                importantForAutofill=android.view.View.IMPORTANT_FOR_AUTOFILL_NO
+            }
+            val password=EditText(this).apply {
+                hint="Password";setSingleLine(true)
+                inputType=android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                importantForAutofill=android.view.View.IMPORTANT_FOR_AUTOFILL_NO
+            }
+            form.addView(label("Google Play review access. Use the credentials provided in Play Console.",14f))
+            form.addView(username);form.addView(password)
+            AlertDialog.Builder(this).setTitle("Review access").setView(form)
+                .setPositiveButton("Sign in") { _,_ ->
+                    stopSession()
+                    val name=username.text.toString().trim()
+                    val secret=password.text.toString()
+                    password.text.clear()
+                    proService.signInForReview(name,secret) { ok ->
+                        if(alive) { refreshPro();renderProOffers();message(getString(if(ok) R.string.account_ready else R.string.account_failed));if(ok)billing.refresh() }
+                    }
+                }.setNegativeButton("Cancel",null).show()
         })
         content.addView(label(getString(R.string.pro_terms),12f,muted))
         content.addView(button(getString(R.string.subscription_manage)) {
