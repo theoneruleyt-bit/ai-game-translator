@@ -81,7 +81,7 @@ class PlayBilling(
             appendLine("--- Ownership ---")
             if (purchaseReports.isEmpty()) appendLine("No response recorded.")
             purchaseReports.forEach { (type, report) -> appendLine("[$type] $report") }
-            appendLine("No tokens, order numbers, license keys or account/payment details included.")
+            appendLine("No tokens, full order numbers, license keys or account/payment details included. Purchase time and last 5 order characters only.")
         }
     }
 
@@ -108,6 +108,9 @@ class PlayBilling(
                 }
                 if (products.isNotEmpty()) {
                     appendLine("Products=${products.joinToString()}; state=${purchase.purchaseState}; acknowledged=${purchase.isAcknowledged}; autoRenewing=${purchase.isAutoRenewing}")
+                    val purchasedAt = java.time.Instant.ofEpochMilli(purchase.purchaseTime).toString()
+                    val orderSuffix = purchase.orderId?.takeLast(5) ?: "unavailable"
+                    appendLine("PurchasedAtUTC=$purchasedAt; orderSuffix=***$orderSuffix")
                 }
             }
         }
@@ -434,4 +437,5 @@ class PlayBilling(
         client.endConnection()
     }
 }
+
 
