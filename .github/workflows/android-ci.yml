@@ -19,7 +19,7 @@ jobs:
           log-accepted-android-sdk-licenses: 'false'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.11.1'
+          gradle-version: '8.13'
       - run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
       - name: Python policy and native-check tests
         run: |
@@ -32,7 +32,9 @@ jobs:
       - name: Verify local translation pack
         run: python3 scripts/check_translation_pack.py
       - name: Build APK, unsigned release bundle, tests and lint
-        run: gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease :app:lintRelease --no-daemon --continue
+        run: gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease :app:testReleaseUnitTest :app:lintRelease --no-daemon --continue
+      - name: Verify optimized release and JNI bindings
+        run: python3 scripts/check_release_optimization.py app/build/outputs/bundle/release/app-release.aab
       - name: Check packaged native ELF alignment
         if: always()
         run: |

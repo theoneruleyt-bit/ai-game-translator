@@ -36,8 +36,8 @@ android {
         applicationId = "com.optima.gametranslator"
         minSdk = 29
         targetSdk = 36
-        versionCode = 49
-        versionName = "0.31.6-closed-test"
+        versionCode = 51
+        versionName = "0.32.0-listen-fix"
     }
 
     signingConfigs {
@@ -52,6 +52,10 @@ android {
     buildTypes {
         getByName("release") {
             isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            ndk.debugSymbolLevel = "SYMBOL_TABLE"
 
             if (config("PLAY_UPLOAD_STORE_FILE").isNotBlank()) {
                 signingConfig = signingConfigs.create("playUpload") {
@@ -116,6 +120,7 @@ dependencies {
     implementation("com.alphacephei:vosk-android:0.3.75@aar")
     implementation("net.java.dev.jna:jna:5.18.1@aar")
 
+    implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.activity:activity-ktx:1.10.1")
     implementation("androidx.camera:camera-camera2:1.4.2")
     implementation("androidx.camera:camera-lifecycle:1.4.2")

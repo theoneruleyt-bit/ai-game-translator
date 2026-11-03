@@ -75,10 +75,13 @@ class MainActivity : ComponentActivity() {
     private var pendingPartialFinal=false
     private var latestRecognized=""
     private val liveCaption=java.util.ArrayDeque<String>()
-    private data class DeferredVoice(val text: String,val slot: Int,val sourceMillis: Long)
+    private data class DeferredVoice(val text: String,val slot: Int,val sourceMillis: Long,val sourceAt: Long)
     private val deferredSystemVoice=java.util.ArrayDeque<DeferredVoice>()
     private var offlineFailures=0
     private var retryLine: LineQueue.Entry?=null
+    private var translationRetryAt=0L
+    private val translationRetryTask=Runnable { pumpTranslation() }
+    private var freeCaptureFailures=0
     private var sourceBeganAt=0L
     private var sourceWindowMillis=0L
     private val liveSegments=LiveSpeechSegments()
@@ -91,7 +94,8 @@ class MainActivity : ComponentActivity() {
     private val speechPulse=object : Runnable {
         override fun run() {
             if(alive&&active&&mode==Mode.MIC) {
-                if(latestRecognized.isNotBlank()) processLiveSpeech(latestRecognized,false)
+                // A timer is not new microphone evidence. Only retry the existing translation draft.
+                if(pendingPartial.isNotBlank()&&pendingPartial!=cachedSource&&!partialBusy) schedulePartial(0)
                 handler.postDelayed(this,180)
             }
         }
@@ -452,7 +456,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window,false)
+        androidx.core.view.WindowCompat.enableEdgeToEdge(window)
         volumeControlStream=android.media.AudioManager.STREAM_MUSIC
         dark=resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK==android.content.res.Configuration.UI_MODE_NIGHT_YES
         ink=if(dark)Color.rgb(10,17,29) else Color.rgb(243,247,251)
@@ -468,7 +472,6 @@ class MainActivity : ComponentActivity() {
         selectedSpeaker=settings.getInt("speaker",0).coerceIn(0,16)
         automaticSubtitleNames=settings.getBoolean("names",true)
         speakers.restore((1..16).mapNotNull { slot -> profilePrefs.getString("speaker_${slot}",null)?.let { it to slot } }.toMap())
-        window.statusBarColor=ink;window.navigationBarColor=ink
         val root=vertical().apply { setPadding(dp(20),dp(24),dp(20),dp(28));background=GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,intArrayOf(ink,if(dark)Color.rgb(15,26,43) else Color.rgb(232,241,247))) }
         val brand=LinearLayout(this).apply { gravity=Gravity.CENTER_VERTICAL }
@@ -763,8 +766,9 @@ class MainActivity : ComponentActivity() {
         }))
         val scroll=ScrollView(this).apply { isFillViewport=true;clipToPadding=true;setBackgroundColor(ink);addView(root) }
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(scroll) { view,insets ->
-            val bars=insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() or androidx.core.view.WindowInsetsCompat.Type.displayCutout())
-            view.setPadding(bars.left,bars.top,bars.right,bars.bottom);androidx.core.view.WindowInsetsCompat.CONSUMED
+            val safe=insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() or androidx.core.view.WindowInsetsCompat.Type.displayCutout() or androidx.core.view.WindowInsetsCompat.Type.ime())
+            view.setPadding(safe.left,safe.top,safe.right,safe.bottom)
+            insets
         }
         setContentView(scroll)
         androidx.core.view.ViewCompat.requestApplyInsets(scroll)
@@ -1208,6 +1212,13 @@ class MainActivity : ComponentActivity() {
     }
     private fun pumpTranslation() {
         if(translating||!alive)return
+        val now=SystemClock.elapsedRealtime()
+        if(now<translationRetryAt) {
+            handler.removeCallbacks(translationRetryTask)
+            handler.postDelayed(translationRetryTask,translationRetryAt-now)
+            return
+        }
+        handler.removeCallbacks(translationRetryTask);translationRetryAt=0
         val line=retryLine?.also { retryLine=null }?:waiting.take()?:return
         val token=epoch;val fromCamera=active&&mode==Mode.CAMERA;val cameraToken=cameraRevision;translating=true
         if(active&&mode==Mode.MIC)listeningTrace.record(SystemClock.elapsedRealtime(),"translation_start",line.text,"queue=${waiting.size}")
@@ -1239,8 +1250,15 @@ class MainActivity : ComponentActivity() {
         }.addOnFailureListener { error ->
             if(valid(token)) {
                 if(active&&mode==Mode.MIC)listeningTrace.record(SystemClock.elapsedRealtime(),"translation_error",line.text,error.javaClass.simpleName)
-                if(active&&mode==Mode.MIC&&line.attempts<2) { retryLine=line.copy(attempts=line.attempts+1);message(getString(R.string.speech_translation_retry)) }
-                else {
+                val now=SystemClock.elapsedRealtime()
+                val busy=generateSequence(error as Throwable?) { it.cause }.take(8).any { it is TranslationRuntime.Busy }
+                val retryStart=if(line.retryStartedAt<0)now else line.retryStartedAt
+                val delay=if(active&&mode==Mode.MIC) TranslationRetryPolicy.delay(busy,line.attempts,now-retryStart) else null
+                if(delay!=null) {
+                    retryLine=line.copy(attempts=if(busy)line.attempts else line.attempts+1,retryStartedAt=retryStart)
+                    translationRetryAt=now+delay
+                    message(getString(R.string.speech_translation_retry))
+                } else {
                     gate.release(line.text);recent.forget(line.text);rejected++
                     lastTranslationIssue=getString(R.string.translation_failed_line,line.text.take(100));message(requireNotNull(lastTranslationIssue))
                 }
@@ -1250,7 +1268,7 @@ class MainActivity : ComponentActivity() {
     private fun enqueueVoice(text: String, speakerSlot: Int=lastSpeaker,sourceMillis: Long=0,sourceAt: Long=SystemClock.elapsedRealtime()) {
         if(text.isBlank())return
         if(active&&mode==Mode.MIC&&!freeListening&&!cloudListening&&!offlineMode&&!headphones.isChecked&&listening) {
-            if(deferredSystemVoice.size<16)deferredSystemVoice.addLast(DeferredVoice(text,speakerSlot,sourceMillis))
+            if(deferredSystemVoice.size<16)deferredSystemVoice.addLast(DeferredVoice(text,speakerSlot,sourceMillis,sourceAt))
             else { rejected++;message(getString(R.string.ui_186)) }
             return
         }
@@ -1477,14 +1495,18 @@ class MainActivity : ComponentActivity() {
         message(getString(R.string.free_starting))
         freeSpeech.start(speedMode,{
             if(valid(token)&&active) { countLiveUse();message(getString(R.string.free_active));handler.removeCallbacks(speechPulse);handler.post(speechPulse) }
-        },{ text,final,eventId -> if(valid(token)&&active)processLiveSpeech(text,final,eventId) },
+        },{ text,final,eventId -> if(valid(token)&&active) {
+            if(text.isNotBlank())freeCaptureFailures=0
+            processLiveSpeech(text,final,eventId)
+        } },
             { level -> if(valid(token)&&active) { signal.progress=level;meter.level=level } },{ error ->
             if(valid(token)&&active) {
-                if(error==getString(R.string.free_capture_failed)&&freeSpeech.ready()&&has(Manifest.permission.RECORD_AUDIO)) {
+                if(error in setOf(getString(R.string.free_capture_failed),getString(R.string.free_capture_overrun))&&freeSpeech.ready()&&has(Manifest.permission.RECORD_AUDIO)) {
                     freeSpeech.stop();microphoneTrial.stop(SystemClock.elapsedRealtime());saveTrialUsage(true)
                     handler.removeCallbacks(speechPulse);resetSpeechPreview()
                     message(getString(R.string.speech_recovering))
-                    handler.postDelayed({ if(valid(token)&&active)runFreeCapture(token) },2500)
+                    freeCaptureFailures++
+                    handler.postDelayed({ if(valid(token)&&active)runFreeCapture(token) },minOf(10000L,1000L*freeCaptureFailures))
                 } else { stopSession();message(error) }
             }
         },onSignal={ health ->
@@ -1657,7 +1679,7 @@ class MainActivity : ComponentActivity() {
         }
         if(text.isNotBlank())emptySpeechRounds=0
         while(autoVoice.isChecked&&deferredSystemVoice.isNotEmpty()) {
-            val job=deferredSystemVoice.removeFirst();enqueueVoice(job.text,job.slot,job.sourceMillis)
+            val job=deferredSystemVoice.removeFirst();enqueueVoice(job.text,job.slot,job.sourceMillis,job.sourceAt)
         }
         scheduleListening(120)
     }
@@ -1674,7 +1696,7 @@ class MainActivity : ComponentActivity() {
         savePreferences();handler.removeCallbacks(sessionTick);window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         contextPreparing=false;contextPausedUntil=0
         if(contextTranslatorLazy.isInitialized())contextTranslator.reset()
-        epoch++;previewTicket++;finalTurns.reset();active=false;busy=false;accessChecking=false;frozen=false;translating=false;retryLine=null;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
+        epoch++;previewTicket++;finalTurns.reset();active=false;busy=false;accessChecking=false;frozen=false;translating=false;retryLine=null;translationRetryAt=0;handler.removeCallbacks(translationRetryTask);freeCaptureFailures=0;gate.reset();waiting.clear();recent.clear();subtitleFilter.clear()
         freeSpeech.stop();cloudSpeech.stop();professional.cancelRequests();provider?.unbindAll();pauseMicrophone();offline.stop();handler.removeCallbacks(speechPulse);latestRecognized="";liveSegments.reset();partialStability.reset();sourceBeganAt=0;sourceWindowMillis=0;liveCaption.clear();speechDisplayRevision=0;lastSpeechDisplayRevision=-1;deferredSystemVoice.clear();partialRevision++;partialUtterance++;partialBusy=false;partialScheduled=false;pendingPartial="";pendingPartialFinal=false;cachedSource="";cachedTranslation="";handler.removeCallbacks(partialTask)
         if(::signal.isInitialized) { signal.isIndeterminate=false;signal.progress=0;meter.level=0;signalLabel.text=getString(R.string.ui_022) }
         if(::voice.isInitialized) { if(keepCurrentVoice)voice.clearWaiting() else voice.stop() }

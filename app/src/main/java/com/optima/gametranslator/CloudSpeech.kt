@@ -25,7 +25,7 @@ class CloudSpeech(private val echo: EchoReference?=null) {
     private var recorder: AudioRecord?=null
     private var closed=false
     fun start(service: ProfessionalGateway,language: String,onReady: ()->Unit,onText: (String,Boolean)->Unit,onError: (String)->Unit) {
-        stop();val token=generation.get();val seen=mutableSetOf<String>();val started=java.util.concurrent.atomic.AtomicBoolean(false)
+        stop();val token=generation.get();val events=RecognitionEvents();val started=java.util.concurrent.atomic.AtomicBoolean(false)
         fun deliver(action: ()->Unit) { main.post { if(!closed&&generation.get()==token)action() } }
         fun fail(reason: String) { deliver { stop();onError(reason) } }
         if(!service.configured) { fail("configuration");return }
@@ -44,7 +44,9 @@ class CloudSpeech(private val echo: EchoReference?=null) {
                         "ready" -> if(started.compareAndSet(false,true)) {worker.execute { capture(ws,token,{ deliver(onReady) },::fail) } }
                         "result" -> {
                             val final=data.optBoolean("final");val result=data.getString("text")
-                            if(result.isNotBlank()&&(!final||seen.add(data.getString("id")))) deliver { onText(result,final) }
+                            events.accept(result,final,if(final)data.getString("id") else "")?.let { event ->
+                                deliver { onText(event.text,event.final) }
+                            }
                         }
                         "rotate" -> fail("rotate")
                         "error" -> fail(data.optString("reason","service"))

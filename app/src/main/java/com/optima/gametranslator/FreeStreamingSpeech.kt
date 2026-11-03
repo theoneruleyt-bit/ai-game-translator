@@ -81,7 +81,7 @@ class FreeStreamingSpeech(context: Context,private val echo: EchoReference?=null
         worker.execute {
             var decoder: OnlineRecognizer?=null;var stream: OnlineStream?=null;var voiceDetector: Vad?=null
             var input: AudioRecord?=null;var capture: Thread?=null;var echoEffect: MicrophoneEcho?=null
-            var punctuator: SpeechPunctuator?=null
+            var punctuator: PunctuationFallback?=null
             val clauses=AdaptiveSpeechClauses(adaptiveClauses)
             val consensus=TranscriptConsensus()
             val turns=StreamingTurns()
@@ -116,14 +116,15 @@ class FreeStreamingSpeech(context: Context,private val echo: EchoReference?=null
                     sampleRate=16000,numThreads=1,provider="cpu")) } catch(_: Exception) { throw GateUnavailable() }
                 voiceDetector=vad
                 if(adaptiveClauses) {
-                    punctuator=try { SpeechPunctuator(assets) } catch(_: Exception) { null }
+                    punctuator=try {
+                        val model=SpeechPunctuator(assets)
+                        PunctuationFallback(model::apply,model::close) { deliver(token) { onClauseStatus(false) } }
+                    } catch(_: Exception) { null }
                         catch(_: LinkageError) { null } catch(_: OutOfMemoryError) { null }
                     val loaded=punctuator!=null;deliver(token) { onClauseStatus(loaded) }
                 }
                 fun punctuate(text: String): String {
-                    return try { punctuator?.apply(text)?:text } catch(_: Exception) {
-                        punctuator?.close();punctuator=null;deliver(token) { onClauseStatus(false) };text
-                    }
+                    return punctuator?.apply(text)?:text
                 }
                 val windows=PcmWindows();val evidence=SpeechEvidence();val audioGate=SpeechAudioGate()
                 val boundary=SpeechTurnBoundary()

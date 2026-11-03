@@ -40,7 +40,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.11.1'
+          gradle-version: '8.13'
 
       - name: Install Android build packages
         run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
@@ -68,6 +68,7 @@ jobs:
           gradle
           :app:playSubmissionBundle
           :app:testDebugUnitTest
+          :app:testReleaseUnitTest
           :app:lintRelease
           --no-daemon
 
@@ -76,6 +77,19 @@ jobs:
           python3 scripts/check_native_pages.py
           app/build/outputs/bundle/release/app-release.aab
           --report app/build/reports/native-pages-release.json
+
+      - name: Verify optimized release and JNI bindings
+        run: python3 scripts/check_release_optimization.py app/build/outputs/bundle/release/app-release.aab
+
+      - name: Package release diagnostics
+        run: |
+          python3 - <<'PYCODE'
+          import pathlib, zipfile
+          paths = [pathlib.Path('app/build/outputs/mapping/release/mapping.txt'), pathlib.Path('app/build/reports/release-optimization.json')]
+          with zipfile.ZipFile('release-diagnostics.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
+              for path in paths:
+                  archive.write(path, path.name)
+          PYCODE
 
       - name: Put signed bundle in developer draft
         env:
@@ -89,6 +103,7 @@ jobs:
           gh release create \
             "play-candidate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
             app/build/outputs/bundle/release/app-release.aab \
+            release-diagnostics.zip \
             --draft \
             --target "$GITHUB_SHA" \
             --title 'Play release candidate' \
