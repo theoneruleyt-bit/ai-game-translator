@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "renamed_app_classes": 161,
+  "dex_classes": 5952,
+  "dex_bytes": 4468048,
+  "mapping_embedded": true,
+  "required_jni_preserved": [
+    "Lcom/k2fsa/sherpa/onnx/OnlineRecognizer;",
+    "Lcom/k2fsa/sherpa/onnx/OnlinePunctuation;",
+    "Lcom/k2fsa/sherpa/onnx/Vad;",
+    "Lcom/google/ai/edge/litertlm/Engine;",
+    "Lorg/tensorflow/lite/Interpreter;",
+    "Lorg/vosk/Recognizer;",
+    "Lcom/sun/jna/Native;"
+  ],
+  "native_symbol_entries": 0,
+  "note": "Pre-stripped vendor libraries cannot regain missing native symbols. Play optimization percentage must be checked after upload."
+}

@@ -60,15 +60,33 @@ def inspect_archive(path):
     return {'archive': str(path), 'check': 'ELF PT_LOAD alignment for 64-bit libraries',
             'passed': not failures, 'failures': failures, 'libraries': results}
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('archive')
     parser.add_argument('--report', required=True)
     args = parser.parse_args()
-    report = inspect_archive(args.archive)
-    output = Path(args.report);output.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        report = inspect_archive(args.archive)
+    except (OSError, zipfile.BadZipFile) as error:
+        report = {
+            'archive': args.archive, 'passed': False, 'libraries': [],
+            'check': 'Archive availability before ELF alignment',
+            'failures': [str(error)],
+            'error': 'AAB/APK could not be opened. Check the preceding Gradle build log; alignment was not checked.'
+        }
+    output = Path(args.report)
+    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2), encoding='utf-8')
-    print(f"{len(report['libraries'])} libraries checked; ELF alignment: {'PASS' if report['passed'] else 'FAIL'}")
-    for name in report['failures']:
-        print(f'16 KB incompatibility: {name}')
-    raise SystemExit(0 if report['passed'] else 1)
+    if 'error' in report:
+        print(report['error'])
+        for failure in report['failures']:
+            print(failure)
+    else:
+        print(f"{len(report['libraries'])} libraries checked; ELF alignment: {'PASS' if report['passed'] else 'FAIL'}")
+        for name in report['failures']:
+            print(f'16 KB incompatibility: {name}')
+    return 0 if report['passed'] else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

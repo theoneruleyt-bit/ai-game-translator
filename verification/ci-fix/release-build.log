@@ -1,0 +1,127 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:generatePlayConfig UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:mergeReleaseShaders
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :app:buildKotlinToolingMetadata
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:checkReleaseDuplicateClasses
+> Task :app:checkReleaseAarMetadata
+> Task :app:processReleaseNavigationResources
+> Task :app:generateReleaseResValues
+> Task :app:compileReleaseNavigationResources
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources
+> Task :app:packageReleaseResources
+> Task :app:parseReleaseLocalResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:processReleaseManifestForPackage
+> Task :app:javaPreCompileRelease
+> Task :app:mergeReleaseArtProfile
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:mergeReleaseStartupProfile
+> Task :app:mergeReleaseJniLibFolders
+> Task :app:mergeReleaseNativeLibs
+> Task :app:mergeReleaseResources
+
+> Task :app:stripReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libimage_processing_util_jni.so, libjnidispatch.so, liblitertlm_jni.so, libmlkit_google_ocr_pipeline.so, libonnxruntime.so, libsherpa-onnx-jni.so, libsurface_util_jni.so, libtensorflowlite_jni.so, libtranslate_jni.so, libvosk.so. Run with --info option to learn more.
+
+> Task :app:writeReleaseAppMetadata
+> Task :app:processReleaseResources
+> Task :app:collectReleaseDependencies
+> Task :app:configureReleaseDependencies
+> Task :app:extractReleaseNativeSymbolTables
+> Task :app:parseReleaseIntegrityConfig
+> Task :app:preReleaseUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileReleaseUnitTest
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac NO-SOURCE
+> Task :app:bundleDebugClassesToCompileJar UP-TO-DATE
+> Task :app:preDebugAndroidTestBuild SKIPPED
+> Task :app:generateDebugAndroidTestResValues UP-TO-DATE
+> Task :app:generateDebugAndroidTestLintModel UP-TO-DATE
+> Task :app:generateDebugLintReportModel UP-TO-DATE
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:generateDebugUnitTestLintModel UP-TO-DATE
+> Task :app:compileReleaseKotlin
+> Task :app:lintAnalyzeDebug
+
+> Task :app:compileReleaseKotlin
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/AdaptiveSpeechClauses.kt:123:38 Condition is always 'true'.
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/CloudSpeech.kt:35:33 The corresponding parameter in the supertype 'WebSocketListener' is named 'webSocket'. This may cause problems when calling this function with named arguments.
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/CloudSpeech.kt:39:36 The corresponding parameter in the supertype 'WebSocketListener' is named 'webSocket'. This may cause problems when calling this function with named arguments.
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/CloudSpeech.kt:56:36 The corresponding parameter in the supertype 'WebSocketListener' is named 'webSocket'. This may cause problems when calling this function with named arguments.
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/CloudSpeech.kt:57:35 The corresponding parameter in the supertype 'WebSocketListener' is named 'webSocket'. This may cause problems when calling this function with named arguments.
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt:169:55 'static fun <TResult : Any!> call(p0: Executor, p1: Callable<TResult!>): Task<TResult!>' is deprecated. Deprecated in Java.
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/SubtitleAreaView.kt:36:81 'field scaledDensity: Float' is deprecated. Deprecated in Java.
+w: file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/VoicePlayer.kt:122:26 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+
+> Task :app:compileReleaseJavaWithJavac NO-SOURCE
+> Task :app:expandReleaseArtProfileWildcards
+> Task :app:mergeReleaseGeneratedProguardFiles
+> Task :app:processReleaseJavaRes
+> Task :app:mergeReleaseJavaResource
+> Task :app:minifyReleaseWithR8
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:buildReleasePreBundle
+> Task :app:compileReleaseArtProfile
+> Task :app:bundleReleaseClassesToRuntimeJar
+> Task :app:bundleReleaseClassesToCompileJar
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:compileReleaseUnitTestKotlin
+> Task :app:compileReleaseUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processReleaseUnitTestJavaRes
+> Task :app:testReleaseUnitTest
+> Task :app:generateReleaseLintReportModel
+> Task :app:generateReleaseUnitTestLintModel
+> Task :app:lintVitalReportRelease SKIPPED
+> Task :app:lintVitalRelease SKIPPED
+> Task :app:packageReleaseBundle
+> Task :app:lintAnalyzeRelease
+> Task :app:signReleaseBundle
+> Task :app:produceReleaseBundleIdeListingFile
+> Task :app:createReleaseBundleListingFileRedirect
+> Task :app:bundleRelease
+> Task :app:lintAnalyzeReleaseUnitTest
+> Task :app:lintAnalyzeDebugAndroidTest UP-TO-DATE
+> Task :app:lintAnalyzeDebugUnitTest
+
+> Task :app:lintReportDebug
+Wrote HTML report to file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/build/reports/lint-results-debug.html
+
+> Task :app:lintDebug
+
+> Task :app:lintReportRelease
+Wrote HTML report to file:///workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/build/reports/lint-results-release.html
+
+> Task :app:lintRelease
+w: Detected multiple Kotlin daemon sessions at 
+
+BUILD SUCCESSFUL in 4m 17s
+86 actionable tasks: 61 executed, 25 up-to-date

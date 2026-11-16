@@ -9,6 +9,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -32,26 +35,40 @@ jobs:
       - name: Verify local translation pack
         run: python3 scripts/check_translation_pack.py
       - name: Build APK, unsigned release bundle, tests and lint
-        run: gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease :app:testReleaseUnitTest :app:lintRelease --no-daemon --continue
+        id: android_build
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p ci-logs
+          gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:bundleRelease :app:testReleaseUnitTest :app:lintRelease --no-daemon --continue --stacktrace --console=plain 2>&1 | tee ci-logs/gradle.log
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          test -s app/build/outputs/bundle/release/app-release.aab
       - name: Verify optimized release and JNI bindings
         run: python3 scripts/check_release_optimization.py app/build/outputs/bundle/release/app-release.aab
       - name: Check packaged native ELF alignment
-        if: always()
-        run: |
-          if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
-            python3 scripts/check_native_pages.py app/build/outputs/apk/debug/app-debug.apk --report app/build/reports/native-pages-debug.json
-          else
-            echo "APK not built; native check unavailable"
-            exit 1
-          fi
+        if: ${{ !cancelled() && steps.android_build.outcome == 'success' }}
+        run: python3 scripts/check_native_pages.py app/build/outputs/apk/debug/app-debug.apk --report app/build/reports/native-pages-debug.json
       - name: Check APK ZIP alignment
-        if: always()
+        if: ${{ !cancelled() && steps.android_build.outcome == 'success' }}
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 -v 4 app/build/outputs/apk/debug/app-debug.apk
       - name: Check release bundle native alignment
-        if: always()
+        if: ${{ !cancelled() && steps.android_build.outcome == 'success' }}
         run: |
           python3 scripts/check_native_pages.py app/build/outputs/bundle/release/app-release.aab --report app/build/reports/native-pages-release.json
+      - name: Save build logs and reports
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ci-logs/
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Prepare download and job summary
         if: always()
         env:

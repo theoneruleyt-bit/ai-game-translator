@@ -23,3 +23,8 @@ __pycache__/
 
 /release.properties
 /private-signing/
+
+# Generated CI diagnostics
+/ci-logs/
+/ci-download.zip
+/release-diagnostics.zip

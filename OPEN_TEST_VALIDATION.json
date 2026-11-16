@@ -1,11 +1,35 @@
 {
-  "python_server_tests": 28,
-  "python_scripts_tests": 5,
-  "python_tests_passed": true,
-  "bundled_asset_checks": "passed",
-  "android_build": "not_run_sdk_and_gradle_unavailable",
-  "signed_aab": "not_produced",
+  "python_tests_passed": 37,
+  "android_unit_tests": {
+    "debug": {
+      "tests": 199,
+      "failures": 0,
+      "errors": 0
+    },
+    "release": {
+      "tests": 199,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "android_debug_apk": "built",
+  "android_release_aab": "built_unsigned",
+  "lint": {
+    "debug": {
+      "errors": 0,
+      "warnings": 73
+    },
+    "release": {
+      "errors": 0,
+      "warnings": 72
+    }
+  },
+  "apk_zipalign_16kb": "passed",
+  "apk_and_aab_elf_16kb": "passed_38_libraries_each",
+  "release_optimization_and_jni": "passed",
+  "workflow_yaml_and_shell_syntax": "passed",
+  "production_signing": "requires_existing_private_upload_key",
+  "device_tests": "not_run",
   "play_console_latest_version_code": "unknown",
-  "default_version_code": 52,
-  "version_code_must_exceed_previous_uploads": true
+  "default_version_code": 52
 }

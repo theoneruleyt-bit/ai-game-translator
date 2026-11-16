@@ -1,0 +1,1136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.13.2">
+
+    <issue
+        id="ApplySharedPref"
+        severity="Warning"
+        message="Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+        category="Correctness"
+        priority="6"
+        summary="Use `apply()` on `SharedPreferences`"
+        explanation="Consider using `apply()` instead of `commit` on shared preferences. Whereas `commit` blocks and writes its data to persistent storage immediately, `apply` will handle it in the background."
+        errorLine1="        if(sync)editor.commit() else editor.apply()"
+        errorLine2="                       ~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="255"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="CredentialManagerMisuse"
+        severity="Warning"
+        message="Call to `CredentialManager.getCredential` without use of `NoCredentialException`"
+        category="Correctness"
+        priority="5"
+        summary="Misuse of Credential Manager API"
+        explanation="When calling `CredentialManager.getCredential` or `CredentialManager.getCredentialAsync`, you should handle `NoCredentialException` somewhere in your project."
+        url="https://developer.android.com/identity/sign-in/credential-manager#handle-exceptions"
+        urls="https://developer.android.com/identity/sign-in/credential-manager#handle-exceptions"
+        errorLine1="        CredentialManager.create(activity).getCredentialAsync("
+        errorLine2="        ^">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/ProService.kt"
+            line="80"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        severity="Warning"
+        message="A newer version of net.java.dev.jna:jna than 5.18.1 is available: 5.19.1"
+        category="Correctness"
+        priority="4"
+        summary="Newer Library Versions Available"
+        explanation="This detector checks with a central repository to see if there are newer versions available for the dependencies used by this project. This is similar to the `GradleDependency` check, which checks for newer versions available in the Android SDK tools and libraries, but this works with any MavenCentral dependency, and connects to the library every time, which makes it more flexible but also **much** slower."
+        errorLine1="    implementation(&quot;net.java.dev.jna:jna:5.18.1@aar&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/build.gradle.kts"
+            line="132"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        severity="Warning"
+        message="This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 29. Merge all the resources in this folder into `mipmap-anydpi`."
+        category="Performance"
+        priority="6"
+        summary="Obsolete SDK_INT Version Check"
+        explanation="This check flags version checks that are not necessary, because the `minSdkVersion` (or surrounding known API level) is already at least as high as the version checked for.&#xA;&#xA;Similarly, it also looks for resources in `-vNN` folders, such as `values-v14` where the version qualifier is less than or equal to the `minSdkVersion`, where the contents should be merged into the best folder.">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/mipmap-anydpi-v26"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_032` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_032&quot; formatted=&quot;false&quot;>&quot;Kısa konuşma testi&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="34"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_046` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_046&quot; formatted=&quot;false&quot;>&quot;Türkçe sesli okuma açık. Yeni tamamlanan replikler okunacak; mikrofon açık kalıyor.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="48"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_049` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_049&quot; formatted=&quot;false&quot;>&quot;Türkçe sesi kulaklıkla dinliyorum&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="51"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_050` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_050&quot; formatted=&quot;false&quot;>&quot;Kulaklık kullanımı seçildi. Sesli okuma seçeneğin korunuyor.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="52"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_051` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_051&quot; formatted=&quot;false&quot;>&quot;Hoparlörden okuma kullanılabilir. Kendi sesinin tekrar algılanmasını azaltmak için kulaklık önerilir.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="53"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_091` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_091&quot; formatted=&quot;false&quot;>&quot;SON REPLİKLER&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="93"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_095` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_095&quot; formatted=&quot;false&quot;>&quot;Geçmiş temizlendi.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="97"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_184` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_184&quot; formatted=&quot;false&quot;>&quot;Bir replik çevrilemedi. İnterneti/modeli kontrol et.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="186"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_197` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_197&quot; formatted=&quot;false&quot;>&quot;Mikrofon açık • cihaz içi İngilizce → Türkçe&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="199"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_199` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_199&quot; formatted=&quot;false&quot;>&quot;Replik çevriliyor • mikrofon açık kalıyor&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="201"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_200` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_200&quot; formatted=&quot;false&quot;>&quot;Konuşma sürüyor • cihaz içi dinleme açık&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="202"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_209` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_209&quot; formatted=&quot;false&quot;>&quot;Üç denemede İngilizce metin alınamadı. Kısa konuşma testini dene; mikrofonu, İngilizce konuşma paketini ve interneti kontrol et.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="211"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_217` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_217&quot; formatted=&quot;false&quot;>&quot;İki denemede konuşma metni alınamadı. Kısa konuşma testini aç; mikrofon izni, İngilizce tanıma ve interneti kontrol et.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="219"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.ui_226` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;ui_226&quot; formatted=&quot;false&quot;>&quot;Yerel dinleme başlatılamadı veya kesildi. Mikrofon iznini ve başka uygulamaların mikrofon kullanımını kontrol et.&quot;&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="228"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.pro_expired` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1="    &lt;string name=&quot;pro_expired&quot;>Deneme tamamlandı&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="248"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.cloud_headphones` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1=" &lt;string name=&quot;cloud_headphones&quot;>Kendi sesini yeniden algılamaması için canlı dinlemede sesli okuma kulaklık seçeneği gerektirir.&lt;/string>"
+        errorLine2="         ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="299"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.listening_voice_choice` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1="    &lt;string name=&quot;listening_voice_choice&quot;>Dinlerken Türkçe okumayı açmak için kulaklık kullanın. Telefon hoparlörünün sesi mikrofona geri girerse yanlış tanıma oluşabilir.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="311"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.listening_with_headphones` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1="    &lt;string name=&quot;listening_with_headphones&quot;>Kulaklıkla sesli çeviri&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="312"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.listening_text_only` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.&#xA;&#xA;&#xA;The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.&#xA;&#xA;You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests =true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests =true.&#xA;,"
+        errorLine1="    &lt;string name=&quot;listening_text_only&quot;>Yalnızca yazılı çeviri&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/values/strings.xml"
+            line="313"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UsableSpace"
+        severity="Warning"
+        message="Consider also using `StorageManager#getAllocatableBytes` and `allocateBytes` which will consider clearable cached data"
+        category="Performance"
+        priority="3"
+        summary="Using getUsableSpace()"
+        explanation="When you need to allocate disk space for large files, consider using the new `allocateBytes(FileDescriptor, long)` API, which will automatically clear cached files belonging to other apps (as needed) to meet your request.&#xA;&#xA;When deciding if the device has enough disk space to hold your new data, call `getAllocatableBytes(UUID)` instead of using `getUsableSpace()`, since the former will consider any cached data that the system is willing to clear on your behalf.&#xA;&#xA;Note that these methods require API level 26. If your app is running on older devices, you will probably need to use both APIs, conditionally switching on `Build.VERSION.SDK_INT`. Lint only looks in the same compilation unit to see if you are already using both APIs, so if it warns even though you are already using the new API, consider moving the calls to the same file or suppressing the warning."
+        errorLine1="                check(cache.usableSpace>=1024L*1024*1024) { &quot;Insufficient model cache storage&quot; }"
+        errorLine2="                            ~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/ContextConversationTranslator.kt"
+            line="54"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="UsableSpace"
+        severity="Warning"
+        message="Consider also using `StorageManager#getAllocatableBytes` and `allocateBytes` which will consider clearable cached data"
+        category="Performance"
+        priority="3"
+        summary="Using getUsableSpace()"
+        explanation="When you need to allocate disk space for large files, consider using the new `allocateBytes(FileDescriptor, long)` API, which will automatically clear cached files belonging to other apps (as needed) to meet your request.&#xA;&#xA;When deciding if the device has enough disk space to hold your new data, call `getAllocatableBytes(UUID)` instead of using `getUsableSpace()`, since the former will consider any cached data that the system is willing to clear on your behalf.&#xA;&#xA;Note that these methods require API level 26. If your app is running on older devices, you will probably need to use both APIs, conditionally switching on `Build.VERSION.SDK_INT`. Lint only looks in the same compilation unit to see if you are already using both APIs, so if it warns even though you are already using the new API, consider moving the calls to the same file or suppressing the warning."
+        errorLine1="                    check(directory.usableSpace>=BYTES-offset+2L*1024*1024*1024) { &quot;Insufficient storage&quot; }"
+        errorLine2="                                    ~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/ContextModelPack.kt"
+            line="48"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        severity="Warning"
+        message="Launcher icon used as round icon did not have a circular shape"
+        category="Usability:Icons"
+        priority="6"
+        summary="The launcher icon shape should use a distinct silhouette"
+        explanation="According to the Android Design Guide (https://d.android.com/r/studio-ui/designer/material/iconography) your launcher icons should &quot;use a distinct silhouette&quot;, a &quot;three-dimensional, front view, with a slight perspective as if viewed from above, so that users perceive some depth.&quot;&#xA;&#xA;The unique silhouette implies that your launcher icon should not be a filled square.">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/mipmap-hdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        severity="Warning"
+        message="Launcher icon used as round icon did not have a circular shape"
+        category="Usability:Icons"
+        priority="6"
+        summary="The launcher icon shape should use a distinct silhouette"
+        explanation="According to the Android Design Guide (https://d.android.com/r/studio-ui/designer/material/iconography) your launcher icons should &quot;use a distinct silhouette&quot;, a &quot;three-dimensional, front view, with a slight perspective as if viewed from above, so that users perceive some depth.&quot;&#xA;&#xA;The unique silhouette implies that your launcher icon should not be a filled square.">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/mipmap-mdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        severity="Warning"
+        message="Launcher icon used as round icon did not have a circular shape"
+        category="Usability:Icons"
+        priority="6"
+        summary="The launcher icon shape should use a distinct silhouette"
+        explanation="According to the Android Design Guide (https://d.android.com/r/studio-ui/designer/material/iconography) your launcher icons should &quot;use a distinct silhouette&quot;, a &quot;three-dimensional, front view, with a slight perspective as if viewed from above, so that users perceive some depth.&quot;&#xA;&#xA;The unique silhouette implies that your launcher icon should not be a filled square.">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/mipmap-xhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        severity="Warning"
+        message="Launcher icon used as round icon did not have a circular shape"
+        category="Usability:Icons"
+        priority="6"
+        summary="The launcher icon shape should use a distinct silhouette"
+        explanation="According to the Android Design Guide (https://d.android.com/r/studio-ui/designer/material/iconography) your launcher icons should &quot;use a distinct silhouette&quot;, a &quot;three-dimensional, front view, with a slight perspective as if viewed from above, so that users perceive some depth.&quot;&#xA;&#xA;The unique silhouette implies that your launcher icon should not be a filled square.">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/mipmap-xxhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        severity="Warning"
+        message="Launcher icon used as round icon did not have a circular shape"
+        category="Usability:Icons"
+        priority="6"
+        summary="The launcher icon shape should use a distinct silhouette"
+        explanation="According to the Android Design Guide (https://d.android.com/r/studio-ui/designer/material/iconography) your launcher icons should &quot;use a distinct silhouette&quot;, a &quot;three-dimensional, front view, with a slight perspective as if viewed from above, so that users perceive some depth.&quot;&#xA;&#xA;The unique silhouette implies that your launcher icon should not be a filled square.">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="MonochromeLauncherIcon"
+        severity="Warning"
+        message="The application adaptive icon is missing a monochrome tag"
+        category="Usability:Icons"
+        priority="6"
+        summary="Monochrome icon is not defined"
+        explanation="If `android:roundIcon` and `android:icon` are both in your manifest, you must either remove the reference to `android:roundIcon` if it is not needed; or, supply the monochrome icon in the drawable defined by the `android:roundIcon` and `android:icon` attribute.&#xA;&#xA;For example, if `android:roundIcon` and `android:icon` are both in the manifest, a launcher might choose to use `android:roundIcon` over `android:icon` to display the adaptive app icon. Therefore, your themed application iconwill not show if your monochrome attribute is not also specified in `android:roundIcon`."
+        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>&lt;background android:drawable=&quot;@color/icon_background&quot;/>&lt;foreground android:drawable=&quot;@drawable/icon_foreground&quot;/>&lt;/adaptive-icon>"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
+            line="1"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        severity="Warning"
+        message="Found bitmap drawable `res/drawable/brand_icon.png` in densityless folder"
+        category="Usability:Icons"
+        priority="5"
+        summary="Image defined in density-independent drawable folder"
+        explanation="The res/drawable folder is intended for density-independent graphics such as shapes defined in XML. For bitmaps, move it to `drawable-mdpi` and consider providing higher and lower resolution versions in `drawable-ldpi`, `drawable-hdpi` and `drawable-xhdpi`. If the icon **really** is density independent (for example a solid color) you can place it in `drawable-nodpi`."
+        url="https://developer.android.com/guide/practices/screens_support.html"
+        urls="https://developer.android.com/guide/practices/screens_support.html">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/res/drawable/brand_icon.png"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `String.toUri` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            val uri=android.net.Uri.parse(&quot;https://play.google.com/store/account/subscriptions&quot;).buildUpon()"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="339"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                    stopSession();offline.selectPack(SpeechPack.ALL[index]);settings.edit().putInt(&quot;speech_pack&quot;,index).apply()"
+        errorLine2="                                                                            ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="531"
+            column="77"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                stopSession();slangEnabled=checked;settings.edit().putBoolean(&quot;slang&quot;,checked).apply()"
+        errorLine2="                                                   ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="546"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            setOnCheckedChangeListener { _,checked -> stopSession();phraseOverrides=checked;settings.edit().putBoolean(&quot;conversation_pack_v2&quot;,checked).apply() }"
+        errorLine2="                                                                                            ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="551"
+            column="93"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                settings.edit().putBoolean(&quot;local_mt&quot;,checked).apply()"
+        errorLine2="                ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="557"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                settings.edit().putBoolean(&quot;context_mt&quot;,checked).apply()"
+        errorLine2="                ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="569"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            setOnCheckedChangeListener { _,checked -> liveReadingSync=checked;if(::voice.isInitialized)voice.liveSync=checked;settings.edit().putBoolean(&quot;live_reading_sync&quot;,checked).apply() }"
+        errorLine2="                                                                                                                              ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="581"
+            column="127"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                stopSession();adaptiveClauses=checked;settings.edit().putBoolean(&quot;adaptive_clauses&quot;,checked).apply()"
+        errorLine2="                                                      ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="586"
+            column="55"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            setOnCheckedChangeListener { _,checked -> stopSession();freeListening=checked;if(checked) { cloudListening=false;if(::cloudChoice.isInitialized)cloudChoice.isChecked=false };settings.edit().putBoolean(&quot;free_listening&quot;,checked).putBoolean(&quot;cloud_listening&quot;,cloudListening).apply();updateListeningOptions() }"
+        errorLine2="                                                                                                                                                                                          ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="594"
+            column="187"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            setOnCheckedChangeListener { _,checked -> stopSession();cloudListening=checked;if(checked) { freeListening=false;if(::freeChoice.isInitialized)freeChoice.isChecked=false };settings.edit().putBoolean(&quot;cloud_listening&quot;,checked).putBoolean(&quot;free_listening&quot;,freeListening).apply();updateListeningOptions() }"
+        errorLine2="                                                                                                                                                                                        ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="599"
+            column="185"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension property `View.isVisible` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        controls.addView(button(getString(R.string.ui_052)) { advanced.visibility=if(advanced.visibility==View.VISIBLE)View.GONE else View.VISIBLE })"
+        errorLine2="                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="677"
+            column="86"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension property `View.isVisible` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        controls.addView(button(getString(R.string.ui_052)) { advanced.visibility=if(advanced.visibility==View.VISIBLE)View.GONE else View.VISIBLE })"
+        errorLine2="                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="677"
+            column="86"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { settings.edit().putInt(&quot;rate_step&quot;,progress).putFloat(&quot;tempo_rate&quot;,.9f+progress*.1f).apply();if(::voice.isInitialized) voice.rate=0.9f+progress*0.1f }"
+        errorLine2="                                                                                                ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="683"
+            column="97"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                override fun onProgressChanged(bar: SeekBar?,progress: Int,fromUser: Boolean) { settings.edit().putInt(&quot;pitch_step&quot;,progress).apply();if(::voice.isInitialized) voice.pitch=.85f+progress*.05f }"
+        errorLine2="                                                                                                ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="707"
+            column="97"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension property `View.isVisible` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        speakerCard.addView(button(getString(R.string.ui_062)) { speakerContent.visibility=if(speakerContent.visibility==View.VISIBLE)View.GONE else View.VISIBLE })"
+        errorLine2="                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="716"
+            column="95"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension property `View.isVisible` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        speakerCard.addView(button(getString(R.string.ui_062)) { speakerContent.visibility=if(speakerContent.visibility==View.VISIBLE)View.GONE else View.VISIBLE })"
+        errorLine2="                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="716"
+            column="95"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            profilePrefs.edit().clear().apply();speakers.clear();message(getString(R.string.ui_075))"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="737"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        if(!settings.getBoolean(&quot;guide_seen&quot;,false)) { settings.edit().putBoolean(&quot;guide_seen&quot;,true).apply();showGuide() }"
+        errorLine2="                                                       ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="797"
+            column="56"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        settings.edit().putFloat(&quot;area_left&quot;,area.left).putFloat(&quot;area_top&quot;,area.top).putFloat(&quot;area_right&quot;,area.right).putFloat(&quot;area_bottom&quot;,area.bottom).putBoolean(&quot;auto_voice&quot;,autoVoice.isChecked).putBoolean(&quot;region&quot;,region.isChecked)"
+        errorLine2="        ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="853"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `String.toUri` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            try { startActivity(Intent(Intent.ACTION_VIEW,android.net.Uri.parse(url))) }"
+        errorLine2="                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="868"
+            column="59"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `String.toUri` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                val uri=android.net.Uri.parse(&quot;https://theoneruleyt-bit.github.io/ai-game-translator/delete-account.html&quot;)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="884"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                stopSession();settings.edit().putString(&quot;theme&quot;,values[index]).apply();dialog.dismiss();recreate()"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="894"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                stopSession();settings.edit().putString(&quot;language&quot;,values[index]).apply();dialog.dismiss();recreate()"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="900"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                settings.edit().putInt(&quot;text_size&quot;,sizes[index]).apply();result.textSize=sizes[index].toFloat();dialog.dismiss()"
+        errorLine2="                ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="906"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                        stopSession();settings.edit().putString(&quot;local_speech_engine&quot;,models[index].id).apply()"
+        errorLine2="                                      ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="916"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                settings.edit().putBoolean(&quot;adaptive&quot;,adaptiveReading).putFloat(&quot;tempo_rate&quot;,voice.rate).apply()"
+        errorLine2="                ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="936"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            setOnCheckedChangeListener { _,checked -> adaptiveReading=checked;voice.adaptiveSpeed=checked;settings.edit().putBoolean(&quot;adaptive&quot;,checked).apply() }"
+        errorLine2="                                                                                                          ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="943"
+            column="107"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                keepScreen=checked;settings.edit().putBoolean(&quot;screen&quot;,checked).apply()"
+        errorLine2="                                   ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="948"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                profilePrefs.edit().putInt(&quot;style_${slot}&quot;,index).apply();dialog.dismiss()"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="962"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        settings.edit().putString(&quot;translation_history_v1&quot;,entries.toString()).apply()"
+        errorLine2="        ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="968"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        if(chosen!=null)profilePrefs.edit().putString(&quot;voice_${slot}&quot;,chosen).apply()"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="1020"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                profilePrefs.edit().putString(&quot;voice_${slot}&quot;,voices[index].name).apply()"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="1029"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                if(voice.selectVoice(voices[index])) { settings.edit().putString(&quot;default_voice&quot;,voices[index].name).apply();voiceChoice.text=labels[index];message(getString(R.string.ui_158)) }"
+        errorLine2="                                                       ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="1043"
+            column="56"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="            stopSession();speedMode=index;settings.edit().putInt(&quot;speed_mode&quot;,index).apply()"
+        errorLine2="                                          ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="1054"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="                    .setPositiveButton(getString(R.string.pro_start)) { _,_ -> settings.edit().putBoolean(&quot;trial_split_started_v2&quot;,true).apply();primaryAction() }"
+        errorLine2="                                                                               ~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="1112"
+            column="80"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        val editor=profilePrefs.edit()"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="1202"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="        prefs.edit().putString(&quot;items&quot;,array.toString()).apply();return true"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/PhraseBook.kt"
+            line="25"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        severity="Warning"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        category="Productivity"
+        priority="6"
+        summary="Use KTX extension function"
+        explanation="The Android KTX libraries decorates the Android platform SDK as well as various libraries with more convenient extension functions available from Kotlin, allowing you to use default parameters, named parameters, and more."
+        errorLine1="    fun clear() { prefs.edit().remove(&quot;items&quot;).apply() }"
+        errorLine2="                  ~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/PhraseBook.kt"
+            line="27"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="SetTextI18n"
+        severity="Warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead."
+        category="Internationalization"
+        priority="6"
+        summary="TextView Internationalization"
+        explanation="When calling `TextView#setText`&#xA;* Never call `Number#toString()` to format numbers; it will not handle fraction separators and locale-specific digits properly. Consider using `String#format` with proper format specifications (`%d` or `%f`) instead.&#xA;* Do not pass a string literal (e.g. &quot;Hello&quot;) to display text. Hardcoded text can not be properly translated to other languages. Consider using Android resource strings instead.&#xA;* Do not build messages by concatenating text chunks. Such messages can not be properly translated."
+        url="https://developer.android.com/guide/topics/resources/localization.html"
+        urls="https://developer.android.com/guide/topics/resources/localization.html"
+        errorLine1="                hint=&quot;Username&quot;;setSingleLine(true);setText(&quot;play-review&quot;)"
+        errorLine2="                                                             ~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="316"
+            column="62"/>
+    </issue>
+
+    <issue
+        id="SetTextI18n"
+        severity="Warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+        category="Internationalization"
+        priority="6"
+        summary="TextView Internationalization"
+        explanation="When calling `TextView#setText`&#xA;* Never call `Number#toString()` to format numbers; it will not handle fraction separators and locale-specific digits properly. Consider using `String#format` with proper format specifications (`%d` or `%f`) instead.&#xA;* Do not pass a string literal (e.g. &quot;Hello&quot;) to display text. Hardcoded text can not be properly translated to other languages. Consider using Android resource strings instead.&#xA;* Do not build messages by concatenating text chunks. Such messages can not be properly translated."
+        url="https://developer.android.com/guide/topics/resources/localization.html"
+        urls="https://developer.android.com/guide/topics/resources/localization.html"
+        errorLine1="        metrics.text=getString(R.string.ui_187, (if(active) getString(R.string.ui_188, ((SystemClock.elapsedRealtime()-sessionStarted)/1000).toString()) else &quot;&quot;).toString(), (completed).toString(), (waiting.size + if(translating) 1 else 0).toString(), (sounds).toString(), (lastLag/1000.0).toString(), (rejected).toString())+if(::voice.isInitialized) &quot;\n&quot;+getString(R.string.tempo_status,java.lang.String.format(java.util.Locale.ROOT,&quot;%.2f&quot;,voice.currentRate),(voice.estimatedWaitingMillis/1000).toString()) else &quot;&quot;"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/workspace/scratch/f763ff353cbd/review/ai-game-translator-main/app/src/main/java/com/optima/gametranslator/MainActivity.kt"
+            line="1326"
+            column="22"/>
+    </issue>
+
+</issues>

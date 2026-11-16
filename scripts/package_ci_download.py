@@ -6,7 +6,7 @@ import zipfile
 
 def package(root, output, status):
     files = set()
-    for pattern in ("app/build/reports/**/*", "app/build/test-results/**/*"):
+    for pattern in ("ci-logs/**/*", "app/build/reports/**/*", "app/build/test-results/**/*"):
         files.update(p for p in root.glob(pattern) if p.is_file())
     if status == "success":
         for relative in ("app/build/outputs/apk/debug/app-debug.apk",

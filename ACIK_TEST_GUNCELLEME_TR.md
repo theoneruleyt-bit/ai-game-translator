@@ -4,7 +4,7 @@
 - Varsayılan versionCode 51 → 52; versionName 0.33.0-open-test.
 - Gradle releaseVersionCode ve releaseVersionName parametreleriyle sürüm seçimi.
 - GitHub imzalı AAB iş akışında sürüm girişleri ve giriş doğrulaması.
-- İmzalı derleme akışına mevcut 33 Python testi ve paketlenmiş model/kütüphane doğrulamaları eklendi.
+- İmzalı derleme akışına 37 Python testi ve paketlenmiş model/kütüphane doğrulamaları eklendi.
 - Paket adı com.optima.gametranslator olarak korundu. Uygulama çeviri davranışında değişiklik yapılmadı.
 - ZIP içinde eski AI_Game_Translator_0_31 kopyası bulunmaz; güncel app ve .github tek köktedir.
 
@@ -23,8 +23,9 @@ Resmî kaynak: https://support.google.com/googleplay/android-developer/answer/14
 Güncelleme: https://support.google.com/googleplay/android-developer/answer/9859350?hl=tr
 
 ## Doğrulama ve sınırlar
-Bu oturumda 28 sunucu testi ve 5 yerel kütüphane denetim testi geçti. Sherpa AAR sağlama toplamı / 64 bit 16 KB hizalama, Silero VAD, İngilizce noktalama modeli ve OPUS-MT paket kontrolleri geçti.
-Android SDK ve Gradle bu ortamda yoktu. Android derlemesi, Kotlin/JUnit, lint, nihai AAB hizalaması ve cihaz testi burada çalıştırılmadı. İmzalı APK/AAB üretilmedi. GitHub iş akışının başarılı olması ve cihaz kontrolleri hâlâ gereklidir. Play Console'un mevcut durumu, gizlilik ve hesap silme bağlantılarının erişilebilirliği doğrulanmadı.
+Bu düzeltme oturumunda 37 Python testi ve debug/release sürümlerinin her birinde 199 JUnit testi geçti. Debug APK ve release AAB üretildi. Debug/release lint 0 hata ile tamamlandı. APK ZIP hizalaması, APK/AAB içindeki 38'er yerel kütüphanenin 16 KB ELF hizalaması ve release optimizasyon/JNI kontrolleri geçti. Ayrıntılar HATA_DUZELTMELERI_TR.md ve verification/ci-fix klasöründedir.
+
+Özel yükleme anahtarınız bulunmadığı için mağazaya sunulacak imzalı AAB oluşturulmadı. Bu ZIP kaynak projesidir. GitHub'da mevcut anahtar ve Secrets ile imzalı derleme yapılmalıdır. Gerçek cihaz testi, Play Console erişim durumu ve gizlilik/hesap silme bağlantılarının erişilebilirliği doğrulanmadı.
 
 ## Sürüm notu önerisi
 Açık test sürümü kullanıma sunulmuştur. Oyun çevirisi deneyimiyle ilgili geri bildirimlerinizi paylaşabilirsiniz.
