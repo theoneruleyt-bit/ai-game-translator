@@ -1,0 +1,11 @@
+{
+  "python_server_tests": 28,
+  "python_scripts_tests": 5,
+  "python_tests_passed": true,
+  "bundled_asset_checks": "passed",
+  "android_build": "not_run_sdk_and_gradle_unavailable",
+  "signed_aab": "not_produced",
+  "play_console_latest_version_code": "unknown",
+  "default_version_code": 52,
+  "version_code_must_exceed_previous_uploads": true
+}

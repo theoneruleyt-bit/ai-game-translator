@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.optima.gametranslator.SpeakerStyleTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-19T09:44:12" hostname="c27e1204a5e0" time="0.002">
-  <properties/>
-  <testcase name="routerSupportsSixteenDistinctNames" classname="com.optima.gametranslator.SpeakerStyleTest" time="0.002"/>
-  <testcase name="queueAccelerationIsBoundedAndOptional" classname="com.optima.gametranslator.SpeakerStyleTest" time="0.0"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

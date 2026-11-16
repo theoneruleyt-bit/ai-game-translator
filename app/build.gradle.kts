@@ -28,6 +28,17 @@ fun resourceXml(value: String) = value
     .replace("\"", "\\\"")
     .replace("'", "\\'")
 
+val releaseVersionCode = providers.gradleProperty("releaseVersionCode").orElse("52").get().let {
+    requireNotNull(it.toIntOrNull()?.takeIf { code -> code in 52..2100000000 }) {
+        "releaseVersionCode must be an integer from 52 to 2100000000 and exceed all previously uploaded Play version codes"
+    }
+}
+val releaseVersionName = providers.gradleProperty("releaseVersionName").orElse("0.33.0-open-test").get().also {
+    require(it.isNotBlank() && it.length <= 100 && it.none { ch -> ch.isISOControl() }) {
+        "releaseVersionName must contain 1 to 100 printable characters"
+    }
+}
+
 android {
     namespace = "com.optima.gametranslator"
     compileSdk = 36
@@ -36,8 +47,8 @@ android {
         applicationId = "com.optima.gametranslator"
         minSdk = 29
         targetSdk = 36
-        versionCode = 51
-        versionName = "0.32.0-listen-fix"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
     }
 
     signingConfigs {

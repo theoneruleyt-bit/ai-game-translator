@@ -1,4 +1,0 @@
-Kamera, mikrofon ve görsellerden İngilizce–Türkçe çeviri.
-İsteğe bağlı gelişmiş cihaz içi Dinle motoru.
-Türkçe sesli okuma, çeviri geçmişi ve açık/koyu tema.
-Cihaz ve ses koşullarına bağlı çeviri sonuçları.

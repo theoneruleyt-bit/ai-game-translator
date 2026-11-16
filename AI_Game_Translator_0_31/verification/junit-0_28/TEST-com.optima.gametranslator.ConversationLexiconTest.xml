@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.optima.gametranslator.ConversationLexiconTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-23T08:43:42" hostname="ff679f5dcc0e" time="0.024">
-  <properties/>
-  <testcase name="exactPhraseAcceptsPunctuationAndReverseDirection" classname="com.optima.gametranslator.ConversationLexiconTest" time="0.022"/>
-  <testcase name="contractionsAreExpandedBeforeTranslation" classname="com.optima.gametranslator.ConversationLexiconTest" time="0.001"/>
-  <testcase name="slangCannotRewriteUnrelatedSentences" classname="com.optima.gametranslator.ConversationLexiconTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

@@ -1,0 +1,9 @@
+{
+  "versionCode": 47,
+  "Kotlin_ProService_and_PlayBilling_syntax": "PASS",
+  "new_MainActivity_blocks_syntax": "PASS",
+  "XML_config": "PASS",
+  "Android_build_unit_tests_lint": "NOT RUN; GitHub Actions required",
+  "real_google_play_verification": "NOT RUN; device sign-in required",
+  "production_ready": false
+}
